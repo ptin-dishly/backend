@@ -16,6 +16,28 @@ registry.register("CreateAllergenBody", CreateAllergenSchema);
 // ======================
 
 registry.registerPath({
+  method: "delete",
+  path: "/allergens/{id}",
+  tags: ["Allergens"],
+  summary: "Delete an allergen",
+  description: "Deletes an allergen by ID",
+  operationId: "deleteAllergen",
+  request: {
+    params: z.object({
+      id: z.string().uuid(),
+    }),
+  },
+  responses: {
+    200: {
+      description: "Allergen deleted",
+    },
+    404: {
+      description: "Allergen not found",
+    },
+  },
+});
+
+registry.registerPath({
   method: "get",
   path: "/allergens",
   tags: ["Allergens"],

@@ -33,6 +33,7 @@ function createMockRepo(overrides?: Partial<AllergenRepository>): AllergenReposi
   return {
     create: async (data) => ok(fakeAllergen(data)),
     findAll: async () => ok([]),
+    delete: async () => ok(undefined),
     ...overrides,
   };
 }
@@ -197,6 +198,40 @@ describe("AllergenService", () => {
       expect(result.ok).toBe(false);
       if (!result.ok) {
         expect(result.error.code).toBe("DB_ERROR");
+      }
+    });
+  });
+
+  describe("delete", () => {
+    it("should delete an allergen by id", async () => {
+      const result = await service.delete("some-uuid");
+
+      expect(result.ok).toBe(true);
+    });
+
+    it("should fail when id is empty", async () => {
+      const result = await service.delete("");
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("INVALID_ID");
+      }
+    });
+
+    it("should propagate repository errors", async () => {
+      repo = createMockRepo({
+        delete: async () => ({
+          ok: false,
+          error: { code: "NOT_FOUND", message: "Allergen not found" },
+        }),
+      });
+      service = new AllergenService(repo);
+
+      const result = await service.delete("some-uuid");
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("NOT_FOUND");
       }
     });
   });

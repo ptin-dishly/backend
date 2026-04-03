@@ -8,6 +8,7 @@ export function allergenRoutes(allergenService: AllergenService): Router {
 
   router.get("/allergens", controller.findAll);
   router.post("/allergens", controller.create);
+  router.delete("/allergens/:id", controller.remove);
 
   return router;
 }

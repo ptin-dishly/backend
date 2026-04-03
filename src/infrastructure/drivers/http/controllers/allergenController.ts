@@ -15,6 +15,21 @@ export function createAllergenController(allergenService: AllergenService) {
       return sendSuccess(res, 200, result.value);
     },
 
+    async remove(req: Request, res: Response) {
+      const id = req.params.id as string;
+      if (!id) {
+        return sendBadRequest(res, "Allergen ID is required");
+      }
+
+      const result = await allergenService.delete(id);
+
+      if (!result.ok) {
+        return sendErrorByCode(res, result.error.code, result.error.message);
+      }
+
+      return sendSuccess(res, 200, null, "Allergen deleted");
+    },
+
     async create(req: Request, res: Response) {
       const parsed = CreateAllergenSchema.safeParse(req.body);
       if (!parsed.success) {

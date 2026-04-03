@@ -25,6 +25,20 @@ export class PgAllergenRepository implements AllergenRepository {
     }
   }
 
+  async delete(id: string): Promise<Result<void>> {
+    try {
+      const result = await this.pool.query("DELETE FROM allergens WHERE id = $1", [id]);
+
+      if (result.rowCount === 0) {
+        return fail("NOT_FOUND", "Allergen not found");
+      }
+
+      return ok(undefined);
+    } catch (error: unknown) {
+      return fail("DELETE_ERROR", "Failed to delete allergen", error);
+    }
+  }
+
   async findAll(): Promise<Result<Allergen[]>> {
     try {
       const result = await this.pool.query("SELECT * FROM allergens ORDER BY eu_number ASC");
