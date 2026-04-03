@@ -2,7 +2,9 @@
   "name": "dishly-backend",
   "type": "module",
   "version": "0.1.0",
+  "packageManager": "pnpm@10.8.1",
   "scripts": {
+    "preinstall": "npx only-allow pnpm",
     "dev": "tsx watch src/index.ts",
     "build": "tsdown",
     "start": "node dist/index.mjs",
