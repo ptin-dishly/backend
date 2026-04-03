@@ -3,10 +3,12 @@ import cors from "cors";
 import express, { type NextFunction, type Request, type Response } from "express";
 import helmet from "helmet";
 
+import type { Container } from "@infrastructure/bootstrap/container";
 import { httpConfig } from "./config";
 import { requestLogger } from "./middleware/requestLogger";
+import { allergenRoutes } from "./routes/allergenRoutes";
 
-export function createApp(): express.Express {
+export function createApp(container: Container): express.Express {
   const app = express();
 
   // ======================
@@ -110,7 +112,7 @@ export function createApp(): express.Express {
   // ======================
 
   const v1 = express.Router();
-  // Routes will be registered here as modules are added
+  v1.use(allergenRoutes(container.allergenService));
 
   app.use("/api/v1", v1);
 

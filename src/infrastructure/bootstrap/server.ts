@@ -8,8 +8,8 @@ export interface ServerBootstrap {
   stop(): Promise<void>;
 }
 
-export function createServerBootstrap(_container: Container): ServerBootstrap {
-  const app = createApp();
+export function createServerBootstrap(container: Container): ServerBootstrap {
+  const app = createApp(container);
   const server = createHttpServer(app);
 
   return {
