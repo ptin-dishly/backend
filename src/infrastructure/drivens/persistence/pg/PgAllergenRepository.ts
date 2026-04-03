@@ -16,25 +16,35 @@ export class PgAllergenRepository implements AllergenRepository {
         [data.code, data.nameEs, data.nameCa, data.nameEn, data.iconUrl ?? null, data.description ?? null, data.euNumber],
       );
 
-      const row = result.rows[0];
-      return ok(
-        new Allergen(
-          row.id,
-          row.code,
-          row.name_es,
-          row.name_ca,
-          row.name_en,
-          row.icon_url,
-          row.description,
-          row.eu_number,
-          row.created_at,
-        ),
-      );
+      return ok(this.toEntity(result.rows[0]));
     } catch (error: unknown) {
       if (error instanceof Error && "code" in error && (error as { code: string }).code === "23505") {
         return fail("DUPLICATE_RESOURCE", "Allergen with this code or EU number already exists");
       }
       return fail("CREATE_ERROR", "Failed to create allergen", error);
     }
+  }
+
+  async findAll(): Promise<Result<Allergen[]>> {
+    try {
+      const result = await this.pool.query("SELECT * FROM allergens ORDER BY eu_number ASC");
+      return ok(result.rows.map((row) => this.toEntity(row)));
+    } catch (error: unknown) {
+      return fail("RETRIEVE_ERROR", "Failed to retrieve allergens", error);
+    }
+  }
+
+  private toEntity(row: Record<string, unknown>): Allergen {
+    return new Allergen(
+      row.id as string,
+      row.code as string,
+      row.name_es as string,
+      row.name_ca as string,
+      row.name_en as string,
+      row.icon_url as string | null,
+      row.description as string | null,
+      row.eu_number as number,
+      row.created_at as Date,
+    );
   }
 }
