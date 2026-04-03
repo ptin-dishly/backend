@@ -26,4 +26,8 @@ export const AllergenSchema = z
   })
   .openapi("Allergen");
 
+export const AllergenParamsSchema = z.object({
+  id: z.string().uuid(),
+});
+
 export type CreateAllergenBody = z.infer<typeof CreateAllergenSchema>;
