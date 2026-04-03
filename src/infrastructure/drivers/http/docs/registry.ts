@@ -1,11 +1,18 @@
 import { OpenAPIRegistry, OpenApiGeneratorV3 } from "@asteasolutions/zod-to-openapi";
 import { z } from "../schemas/zod";
 import { AllergenSchema, CreateAllergenSchema } from "../schemas/allergen";
+import { ErrorResponseSchema, SuccessResponseSchema } from "../responses/schemas";
 
 const registry = new OpenAPIRegistry();
 
 // ======================
-// REGISTER SCHEMAS
+// REGISTER PROTOCOL SCHEMAS
+// ======================
+
+registry.register("ErrorResponse", ErrorResponseSchema);
+
+// ======================
+// REGISTER DOMAIN SCHEMAS
 // ======================
 
 registry.register("Allergen", AllergenSchema);
@@ -51,6 +58,24 @@ const allergenExamples = {
   },
 };
 
+const errorExamples = {
+  validation: {
+    success: false,
+    error: { code: "VALIDATION_ERROR", message: "All language names (es, ca, en) are required" },
+    meta: { timestamp: "2026-04-03T10:00:00.000Z" },
+  },
+  notFound: {
+    success: false,
+    error: { code: "NOT_FOUND", message: "Allergen not found" },
+    meta: { timestamp: "2026-04-03T10:00:00.000Z" },
+  },
+  duplicate: {
+    success: false,
+    error: { code: "DUPLICATE_RESOURCE", message: "Allergen with this code or EU number already exists" },
+    meta: { timestamp: "2026-04-03T10:00:00.000Z" },
+  },
+};
+
 // ======================
 // REGISTER PATHS
 // ======================
@@ -70,9 +95,26 @@ registry.registerPath({
   responses: {
     200: {
       description: "Allergen deleted",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(z.null()),
+          example: {
+            success: true,
+            data: null,
+            message: "Allergen deleted",
+            meta: { timestamp: "2026-04-03T10:00:00.000Z" },
+          },
+        },
+      },
     },
     404: {
       description: "Allergen not found",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: errorExamples.notFound,
+        },
+      },
     },
   },
 });
@@ -89,10 +131,7 @@ registry.registerPath({
       description: "List of allergens",
       content: {
         "application/json": {
-          schema: z.object({
-            success: z.literal(true),
-            data: z.array(AllergenSchema),
-          }),
+          schema: SuccessResponseSchema(z.array(AllergenSchema)),
           example: {
             success: true,
             data: [allergenExamples.gluten, allergenExamples.crustaceans, allergenExamples.eggs],
@@ -132,10 +171,7 @@ registry.registerPath({
       description: "Allergen created successfully",
       content: {
         "application/json": {
-          schema: z.object({
-            success: z.literal(true),
-            data: AllergenSchema,
-          }),
+          schema: SuccessResponseSchema(AllergenSchema),
           example: {
             success: true,
             data: allergenExamples.gluten,
@@ -146,9 +182,21 @@ registry.registerPath({
     },
     400: {
       description: "Validation error",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: errorExamples.validation,
+        },
+      },
     },
     409: {
       description: "Allergen with this code or EU number already exists",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: errorExamples.duplicate,
+        },
+      },
     },
   },
 });

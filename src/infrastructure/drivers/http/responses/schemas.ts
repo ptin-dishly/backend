@@ -1,6 +1,6 @@
 import type { DomainErrorCode } from "@domain/value-objects/ErrorCodes";
 import { DomainErrorCodes } from "@domain/value-objects/ErrorCodes";
-import { z } from "zod";
+import { z } from "@infrastructure/drivers/http/schemas/zod";
 
 // ======================
 // ERROR CODES
@@ -55,3 +55,33 @@ export type BaseResponse<T> = {
   error?: ApiError;
   meta: Meta;
 };
+
+// ======================
+// API RESPONSE PROTOCOL
+// ======================
+
+export const ErrorResponseSchema = z.object({
+  success: z.literal(false),
+  error: ApiErrorSchema,
+  meta: MetaSchema,
+}).openapi("ErrorResponse");
+
+export function SuccessResponseSchema<T extends z.ZodType>(dataSchema: T) {
+  return z.object({
+    success: z.literal(true),
+    data: dataSchema,
+    message: z.string().optional(),
+    meta: MetaSchema,
+  });
+}
+
+export function PaginatedResponseSchema<T extends z.ZodType>(dataSchema: T) {
+  return z.object({
+    success: z.literal(true),
+    data: z.array(dataSchema),
+    message: z.string().optional(),
+    meta: MetaSchema.extend({
+      pagination: PaginationMetaSchema,
+    }),
+  });
+}
