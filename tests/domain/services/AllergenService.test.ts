@@ -32,6 +32,7 @@ function fakeAllergen(data: CreateAllergenData): Allergen {
 function createMockRepo(overrides?: Partial<AllergenRepository>): AllergenRepository {
   return {
     create: async (data) => ok(fakeAllergen(data)),
+    findAll: async () => ok([]),
     ...overrides,
   };
 }
@@ -151,6 +152,52 @@ describe("AllergenService", () => {
       await service.create(data);
 
       expect(capturedData).toEqual(data);
+    });
+  });
+
+  describe("findAll", () => {
+    it("should return all allergens from repository", async () => {
+      const allergens = [
+        fakeAllergen(validData()),
+        fakeAllergen(validData({ code: "CRU", nameEs: "Crustáceos", nameCa: "Crustacis", nameEn: "Crustaceans", euNumber: 2 })),
+      ];
+      repo = createMockRepo({ findAll: async () => ok(allergens) });
+      service = new AllergenService(repo);
+
+      const result = await service.findAll();
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value).toHaveLength(2);
+        expect(result.value[0].code).toBe("GLU");
+        expect(result.value[1].code).toBe("CRU");
+      }
+    });
+
+    it("should return empty array when no allergens exist", async () => {
+      const result = await service.findAll();
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value).toHaveLength(0);
+      }
+    });
+
+    it("should propagate repository errors", async () => {
+      repo = createMockRepo({
+        findAll: async () => ({
+          ok: false,
+          error: { code: "DB_ERROR", message: "Connection failed" },
+        }),
+      });
+      service = new AllergenService(repo);
+
+      const result = await service.findAll();
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("DB_ERROR");
+      }
     });
   });
 });
