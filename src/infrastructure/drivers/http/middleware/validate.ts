@@ -17,7 +17,6 @@ export function validate(schemas: ValidationSchemas) {
           errors: result.error.flatten().fieldErrors,
         });
       }
-      res.locals.params = result.data;
     }
 
     if (schemas.query) {
@@ -27,7 +26,6 @@ export function validate(schemas: ValidationSchemas) {
           errors: result.error.flatten().fieldErrors,
         });
       }
-      res.locals.query = result.data;
     }
 
     if (schemas.body) {
@@ -37,7 +35,6 @@ export function validate(schemas: ValidationSchemas) {
           errors: result.error.flatten().fieldErrors,
         });
       }
-      res.locals.body = result.data;
     }
 
     next();

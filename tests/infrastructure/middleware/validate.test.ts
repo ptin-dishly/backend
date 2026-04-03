@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { validate } from "@infrastructure/drivers/http/middleware/validate";
 import { z } from "zod";
-import type { Request, Response, NextFunction } from "express";
+import type { NextFunction, Request, Response } from "express";
 
 function mockReq(overrides?: Partial<Request>): Request {
   return {
@@ -34,7 +34,6 @@ describe("validate middleware", () => {
       validate({ body: schema })(req, res, next);
 
       expect(next).toHaveBeenCalled();
-      expect(res.locals.body).toEqual({ name: "Gluten" });
     });
 
     it("should return 400 when body is invalid", () => {
@@ -72,7 +71,6 @@ describe("validate middleware", () => {
       validate({ params: schema })(req, res, next);
 
       expect(next).toHaveBeenCalled();
-      expect(res.locals.params).toEqual({ id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890" });
     });
 
     it("should return 400 when params are invalid", () => {
@@ -100,7 +98,6 @@ describe("validate middleware", () => {
       validate({ query: schema })(req, res, next);
 
       expect(next).toHaveBeenCalled();
-      expect(res.locals.query).toEqual({ q: "glut" });
     });
 
     it("should return 400 when query is invalid", () => {
@@ -114,7 +111,7 @@ describe("validate middleware", () => {
   });
 
   describe("combined validation", () => {
-    it("should validate body, params, and query together", () => {
+    it("should call next when all schemas pass", () => {
       const req = mockReq({
         params: { id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890" } as Record<string, string>,
         query: { q: "test" } as Record<string, string>,
@@ -129,9 +126,6 @@ describe("validate middleware", () => {
       })(req, res, next);
 
       expect(next).toHaveBeenCalled();
-      expect(res.locals.params).toEqual({ id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890" });
-      expect(res.locals.query).toEqual({ q: "test" });
-      expect(res.locals.body).toEqual({ name: "Gluten" });
     });
 
     it("should fail on first invalid schema (params before body)", () => {
