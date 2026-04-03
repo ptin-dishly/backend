@@ -1,11 +1,11 @@
-import type { Request, Response } from "express";
 import type { AllergenService } from "@domain/services/AllergenService";
-import { CreateAllergenSchema } from "@infrastructure/drivers/http/schemas/allergen";
 import {
-  sendSuccess,
   sendBadRequest,
   sendErrorByCode,
+  sendSuccess,
 } from "@infrastructure/drivers/http/responses";
+import { CreateAllergenSchema } from "@infrastructure/drivers/http/schemas/allergen";
+import type { Request, Response } from "express";
 
 export function createAllergenController(allergenService: AllergenService) {
   return {

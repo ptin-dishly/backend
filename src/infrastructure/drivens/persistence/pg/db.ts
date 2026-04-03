@@ -1,5 +1,5 @@
-import pg from "pg";
 import env from "env-var";
+import pg from "pg";
 
 const dbConfig = {
   host: env.get("DB_HOST").default("localhost").asString(),

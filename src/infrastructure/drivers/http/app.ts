@@ -1,10 +1,9 @@
+import type { Container } from "@infrastructure/bootstrap/container";
+import { apiReference } from "@scalar/express-api-reference";
 import compression from "compression";
 import cors from "cors";
 import express, { type NextFunction, type Request, type Response } from "express";
 import helmet from "helmet";
-
-import { apiReference } from "@scalar/express-api-reference";
-import type { Container } from "@infrastructure/bootstrap/container";
 import { httpConfig } from "./config";
 import { openApiSpec } from "./docs/registry";
 import { requestLogger } from "./middleware/requestLogger";

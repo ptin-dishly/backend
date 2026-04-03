@@ -1,11 +1,11 @@
-import type pg from "pg";
 import { Allergen } from "@domain/entities/Allergen";
 import type {
   AllergenRepository,
   CreateAllergenData,
 } from "@domain/ports/drivens/AllergenRepository";
 import type { Result } from "@domain/value-objects/Result";
-import { ok, fail } from "@domain/value-objects/Result";
+import { fail, ok } from "@domain/value-objects/Result";
+import type pg from "pg";
 
 export class PgAllergenRepository implements AllergenRepository {
   constructor(private pool: pg.Pool) {}

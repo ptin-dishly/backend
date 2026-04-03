@@ -1,6 +1,6 @@
-import { logger } from "@infrastructure/logger";
 import { createApp } from "@infrastructure/drivers/http/app";
 import { createHttpServer, type HttpServer } from "@infrastructure/drivers/http/server";
+import { logger } from "@infrastructure/logger";
 import type { Container } from "./container";
 
 export interface ServerBootstrap {

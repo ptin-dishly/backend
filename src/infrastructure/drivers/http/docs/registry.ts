@@ -1,7 +1,7 @@
 import { OpenAPIRegistry, OpenApiGeneratorV3 } from "@asteasolutions/zod-to-openapi";
-import { z } from "../schemas/zod";
-import { AllergenSchema, CreateAllergenSchema } from "../schemas/allergen";
 import { ErrorResponseSchema, SuccessResponseSchema } from "../responses/schemas";
+import { AllergenSchema, CreateAllergenSchema } from "../schemas/allergen";
+import { z } from "../schemas/zod";
 
 const registry = new OpenAPIRegistry();
 

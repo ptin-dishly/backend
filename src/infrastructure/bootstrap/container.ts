@@ -1,7 +1,7 @@
-import type pg from "pg";
-import { pool } from "@infrastructure/drivens/persistence/pg/db";
 import { AllergenService } from "@domain/services/AllergenService";
+import { pool } from "@infrastructure/drivens/persistence/pg/db";
 import { PgAllergenRepository } from "@infrastructure/drivens/persistence/pg/PgAllergenRepository";
+import type pg from "pg";
 
 export interface Container {
   pool: pg.Pool;
