@@ -1,6 +1,9 @@
 import type pg from "pg";
 import { Allergen } from "@domain/entities/Allergen";
-import type { AllergenRepository, CreateAllergenData } from "@domain/ports/drivens/AllergenRepository";
+import type {
+  AllergenRepository,
+  CreateAllergenData,
+} from "@domain/ports/drivens/AllergenRepository";
 import type { Result } from "@domain/value-objects/Result";
 import { ok, fail } from "@domain/value-objects/Result";
 
@@ -13,12 +16,24 @@ export class PgAllergenRepository implements AllergenRepository {
         `INSERT INTO allergens (code, name_es, name_ca, name_en, icon_url, description, eu_number)
          VALUES ($1, $2, $3, $4, $5, $6, $7)
          RETURNING *`,
-        [data.code, data.nameEs, data.nameCa, data.nameEn, data.iconUrl ?? null, data.description ?? null, data.euNumber],
+        [
+          data.code,
+          data.nameEs,
+          data.nameCa,
+          data.nameEn,
+          data.iconUrl ?? null,
+          data.description ?? null,
+          data.euNumber,
+        ],
       );
 
       return ok(this.toEntity(result.rows[0]));
     } catch (error: unknown) {
-      if (error instanceof Error && "code" in error && (error as { code: string }).code === "23505") {
+      if (
+        error instanceof Error &&
+        "code" in error &&
+        (error as { code: string }).code === "23505"
+      ) {
         return fail("DUPLICATE_RESOURCE", "Allergen with this code or EU number already exists");
       }
       return fail("CREATE_ERROR", "Failed to create allergen", error);

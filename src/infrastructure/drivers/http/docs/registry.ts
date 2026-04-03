@@ -71,7 +71,10 @@ const errorExamples = {
   },
   duplicate: {
     success: false,
-    error: { code: "DUPLICATE_RESOURCE", message: "Allergen with this code or EU number already exists" },
+    error: {
+      code: "DUPLICATE_RESOURCE",
+      message: "Allergen with this code or EU number already exists",
+    },
     meta: { timestamp: "2026-04-03T10:00:00.000Z" },
   },
 };

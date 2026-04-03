@@ -60,11 +60,13 @@ export type BaseResponse<T> = {
 // API RESPONSE PROTOCOL
 // ======================
 
-export const ErrorResponseSchema = z.object({
-  success: z.literal(false),
-  error: ApiErrorSchema,
-  meta: MetaSchema,
-}).openapi("ErrorResponse");
+export const ErrorResponseSchema = z
+  .object({
+    success: z.literal(false),
+    error: ApiErrorSchema,
+    meta: MetaSchema,
+  })
+  .openapi("ErrorResponse");
 
 export function SuccessResponseSchema<T extends z.ZodType>(dataSchema: T) {
   return z.object({
