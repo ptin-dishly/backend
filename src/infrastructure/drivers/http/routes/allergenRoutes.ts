@@ -1,7 +1,10 @@
 import type { AllergenService } from "@domain/services/AllergenService";
 import { createAllergenController } from "@infrastructure/drivers/http/controllers/allergenController";
 import { validate } from "@infrastructure/drivers/http/middleware/validate";
-import { AllergenParamsSchema, CreateAllergenSchema } from "@infrastructure/drivers/http/schemas/allergen";
+import {
+  AllergenParamsSchema,
+  CreateAllergenSchema,
+} from "@infrastructure/drivers/http/schemas/allergen";
 import { Router } from "express";
 
 export function allergenRoutes(allergenService: AllergenService): Router {

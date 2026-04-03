@@ -1,6 +1,6 @@
+import { sendBadRequest } from "@infrastructure/drivers/http/responses";
 import type { NextFunction, Request, Response } from "express";
 import type { z } from "zod";
-import { sendBadRequest } from "@infrastructure/drivers/http/responses";
 
 interface ValidationSchemas {
   body?: z.ZodType;
