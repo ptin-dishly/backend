@@ -12,6 +12,7 @@
     "lint": "biome check src",
     "lint:fix": "biome check --write src",
     "format": "biome format --write src",
+    "format:check": "biome format src",
     "check": "biome check --write src && tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest"
