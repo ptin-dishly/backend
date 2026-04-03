@@ -12,6 +12,46 @@ registry.register("Allergen", AllergenSchema);
 registry.register("CreateAllergenBody", CreateAllergenSchema);
 
 // ======================
+// EXAMPLES
+// ======================
+
+const allergenExamples = {
+  gluten: {
+    id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    code: "GLU",
+    nameEs: "Gluten",
+    nameCa: "Gluten",
+    nameEn: "Gluten",
+    iconUrl: null,
+    description: null,
+    euNumber: 1,
+    createdAt: "2026-04-03T10:00:00.000Z",
+  },
+  crustaceans: {
+    id: "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+    code: "CRU",
+    nameEs: "Crustáceos",
+    nameCa: "Crustacis",
+    nameEn: "Crustaceans",
+    iconUrl: null,
+    description: null,
+    euNumber: 2,
+    createdAt: "2026-04-03T10:00:01.000Z",
+  },
+  eggs: {
+    id: "c3d4e5f6-a7b8-9012-cdef-123456789012",
+    code: "HUE",
+    nameEs: "Huevos",
+    nameCa: "Ous",
+    nameEn: "Eggs",
+    iconUrl: null,
+    description: null,
+    euNumber: 3,
+    createdAt: "2026-04-03T10:00:02.000Z",
+  },
+};
+
+// ======================
 // REGISTER PATHS
 // ======================
 
@@ -42,7 +82,7 @@ registry.registerPath({
   path: "/allergens",
   tags: ["Allergens"],
   summary: "List all allergens",
-  description: "Returns all EU regulated allergens ordered by EU number",
+  description: "Returns all 14 EU regulated allergens ordered by EU number",
   operationId: "listAllergens",
   responses: {
     200: {
@@ -53,6 +93,11 @@ registry.registerPath({
             success: z.literal(true),
             data: z.array(AllergenSchema),
           }),
+          example: {
+            success: true,
+            data: [allergenExamples.gluten, allergenExamples.crustaceans, allergenExamples.eggs],
+            meta: { timestamp: "2026-04-03T10:00:00.000Z" },
+          },
         },
       },
     },
@@ -71,6 +116,13 @@ registry.registerPath({
       content: {
         "application/json": {
           schema: CreateAllergenSchema,
+          example: {
+            code: "GLU",
+            nameEs: "Gluten",
+            nameCa: "Gluten",
+            nameEn: "Gluten",
+            euNumber: 1,
+          },
         },
       },
     },
@@ -84,6 +136,11 @@ registry.registerPath({
             success: z.literal(true),
             data: AllergenSchema,
           }),
+          example: {
+            success: true,
+            data: allergenExamples.gluten,
+            meta: { timestamp: "2026-04-03T10:00:00.000Z" },
+          },
         },
       },
     },
