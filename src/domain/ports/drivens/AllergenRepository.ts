@@ -13,4 +13,5 @@ export interface CreateAllergenData {
 
 export interface AllergenRepository {
   create(data: CreateAllergenData): Promise<Result<Allergen>>;
+  findAll(): Promise<Result<Allergen[]>>;
 }

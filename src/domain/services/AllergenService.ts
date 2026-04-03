@@ -24,4 +24,8 @@ export class AllergenService {
 
     return await this.allergenRepository.create(data);
   }
+
+  async findAll(): Promise<Result<Allergen[]>> {
+    return await this.allergenRepository.findAll();
+  }
 }
