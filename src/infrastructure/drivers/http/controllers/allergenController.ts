@@ -5,6 +5,16 @@ import { sendSuccess, sendBadRequest, sendErrorByCode } from "@infrastructure/dr
 
 export function createAllergenController(allergenService: AllergenService) {
   return {
+    async findAll(_req: Request, res: Response) {
+      const result = await allergenService.findAll();
+
+      if (!result.ok) {
+        return sendErrorByCode(res, result.error.code, result.error.message);
+      }
+
+      return sendSuccess(res, 200, result.value);
+    },
+
     async create(req: Request, res: Response) {
       const parsed = CreateAllergenSchema.safeParse(req.body);
       if (!parsed.success) {

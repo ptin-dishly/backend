@@ -16,6 +16,28 @@ registry.register("CreateAllergenBody", CreateAllergenSchema);
 // ======================
 
 registry.registerPath({
+  method: "get",
+  path: "/allergens",
+  tags: ["Allergens"],
+  summary: "List all allergens",
+  description: "Returns all EU regulated allergens ordered by EU number",
+  operationId: "listAllergens",
+  responses: {
+    200: {
+      description: "List of allergens",
+      content: {
+        "application/json": {
+          schema: z.object({
+            success: z.literal(true),
+            data: z.array(AllergenSchema),
+          }),
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
   method: "post",
   path: "/allergens",
   tags: ["Allergens"],
