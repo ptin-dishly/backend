@@ -3,8 +3,10 @@ import cors from "cors";
 import express, { type NextFunction, type Request, type Response } from "express";
 import helmet from "helmet";
 
+import { apiReference } from "@scalar/express-api-reference";
 import type { Container } from "@infrastructure/bootstrap/container";
 import { httpConfig } from "./config";
+import { openApiSpec } from "./docs/registry";
 import { requestLogger } from "./middleware/requestLogger";
 import { allergenRoutes } from "./routes/allergenRoutes";
 
@@ -20,12 +22,13 @@ export function createApp(container: Container): express.Express {
       contentSecurityPolicy: {
         directives: {
           defaultSrc: ["'self'"],
-          scriptSrc: ["'self'"],
-          styleSrc: ["'self'", "'unsafe-inline'"],
-          imgSrc: ["'self'", "data:"],
+          scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
+          styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
+          imgSrc: ["'self'", "data:", "https://cdn.jsdelivr.net"],
           connectSrc: ["'self'"],
           objectSrc: ["'none'"],
           frameSrc: ["'none'"],
+          fontSrc: ["'self'", "https://cdn.jsdelivr.net"],
         },
       },
       hsts: false,
@@ -106,6 +109,18 @@ export function createApp(container: Container): express.Express {
       uptime: process.uptime(),
     });
   });
+
+  // ======================
+  // API DOCUMENTATION
+  // ======================
+
+  app.use(
+    "/docs",
+    apiReference({
+      content: openApiSpec,
+      theme: "kepler",
+    }),
+  );
 
   // ======================
   // API ROUTES v1

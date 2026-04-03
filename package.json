@@ -28,6 +28,8 @@
     "vitest": "^4.1.0"
   },
   "dependencies": {
+    "@asteasolutions/zod-to-openapi": "^8.5.0",
+    "@scalar/express-api-reference": "^0.9.6",
     "bcryptjs": "3.0.3",
     "compression": "1.8.1",
     "cors": "2.8.6",
