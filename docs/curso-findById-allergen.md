@@ -1,8 +1,5 @@
 # Curso: Crea tu primer endpoint GET por ID
 
-> Para un desarrollador inteligente que todavia no ha tocado backend.
-> Idioma del curso: castellano. Idioma del codigo: ingles.
-
 ---
 
 ## PARTE 1 — Entendiendo como funciona esto (teoria con codigo real)
