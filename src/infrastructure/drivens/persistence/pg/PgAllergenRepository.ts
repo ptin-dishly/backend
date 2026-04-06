@@ -60,7 +60,7 @@ export class PgAllergenRepository implements AllergenRepository {
         euNumber,
       ]);
 
-      if (result.rows.lenght === 0) {
+      if (result.rows.length === 0) {
         return ok(null);
       }
       return ok(this.toEntity(result.rows[0]));
