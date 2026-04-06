@@ -144,3 +144,24 @@ export function sendNotFound(res: Response, message: string): void {
 export function sendInternalError(res: Response, message: string): void {
   sendError(res, 500, "INTERNAL_ERROR", message);
 }
+
+// ======================
+// HEALTH
+// ======================
+
+export function sendHealthReady(res: Response): void {
+  res.status(200).json({
+    status: "ready",
+    database: "connected",
+    meta: createMeta(),
+  });
+}
+
+export function sendHealthNotReady(res: Response, error: string): void {
+  res.status(503).json({
+    status: "not_ready",
+    database: "disconnected",
+    error: error,
+    meta: createMeta(),
+  });
+}

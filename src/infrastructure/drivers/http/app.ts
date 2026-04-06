@@ -2,12 +2,14 @@ import type { Container } from "@infrastructure/bootstrap/container";
 import { apiReference } from "@scalar/express-api-reference";
 import compression from "compression";
 import cors from "cors";
-import express, { type NextFunction, type Request, type Response } from "express";
+import express, { Request, type NextFunction, type Response } from "express";
 import helmet from "helmet";
 import { httpConfig } from "./config";
 import { openApiSpec } from "./docs/registry";
 import { requestLogger } from "./middleware/requestLogger";
 import { allergenRoutes } from "./routes/allergenRoutes";
+import { healthRoutes } from "./routes/healthRoutes";
+import { HealthController } from "./controllers/healthController";
 
 export function createApp(container: Container): express.Express {
   const app = express();
@@ -101,13 +103,8 @@ export function createApp(container: Container): express.Express {
   // HEALTH CHECK
   // ======================
 
-  app.get("/health", (_req: Request, res: Response) => {
-    res.status(200).json({
-      status: "ok",
-      timestamp: new Date().toISOString(),
-      uptime: process.uptime(),
-    });
-  });
+  const healthCtrl = new HealthController(container.pool);
+  app.use("/health", healthRoutes(healthCtrl));
 
   // ======================
   // API DOCUMENTATION
