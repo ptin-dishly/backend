@@ -13,6 +13,7 @@ export function allergenRoutes(allergenService: AllergenService): Router {
 
   router.get("/allergens", controller.findAll);
   router.post("/allergens", validate({ body: CreateAllergenSchema }), controller.create);
+  router.get("/allergens/:id", validate({ params: AllergenParamsSchema }), controller.findById);
   router.delete("/allergens/:id", validate({ params: AllergenParamsSchema }), controller.remove);
 
   return router;

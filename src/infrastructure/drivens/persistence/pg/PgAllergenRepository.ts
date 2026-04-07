@@ -63,6 +63,18 @@ export class PgAllergenRepository implements AllergenRepository {
     }
   }
 
+  async findById(id: string): Promise<Result<Allergen | null>> {
+    try {
+      const result = await this.pool.query("SELECT * FROM allergens WHERE id = $1", [id]);
+      if (result.rows.length === 0) {
+        return ok(null);
+      }
+      return ok(this.toEntity(result.rows[0]));
+    } catch (error: unknown) {
+      return fail("RETRIEVE_ERROR", "Failed to retrieve allergen", error);
+    }
+  }
+
   private toEntity(row: Record<string, unknown>): Allergen {
     return new Allergen(
       row.id as string,

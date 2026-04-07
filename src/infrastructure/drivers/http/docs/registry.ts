@@ -124,6 +124,57 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
+  path: "/allergens/{id}",
+  tags: ["Allergens"],
+  summary: "Get an allergen by ID",
+  description: "Returns a single allergen by its UUID",
+  operationId: "getAllergenById",
+  request: {
+    params: z.object({
+      id: z.string().uuid(),
+    }),
+  },
+  responses: {
+    200: {
+      description: "Allergen found",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(AllergenSchema),
+          example: {
+            success: true,
+            data: allergenExamples.gluten,
+            meta: { timestamp: "2026-04-03T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    400: {
+      description: "Invalid ID format",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: { code: "INVALID_REQUEST", message: "Invalid path parameters" },
+            meta: { timestamp: "2026-04-03T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    404: {
+      description: "Allergen not found",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: errorExamples.notFound,
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
   path: "/allergens",
   tags: ["Allergens"],
   summary: "List all allergens",
