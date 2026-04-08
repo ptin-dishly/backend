@@ -15,5 +15,6 @@ export interface AllergenRepository {
   create(data: CreateAllergenData): Promise<Result<Allergen>>;
   findAll(): Promise<Result<Allergen[]>>;
   findById(id: string): Promise<Result<Allergen | null>>;
+  UpdateAllergenData(id: string, data: Partial<CreateAllergenData>): Promise<Result<Allergen | null>>;
   delete(id: string): Promise<Result<void>>;
 }

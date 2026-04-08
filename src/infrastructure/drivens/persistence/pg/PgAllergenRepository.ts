@@ -75,6 +75,48 @@ export class PgAllergenRepository implements AllergenRepository {
     }
   }
 
+  async UpdateAllergenData(id: string, data: Partial<CreateAllergenData>): Promise<Result<Allergen | null>> {
+    try {
+      const fields = [];
+      const values = [];
+      let index = 1;
+
+      for (const [key, value] of Object.entries(data)) {
+        if (value !== undefined) {
+          fields.push(`${this.toDbField(key)} = $${index}`);
+          values.push(value);
+          index++;
+        }
+      }
+
+      if (fields.length === 0) {
+        return fail("VALIDATION_ERROR", "No data provided for update");
+      }
+
+      values.push(id);
+
+      const result = await this.pool.query(
+        `UPDATE allergens SET ${fields.join(", ")} WHERE id = $${index} RETURNING *`,
+        values,
+      );
+
+      if (result.rows.length === 0) {
+        return ok(null);
+      }
+
+      return ok(this.toEntity(result.rows[0]));
+    } catch (error: unknown) {
+      if (
+        error instanceof Error &&
+        "code" in error &&
+        (error as { code: string }).code === "23505"
+      ) {
+        return fail("DUPLICATE_RESOURCE", "Allergen with this code or EU number already exists");
+      }
+      return fail("UPDATE_ERROR", "Failed to update allergen", error);
+    }
+  }
+
   private toEntity(row: Record<string, unknown>): Allergen {
     return new Allergen(
       row.id as string,

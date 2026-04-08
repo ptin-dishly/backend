@@ -125,6 +125,88 @@ registry.registerPath({
     },
   },
 });
+registry.registerPath({
+  method: "put",
+  path: "/allergens/{id}",
+  tags: ["Allergens"],
+  summary: "Update an allergen",
+  description: "Updates an allergen's data by ID. All fields are optional, but at least one must be provided.",
+  operationId: "updateAllergen",
+  request: {
+    params: z.object({
+      id: z.string().uuid(),
+    }),
+    body: CreateAllergenSchema.partial().refine(
+      (data) =>
+        data.code !== undefined ||
+        data.nameEs !== undefined ||
+        data.nameCa !== undefined ||
+        data.nameEn !== undefined ||
+        data.iconUrl !== undefined ||
+        data.description !== undefined ||
+        data.euNumber !== undefined,
+      {
+        message: "At least one field must be provided for update",
+      }
+    ),
+  },
+  responses: {
+    200: {
+      description: "Allergen updated successfully",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(AllergenSchema),
+          example: {
+            success: true,
+            data: {
+              id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+              code: "GLU",
+              nameEs: "Gluten",
+              nameCa: "Gluten",
+              nameEn: "Gluten",
+              iconUrl: null,
+              description: "Updated description",
+              euNumber: 1,
+              createdAt: "2026-04-03T10:00:00.000Z",
+            },
+            meta: { timestamp: "2026-04-03T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    400: {
+      description: "Validation error",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: { code: "VALIDATION_ERROR", message: "At least one field must be provided for update" },
+            meta: { timestamp: "2026-04-03T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    404: {
+      description: "Allergen not found",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: errorExamples.notFound,
+        },
+      },
+    },
+    409: {
+      description: "Allergen with this code or EU number already exists",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: errorExamples.duplicate,
+        },
+      },
+    },
+  },
+});
 
 registry.registerPath({
   method: "get",
