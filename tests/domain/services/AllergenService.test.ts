@@ -34,6 +34,7 @@ function createMockRepo(overrides?: Partial<AllergenRepository>): AllergenReposi
     create: async (data) => ok(fakeAllergen(data)),
     findAll: async () => ok([]),
     delete: async () => ok(undefined),
+    search: async () => ok([]),
     ...overrides,
   };
 }
@@ -198,6 +199,70 @@ describe("AllergenService", () => {
       expect(result.ok).toBe(false);
       if (!result.ok) {
         expect(result.error.code).toBe("DB_ERROR");
+      }
+    });
+  });
+
+  describe("search", () => {
+    it("should return allergens when search is successful", async () => {
+      const allergens = [fakeAllergen(validData({ nameEs: "Gluten" }))];
+      repo = createMockRepo({ search: async () => ok(allergens) });
+      service = new AllergenService(repo);
+
+      const result = await service.search("glu");
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value).toHaveLength(1);
+        expect(result.value[0].nameEs).toBe("Gluten");
+      }
+    });
+
+    it("should fail when search query is empty", async () => {
+      const result = await service.search("   ");
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("VALIDATION_ERROR");
+      }
+    });
+
+    it("should fail when search query is less than 2 characters", async () => {
+      const result = await service.search("a");
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("VALIDATION_ERROR");
+        expect(result.error.message).toContain("2 characters");
+      }
+    });
+
+    it("should return an empty array when no allergens match the query", async () => {
+      repo = createMockRepo({ search: async () => ok([]) });
+      service = new AllergenService(repo);
+
+      const result = await service.search("un-alérgeno-que-no-existe");
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value).toEqual([]);
+      }
+    });
+
+    it("should propagate repository errors during search", async () => {
+      repo = createMockRepo({
+        search: async () => ({
+          ok: false,
+          error: { code: "RETRIEVE_ERROR", message: "Database connection failed" },
+        }),
+      });
+      service = new AllergenService(repo);
+
+      const result = await service.search("gluten");
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("RETRIEVE_ERROR");
       }
     });
   });

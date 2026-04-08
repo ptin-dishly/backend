@@ -124,6 +124,21 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
+  path: "/allergens/search",
+  tags: ["Allergens"],
+  summary: "Cercar al·lèrgens",
+  request: {
+    query: z.object({
+      q: z.string().optional(),
+    }),
+  },
+  responses: {
+    200: { description: "Llista d'al·lèrgens" },
+  },
+});
+
+registry.registerPath({
+  method: "get",
   path: "/allergens",
   tags: ["Allergens"],
   summary: "List all allergens",

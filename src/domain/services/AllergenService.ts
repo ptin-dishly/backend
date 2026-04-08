@@ -29,6 +29,20 @@ export class AllergenService {
     return await this.allergenRepository.findAll();
   }
 
+  async search(query: string): Promise<Result<Allergen[]>> {
+    const q = query ? query.trim() : "";
+
+    if (q.length === 0) {
+      return fail("VALIDATION_ERROR", "Search query cannot be empty");
+    }
+
+    if (q.length < 2) {
+      return fail("VALIDATION_ERROR", "Search query must be at least 2 characters long");
+    }
+
+    return await this.allergenRepository.search(q);
+  }
+
   async delete(id: string): Promise<Result<void>> {
     if (!id) {
       return fail("INVALID_ID", "Allergen ID is required");

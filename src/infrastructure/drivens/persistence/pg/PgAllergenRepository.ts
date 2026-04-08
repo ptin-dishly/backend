@@ -63,6 +63,22 @@ export class PgAllergenRepository implements AllergenRepository {
     }
   }
 
+  async search(query: string): Promise<Result<Allergen[]>> {
+    try {
+      const pattern = `%${query}%`;
+      const result = await this.pool.query(
+        `SELECT * FROM allergens 
+         WHERE name_es ILIKE $1 OR name_ca ILIKE $1 OR name_en ILIKE $1
+         ORDER BY eu_number ASC`,
+        [pattern],
+      );
+
+      return ok(result.rows.map((row) => this.toEntity(row)));
+    } catch (error: unknown) {
+      return fail("RETRIEVE_ERROR", "Failed to search allergens", error);
+    }
+  }
+
   private toEntity(row: Record<string, unknown>): Allergen {
     return new Allergen(
       row.id as string,
