@@ -147,7 +147,7 @@ registry.registerPath({
           example: {
             success: true,
             data: [allergenExamples.gluten],
-            meta: { timestamp: new Date().toISOString() },
+            meta: { timestamp: "2026-04-03T10:00:00.000Z" },
           },
         },
       },
@@ -163,7 +163,7 @@ registry.registerPath({
               code: "VALIDATION_ERROR",
               message: "Search query must be at least 2 characters long",
             },
-            meta: { timestamp: new Date().toISOString() },
+            meta: { timestamp: "2026-04-03T10:00:00.000Z" },
           },
         },
       },
