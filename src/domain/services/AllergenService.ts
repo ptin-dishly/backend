@@ -30,17 +30,7 @@ export class AllergenService {
   }
 
   async search(query: string): Promise<Result<Allergen[]>> {
-    const q = query ? query.trim() : "";
-
-    if (q.length === 0) {
-      return fail("VALIDATION_ERROR", "Search query cannot be empty");
-    }
-
-    if (q.length < 2) {
-      return fail("VALIDATION_ERROR", "Search query must be at least 2 characters long");
-    }
-
-    return await this.allergenRepository.search(q);
+    return await this.allergenRepository.search(query.trim());
   }
 
   async findById(id: string): Promise<Result<Allergen | null>> {

@@ -219,25 +219,6 @@ describe("AllergenService", () => {
       }
     });
 
-    it("should fail when search query is empty", async () => {
-      const result = await service.search("   ");
-
-      expect(result.ok).toBe(false);
-      if (!result.ok) {
-        expect(result.error.code).toBe("VALIDATION_ERROR");
-      }
-    });
-
-    it("should fail when search query is less than 2 characters", async () => {
-      const result = await service.search("a");
-
-      expect(result.ok).toBe(false);
-      if (!result.ok) {
-        expect(result.error.code).toBe("VALIDATION_ERROR");
-        expect(result.error.message).toContain("2 characters");
-      }
-    });
-
     it("should return empty array when no allergens match", async () => {
       repo = createMockRepo({ search: async () => ok([]) });
       service = new AllergenService(repo);
