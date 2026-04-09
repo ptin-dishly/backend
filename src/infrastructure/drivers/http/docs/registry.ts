@@ -415,27 +415,43 @@ registry.registerPath({
 
 const generator = new OpenApiGeneratorV3(registry.definitions);
 
-export const openApiSpec = generator.generateDocument({
-  openapi: "3.0.3",
-  info: {
-    title: "Dishly API",
-    version: "0.1.0",
-    description: "API per a la gestió intel·ligent d'al·lèrgens — Cal Blay",
+export const openApiSpec = {
+  ...generator.generateDocument({
+    openapi: "3.0.3",
+    info: {
+      title: "Dishly API",
+      version: "0.1.0",
+      description: "API per a la gestió intel·ligent d'al·lèrgens — Cal Blay",
+    },
+    servers: [
+      {
+        url: "/api/v1",
+        description: "Local",
+      },
+    ],
+    tags: [
+      {
+        name: "Allergens",
+        description: "EU regulated allergens (Regulation 1169/2011)",
+      },
+      {
+        name: "Sessions",
+        description: "Authentication and session management",
+      },
+    ],
+  }),
+  components: {
+    ...generator.generateDocument({
+      openapi: "3.0.3",
+      info: { title: "", version: "" },
+    }).components,
+    securitySchemes: {
+      bearerAuth: {
+        type: "http",
+        scheme: "bearer",
+        bearerFormat: "JWT",
+        description: "JWT token obtained from POST /sessions (login)",
+      },
+    },
   },
-  servers: [
-    {
-      url: "/api/v1",
-      description: "Local",
-    },
-  ],
-  tags: [
-    {
-      name: "Allergens",
-      description: "EU regulated allergens (Regulation 1169/2011)",
-    },
-    {
-      name: "Sessions",
-      description: "Authentication and session management",
-    },
-  ],
-});
+};

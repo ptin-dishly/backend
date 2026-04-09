@@ -119,6 +119,9 @@ export function createApp(container: Container): express.Express {
     apiReference({
       content: openApiSpec,
       theme: "kepler",
+      authentication: {
+        preferredSecurityScheme: "bearerAuth",
+      },
     }),
   );
 
