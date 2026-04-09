@@ -237,6 +237,35 @@ describe("AllergenService", () => {
         expect(result.error.message).toContain("2 characters");
       }
     });
+
+    it("should return empty array when no allergens match", async () => {
+      repo = createMockRepo({ search: async () => ok([]) });
+      service = new AllergenService(repo);
+
+      const result = await service.search("xyz");
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value).toHaveLength(0);
+      }
+    });
+
+    it("should propagate repository errors", async () => {
+      repo = createMockRepo({
+        search: async () => ({
+          ok: false,
+          error: { code: "RETRIEVE_ERROR", message: "Database connection failed" },
+        }),
+      });
+      service = new AllergenService(repo);
+
+      const result = await service.search("glu");
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("RETRIEVE_ERROR");
+      }
+    });
   });
 
   describe("findById", () => {

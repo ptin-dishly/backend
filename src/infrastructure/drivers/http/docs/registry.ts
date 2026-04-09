@@ -131,8 +131,7 @@ registry.registerPath({
   path: "/allergens/search",
   tags: ["Allergens"],
   summary: "Search allergens by name",
-  description:
-    "Returns a list of allergens that match the search criteria (minimum 2 characters)",
+  description: "Returns a list of allergens that match the search criteria (minimum 2 characters)",
   operationId: "searchAllergens",
   request: {
     query: z.object({
