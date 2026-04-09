@@ -33,6 +33,7 @@ function createMockRepo(overrides?: Partial<AllergenRepository>): AllergenReposi
   return {
     create: async (data) => ok(fakeAllergen(data)),
     findAll: async () => ok([]),
+    findById: async () => ok(null),
     delete: async () => ok(undefined),
     search: async () => ok([]),
     ...overrides,
@@ -236,29 +237,50 @@ describe("AllergenService", () => {
         expect(result.error.message).toContain("2 characters");
       }
     });
+  });
 
-    it("should return an empty array when no allergens match the query", async () => {
-      repo = createMockRepo({ search: async () => ok([]) });
+  describe("findById", () => {
+    it("should return an allergen when found", async () => {
+      const allergen = fakeAllergen(validData());
+      repo = createMockRepo({ findById: async () => ok(allergen) });
       service = new AllergenService(repo);
 
-      const result = await service.search("un-alérgeno-que-no-existe");
+      const result = await service.findById("some-uuid");
 
       expect(result.ok).toBe(true);
       if (result.ok) {
-        expect(result.value).toEqual([]);
+        expect(result.value?.code).toBe("GLU");
       }
     });
 
-    it("should propagate repository errors during search", async () => {
+    it("should fail when id is empty", async () => {
+      const result = await service.findById("");
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("INVALID_ID");
+      }
+    });
+
+    it("should return null when allergen not found", async () => {
+      const result = await service.findById("nonexistent-uuid");
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value).toBeNull();
+      }
+    });
+
+    it("should propagate repository errors", async () => {
       repo = createMockRepo({
-        search: async () => ({
+        findById: async () => ({
           ok: false,
           error: { code: "RETRIEVE_ERROR", message: "Database connection failed" },
         }),
       });
       service = new AllergenService(repo);
 
-      const result = await service.search("gluten");
+      const result = await service.findById("some-uuid");
 
       expect(result.ok).toBe(false);
       if (!result.ok) {
