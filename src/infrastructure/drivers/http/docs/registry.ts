@@ -130,18 +130,18 @@ registry.registerPath({
   method: "get",
   path: "/allergens/search",
   tags: ["Allergens"],
-  summary: "Cercar al·lèrgens per nom",
+  summary: "Search allergens by name",
   description:
-    "Retorna una llista d'al·lèrgens que coincideixen amb el criteri de cerca (mínim 2 caràcters)",
+    "Returns a list of allergens that match the search criteria (minimum 2 characters)",
   operationId: "searchAllergens",
   request: {
     query: z.object({
-      q: z.string().min(2).describe("Text a cercar en els noms de l'al·lèrgen"),
+      q: z.string().min(2).describe("Text to search within allergen names"),
     }),
   },
   responses: {
     200: {
-      description: "Llista d'al·lèrgens trobats",
+      description: "List of found allergens",
       content: {
         "application/json": {
           schema: SuccessResponseSchema(z.array(AllergenSchema)),
@@ -154,7 +154,7 @@ registry.registerPath({
       },
     },
     400: {
-      description: "Consulta de cerca invàlida (massa curta o buida)",
+      description: "Invalid search query (too short or empty)",
       content: {
         "application/json": {
           schema: ErrorResponseSchema,
