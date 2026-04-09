@@ -128,6 +128,51 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
+  path: "/allergens/search",
+  tags: ["Allergens"],
+  summary: "Search allergens by name",
+  description: "Returns a list of allergens that match the search criteria (minimum 2 characters)",
+  operationId: "searchAllergens",
+  request: {
+    query: z.object({
+      q: z.string().min(2).describe("Text to search within allergen names"),
+    }),
+  },
+  responses: {
+    200: {
+      description: "List of found allergens",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(z.array(AllergenSchema)),
+          example: {
+            success: true,
+            data: [allergenExamples.gluten],
+            meta: { timestamp: "2026-04-03T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    400: {
+      description: "Invalid search query (too short or empty)",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "VALIDATION_ERROR",
+              message: "Search query must be at least 2 characters long",
+            },
+            meta: { timestamp: "2026-04-03T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
   path: "/allergens/{id}",
   tags: ["Allergens"],
   summary: "Get an allergen by ID",

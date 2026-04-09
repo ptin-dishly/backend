@@ -30,4 +30,8 @@ export const AllergenParamsSchema = z.object({
   id: z.string().uuid(),
 });
 
+export const AllergenSearchQuerySchema = z.object({
+  q: z.string().min(2),
+});
+
 export type CreateAllergenBody = z.infer<typeof CreateAllergenSchema>;
