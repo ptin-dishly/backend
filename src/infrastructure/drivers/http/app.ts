@@ -10,6 +10,7 @@ import { openApiSpec } from "./docs/registry";
 import { requestLogger } from "./middleware/requestLogger";
 import { allergenRoutes } from "./routes/allergenRoutes";
 import { healthRoutes } from "./routes/healthRoutes";
+import { sessionRoutes } from "./routes/sessionRoutes";
 
 export function createApp(container: Container): express.Express {
   const app = express();
@@ -115,6 +116,9 @@ export function createApp(container: Container): express.Express {
     apiReference({
       content: openApiSpec,
       theme: "kepler",
+      authentication: {
+        preferredSecurityScheme: "bearerAuth",
+      },
     }),
   );
 
@@ -124,6 +128,7 @@ export function createApp(container: Container): express.Express {
 
   const v1 = express.Router();
   v1.use(allergenRoutes(container.allergenService));
+  v1.use(sessionRoutes(container.authService, container.tokenService));
 
   app.use("/api/v1", v1);
 

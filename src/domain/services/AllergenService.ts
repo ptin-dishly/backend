@@ -29,6 +29,17 @@ export class AllergenService {
     return await this.allergenRepository.findAll();
   }
 
+  async search(query: string): Promise<Result<Allergen[]>> {
+    return await this.allergenRepository.search(query.trim());
+  }
+
+  async findById(id: string): Promise<Result<Allergen | null>> {
+    if (!id) {
+      return fail("INVALID_ID", "Allergen ID is required");
+    }
+    return await this.allergenRepository.findById(id);
+  }
+
   async delete(id: string): Promise<Result<void>> {
     if (!id) {
       return fail("INVALID_ID", "Allergen ID is required");

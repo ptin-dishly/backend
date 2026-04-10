@@ -6,6 +6,7 @@ import {
   SuccessResponseSchema,
 } from "../responses/schemas";
 import { AllergenSchema, CreateAllergenSchema } from "../schemas/allergen";
+import { LoginSchema, RefreshSchema, TokenPairSchema } from "../schemas/session";
 import { z } from "../schemas/zod";
 
 const registry = new OpenAPIRegistry();
@@ -22,6 +23,9 @@ registry.register("ErrorResponse", ErrorResponseSchema);
 
 registry.register("Allergen", AllergenSchema);
 registry.register("CreateAllergenBody", CreateAllergenSchema);
+registry.register("LoginBody", LoginSchema);
+registry.register("RefreshBody", RefreshSchema);
+registry.register("TokenPair", TokenPairSchema);
 
 // ======================
 // EXAMPLES
@@ -110,6 +114,102 @@ registry.registerPath({
             success: true,
             data: null,
             message: "Allergen deleted",
+            meta: { timestamp: "2026-04-03T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    404: {
+      description: "Allergen not found",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: errorExamples.notFound,
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/allergens/search",
+  tags: ["Allergens"],
+  summary: "Search allergens by name",
+  description: "Returns a list of allergens that match the search criteria (minimum 2 characters)",
+  operationId: "searchAllergens",
+  request: {
+    query: z.object({
+      q: z.string().min(2).describe("Text to search within allergen names"),
+    }),
+  },
+  responses: {
+    200: {
+      description: "List of found allergens",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(z.array(AllergenSchema)),
+          example: {
+            success: true,
+            data: [allergenExamples.gluten],
+            meta: { timestamp: "2026-04-03T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    400: {
+      description: "Invalid search query (too short or empty)",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "VALIDATION_ERROR",
+              message: "Search query must be at least 2 characters long",
+            },
+            meta: { timestamp: "2026-04-03T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/allergens/{id}",
+  tags: ["Allergens"],
+  summary: "Get an allergen by ID",
+  description: "Returns a single allergen by its UUID",
+  operationId: "getAllergenById",
+  request: {
+    params: z.object({
+      id: z.string().uuid(),
+    }),
+  },
+  responses: {
+    200: {
+      description: "Allergen found",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(AllergenSchema),
+          example: {
+            success: true,
+            data: allergenExamples.gluten,
+            meta: { timestamp: "2026-04-03T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    400: {
+      description: "Invalid ID format",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: { code: "INVALID_REQUEST", message: "Invalid path parameters" },
             meta: { timestamp: "2026-04-03T10:00:00.000Z" },
           },
         },
@@ -237,28 +337,198 @@ registry.registerPath({
 });
 
 // ======================
+// SESSION PATHS
+// ======================
+
+registry.registerPath({
+  method: "post",
+  path: "/sessions",
+  tags: ["Sessions"],
+  summary: "Create a session (login)",
+  description: "Authenticates a user and returns an access token and a refresh token",
+  operationId: "createSession",
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: LoginSchema,
+          example: {
+            email: "marc@calblay.cat",
+            password: "secret123",
+          },
+        },
+      },
+    },
+  },
+  responses: {
+    201: {
+      description: "Session created",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(TokenPairSchema),
+          example: {
+            success: true,
+            data: {
+              accessToken: "eyJhbGciOiJIUzI1NiIs...",
+              refreshToken: "eyJhbGciOiJIUzI1NiIs...",
+              expiresIn: 900,
+            },
+            meta: { timestamp: "2026-04-03T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    401: {
+      description: "Invalid credentials",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: { code: "INVALID_PASSWORD", message: "Invalid email or password" },
+            meta: { timestamp: "2026-04-03T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "put",
+  path: "/sessions",
+  tags: ["Sessions"],
+  summary: "Refresh a session",
+  description: "Exchanges a valid refresh token for a new access token and refresh token",
+  operationId: "refreshSession",
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: RefreshSchema,
+          example: {
+            refreshToken: "eyJhbGciOiJIUzI1NiIs...",
+          },
+        },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: "Session refreshed",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(TokenPairSchema),
+          example: {
+            success: true,
+            data: {
+              accessToken: "eyJhbGciOiJIUzI1NiIs...",
+              refreshToken: "eyJhbGciOiJIUzI1NiIs...",
+              expiresIn: 900,
+            },
+            meta: { timestamp: "2026-04-03T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    401: {
+      description: "Invalid or expired refresh token",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: { code: "UNAUTHORIZED", message: "Invalid or expired refresh token" },
+            meta: { timestamp: "2026-04-03T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "delete",
+  path: "/sessions",
+  tags: ["Sessions"],
+  summary: "Delete a session (logout)",
+  description: "Invalidates the refresh token and ends the session. Requires a valid access token.",
+  operationId: "deleteSession",
+  security: [{ bearerAuth: [] }],
+  responses: {
+    200: {
+      description: "Session closed",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(z.null()),
+          example: {
+            success: true,
+            data: null,
+            message: "Session closed",
+            meta: { timestamp: "2026-04-03T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    401: {
+      description: "Missing or invalid access token",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: { code: "UNAUTHORIZED", message: "Missing or invalid Authorization header" },
+            meta: { timestamp: "2026-04-03T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+  },
+});
+
+// ======================
 // GENERATE OPENAPI SPEC
 // ======================
 
 const generator = new OpenApiGeneratorV3(registry.definitions);
 
-export const openApiSpec = generator.generateDocument({
-  openapi: "3.0.3",
-  info: {
-    title: "Dishly API",
-    version: "0.1.0",
-    description: "API per a la gestió intel·ligent d'al·lèrgens — Cal Blay",
+export const openApiSpec = {
+  ...generator.generateDocument({
+    openapi: "3.0.3",
+    info: {
+      title: "Dishly API",
+      version: "0.1.0",
+      description: "API per a la gestió intel·ligent d'al·lèrgens — Cal Blay",
+    },
+    servers: [
+      {
+        url: "/api/v1",
+        description: "Local",
+      },
+    ],
+    tags: [
+      {
+        name: "Allergens",
+        description: "EU regulated allergens (Regulation 1169/2011)",
+      },
+      {
+        name: "Sessions",
+        description: "Authentication and session management",
+      },
+    ],
+  }),
+  components: {
+    ...generator.generateDocument({
+      openapi: "3.0.3",
+      info: { title: "", version: "" },
+    }).components,
+    securitySchemes: {
+      bearerAuth: {
+        type: "http",
+        scheme: "bearer",
+        bearerFormat: "JWT",
+        description: "JWT token obtained from POST /sessions (login)",
+      },
+    },
   },
-  servers: [
-    {
-      url: "/api/v1",
-      description: "Local",
-    },
-  ],
-  tags: [
-    {
-      name: "Allergens",
-      description: "EU regulated allergens (Regulation 1169/2011)",
-    },
-  ],
-});
+};

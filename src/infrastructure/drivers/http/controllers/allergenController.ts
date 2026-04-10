@@ -15,6 +15,32 @@ export function createAllergenController(allergenService: AllergenService) {
       return sendSuccess(res, 200, result.value);
     },
 
+    async search(req: Request, res: Response) {
+      const { q } = req.query;
+
+      const result = await allergenService.search(String(q || ""));
+
+      if (!result.ok) {
+        return sendErrorByCode(res, result.error.code, result.error.message);
+      }
+
+      return sendSuccess(res, 200, result.value);
+    },
+
+    async findById(req: Request<{ id: string }>, res: Response) {
+      const result = await allergenService.findById(req.params.id);
+
+      if (!result.ok) {
+        return sendErrorByCode(res, result.error.code, result.error.message);
+      }
+
+      if (result.value === null) {
+        return sendErrorByCode(res, "NOT_FOUND", "Allergen not found");
+      }
+
+      return sendSuccess(res, 200, result.value);
+    },
+
     async remove(req: Request<{ id: string }>, res: Response) {
       const result = await allergenService.delete(req.params.id);
 
