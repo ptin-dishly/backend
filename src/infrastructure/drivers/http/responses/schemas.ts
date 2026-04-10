@@ -92,15 +92,19 @@ export function PaginatedResponseSchema<T extends z.ZodType>(dataSchema: T) {
 // HEALTH RESPONSE SCHEMAS
 // ======================
 
-export const HealthReadyOkSchema = z.object({
+export const HealthReadyOkSchema = z
+  .object({
     status: z.string().openapi({ example: "ready" }),
     database: z.string().openapi({ example: "connected" }),
     timestamp: z.string().datetime().openapi({ example: "2026-04-03T10:00:00.000Z" }),
-  }).openapi("HealthReadyOk");
+  })
+  .openapi("HealthReadyOk");
 
-export const HealthReadyErrorSchema = z.object({
+export const HealthReadyErrorSchema = z
+  .object({
     status: z.string().openapi({ example: "not_ready" }),
     database: z.string().openapi({ example: "disconnected" }),
     error: z.string().openapi({ example: "Connection terminated unexpectedly" }),
     timestamp: z.string().datetime().openapi({ example: "2026-04-03T10:00:00.000Z" }),
-  }).openapi("HealthReadyError");
+  })
+  .openapi("HealthReadyError");

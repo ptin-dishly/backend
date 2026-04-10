@@ -1,6 +1,9 @@
+import {
+  sendHealthNotReady,
+  sendHealthReady,
+} from "@infrastructure/drivers/http/responses/helpers";
 import type { Request, Response } from "express";
 import type pg from "pg";
-import { sendHealthReady, sendHealthNotReady } from "../../../responses/helpers";
 
 export class HealthController {
   constructor(private readonly pool: pg.Pool) {}

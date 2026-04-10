@@ -1,5 +1,10 @@
 import { OpenAPIRegistry, OpenApiGeneratorV3 } from "@asteasolutions/zod-to-openapi";
-import { ErrorResponseSchema, HealthReadyErrorSchema, HealthReadyOkSchema, SuccessResponseSchema } from "../responses/schemas";
+import {
+  ErrorResponseSchema,
+  HealthReadyErrorSchema,
+  HealthReadyOkSchema,
+  SuccessResponseSchema,
+} from "../responses/schemas";
 import { AllergenSchema, CreateAllergenSchema } from "../schemas/allergen";
 import { z } from "../schemas/zod";
 
@@ -147,6 +152,33 @@ registry.registerPath({
 });
 
 registry.registerPath({
+  method: "get",
+  path: "/health/ready",
+  servers: [{ url: "/" }],
+  tags: ["Infrastructure"],
+  summary: "Check database readiness",
+  description: "Pings the database with SELECT 1 to ensure connectivity.",
+  responses: {
+    200: {
+      description: "Database is reachable",
+      content: {
+        "application/json": {
+          schema: HealthReadyOkSchema,
+        },
+      },
+    },
+    503: {
+      description: "Database is unreachable",
+      content: {
+        "application/json": {
+          schema: HealthReadyErrorSchema,
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
   method: "post",
   path: "/allergens",
   tags: ["Allergens"],
@@ -202,32 +234,6 @@ registry.registerPath({
       },
     },
   },
-});
-
-registry.registerPath({
-  method: "get",
-  path: "/../health/ready",
-  tags: ["Infrastructure"],
-  summary: "Check database readiness",
-  description: "Pings the database with SELECT 1 to ensure connectivity.",
-  responses: {
-    200: {
-      description: "Database is reachable",
-      content: {
-        "application/json": {
-          schema: HealthReadyOkSchema,
-        }
-      }
-    },
-    503: {
-      description: "Database is unreachable",
-      content: {
-        "application/json": {
-          schema: HealthReadyErrorSchema,
-        }
-      }
-    }
-  }
 });
 
 // ======================
