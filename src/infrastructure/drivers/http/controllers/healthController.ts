@@ -3,6 +3,7 @@ import {
   sendHealthNotReady,
   sendHealthReady,
 } from "@infrastructure/drivers/http/responses/helpers";
+import { logger } from "@infrastructure/logger";
 import type { Request, Response } from "express";
 import type pg from "pg";
 
@@ -14,7 +15,7 @@ export class HealthController {
       await this.pool.query("SELECT 1");
       sendHealthReady(res);
     } catch (error) {
-      console.error("[HealthCheck Error]: Database connection failed", error);
+      logger.error({ error }, "Database connection failed");
       sendHealthNotReady(res, "Database unavailable");
     }
   };
