@@ -43,7 +43,10 @@ describe("HealthController", () => {
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({
           status: "ok",
-          timestamp: expect.any(String),
+          uptime: expect.any(Number),
+          meta: expect.objectContaining({
+            timestamp: expect.any(String),
+          }),
         }),
       );
     });
@@ -62,14 +65,17 @@ describe("HealthController", () => {
         expect.objectContaining({
           status: "ready",
           database: "connected",
+          meta: expect.objectContaining({
+            timestamp: expect.any(String),
+          }),
         }),
       );
     });
 
-    it("should return 503 when database query fails", async () => {
+    it("should return 503 with generic message on db failure", async () => {
       const req = mockReq();
       const res = mockRes();
-      const error = new Error("DB Connection Refused");
+      const error = new Error("Database unavailable");
       vi.mocked(mockPool.query!).mockRejectedValueOnce(error);
 
       await controller.checkReady(req, res);
@@ -79,7 +85,10 @@ describe("HealthController", () => {
         expect.objectContaining({
           status: "not_ready",
           database: "disconnected",
-          error: "DB Connection Refused",
+          error: "Database unavailable",
+          meta: expect.objectContaining({
+            timestamp: expect.any(String),
+          }),
         }),
       );
     });

@@ -1,4 +1,5 @@
 import {
+  sendHealthLive,
   sendHealthNotReady,
   sendHealthReady,
 } from "@infrastructure/drivers/http/responses/helpers";
@@ -13,16 +14,12 @@ export class HealthController {
       await this.pool.query("SELECT 1");
       sendHealthReady(res);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Database connection failed";
-      sendHealthNotReady(res, message);
+      console.error("[HealthCheck Error]: Database connection failed", error);
+      sendHealthNotReady(res, "Database unavailable");
     }
   };
 
   public checkLive = (_req: Request, res: Response): void => {
-    res.status(200).json({
-      status: "ok",
-      timestamp: new Date().toISOString(),
-      uptime: process.uptime(),
-    });
+    sendHealthLive(res);
   };
 }

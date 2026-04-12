@@ -149,6 +149,14 @@ export function sendInternalError(res: Response, message: string): void {
 // HEALTH
 // ======================
 
+export function sendHealthLive(res: Response): void {
+  res.status(200).json({
+    status: "ok",
+    meta: createMeta(),
+    uptime: process.uptime(),
+  });
+}
+
 export function sendHealthReady(res: Response): void {
   res.status(200).json({
     status: "ready",
