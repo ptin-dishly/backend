@@ -5,9 +5,11 @@ import cors from "cors";
 import express, { type NextFunction, type Request, type Response } from "express";
 import helmet from "helmet";
 import { httpConfig } from "./config";
+import { HealthController } from "./controllers/healthController";
 import { openApiSpec } from "./docs/registry";
 import { requestLogger } from "./middleware/requestLogger";
 import { allergenRoutes } from "./routes/allergenRoutes";
+import { healthRoutes } from "./routes/healthRoutes";
 import { sessionRoutes } from "./routes/sessionRoutes";
 
 export function createApp(container: Container): express.Express {
@@ -102,13 +104,8 @@ export function createApp(container: Container): express.Express {
   // HEALTH CHECK
   // ======================
 
-  app.get("/health", (_req: Request, res: Response) => {
-    res.status(200).json({
-      status: "ok",
-      timestamp: new Date().toISOString(),
-      uptime: process.uptime(),
-    });
-  });
+  const healthCtrl = new HealthController(container.pool);
+  app.use("/health", healthRoutes(healthCtrl));
 
   // ======================
   // API DOCUMENTATION

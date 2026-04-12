@@ -87,3 +87,36 @@ export function PaginatedResponseSchema<T extends z.ZodType>(dataSchema: T) {
     }),
   });
 }
+
+// ======================
+// HEALTH RESPONSE SCHEMAS
+// ======================
+
+export const HealthLiveOkSchema = z.object({
+  status: z.string().openapi({ example: "ok" }),
+  uptime: z.number().openapi({ example: 123.45 }),
+  meta: z.object({
+    timestamp: z.string().openapi({ example: "2026-04-12T17:39:15Z" }),
+  }),
+});
+
+export const HealthReadyOkSchema = z
+  .object({
+    status: z.string().openapi({ example: "ready" }),
+    database: z.string().openapi({ example: "connected" }),
+    meta: z.object({
+      timestamp: z.string().openapi({ example: "2026-04-03T10:00:00.000Z" }),
+    }),
+  })
+  .openapi("HealthReadyOk");
+
+export const HealthReadyErrorSchema = z
+  .object({
+    status: z.string().openapi({ example: "not_ready" }),
+    database: z.string().openapi({ example: "disconnected" }),
+    error: z.string().openapi({ example: "Database unavailable" }),
+    meta: z.object({
+      timestamp: z.string().openapi({ example: "2026-04-03T10:00:00.000Z" }),
+    }),
+  })
+  .openapi("HealthReadyError");
