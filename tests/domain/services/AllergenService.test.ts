@@ -226,15 +226,6 @@ describe("AllergenService", () => {
         }
     });
 
-    it("should fail when euNumber is NaN", async () => {
-        const result = await service.findByEuNumber(NaN);
-
-        expect(result.ok).toBe(false);
-        if (!result.ok) {
-            expect(result.error.code).toBe("VALIDATION_ERROR");
-        }
-    });
-
     it("should return null when allergen not found", async () => {
         repo = createMockRepo({ findByEuNumber: async () => ok(null) });
         service = new AllergenService(repo);

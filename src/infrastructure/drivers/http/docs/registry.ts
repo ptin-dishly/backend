@@ -126,7 +126,7 @@ registry.registerPath({
   method: "get",
   path: "/allergens/eu/{euNumber}",
   tags: ["Allergens"],
-  summary: "Get an allergen by EU NUmber",
+  summary: "Get an allergen by EU Number",
   description: "Returns a single allergen by its EU regulation number (1-14)",
   operationId: "getAllergenByEuNumber",
   request: {

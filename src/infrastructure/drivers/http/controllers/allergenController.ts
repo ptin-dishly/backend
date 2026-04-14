@@ -18,10 +18,6 @@ export function createAllergenController(allergenService: AllergenService) {
     async findByEuNumber(req: Request<{ euNumber: string }>, res: Response) {
       const euNumber = Number(req.params.euNumber);
 
-      if (Number.isNaN(euNumber)) {
-        return sendErrorByCode(res, "VALIDATION_ERROR", "EU number must be a valid number");
-      }
-
       const result = await allergenService.findByEuNumber(euNumber);
 
       if (!result.ok) {
