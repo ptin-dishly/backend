@@ -36,7 +36,10 @@ export class AllergenService {
     return await this.allergenRepository.findById(id);
   }
 
-  async UpdateAllergenData(id: string, data: Partial<CreateAllergenData>): Promise<Result<Allergen | null>> {
+  async UpdateAllergenData(
+    id: string,
+    data: Partial<CreateAllergenData>,
+  ): Promise<Result<Allergen | null>> {
     if (!id) {
       return fail("INVALID_ID", "Allergen ID is required");
     }

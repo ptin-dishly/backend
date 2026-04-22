@@ -28,7 +28,10 @@ export function createAllergenController(allergenService: AllergenService) {
 
       return sendSuccess(res, 200, result.value);
     },
-    async updateAllergenData(req: Request<{ id: string }, unknown, Partial<CreateAllergenBody>>, res: Response) {
+    async updateAllergenData(
+      req: Request<{ id: string }, unknown, Partial<CreateAllergenBody>>,
+      res: Response,
+    ) {
       const result = await allergenService.UpdateAllergenData(req.params.id, req.body);
 
       if (!result.ok) {

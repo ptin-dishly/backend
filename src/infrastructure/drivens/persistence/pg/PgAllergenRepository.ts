@@ -10,6 +10,27 @@ import type pg from "pg";
 export class PgAllergenRepository implements AllergenRepository {
   constructor(private pool: pg.Pool) {}
 
+  private toDbField(key: string): string {
+    switch (key) {
+      case "code":
+        return "code";
+      case "nameEs":
+        return "name_es";
+      case "nameCa":
+        return "name_ca";
+      case "nameEn":
+        return "name_en";
+      case "iconUrl":
+        return "icon_url";
+      case "description":
+        return "description";
+      case "euNumber":
+        return "eu_number";
+      default:
+        throw new Error(`Unsupported update field: ${key}`);
+    }
+  }
+
   async create(data: CreateAllergenData): Promise<Result<Allergen>> {
     try {
       const result = await this.pool.query(
@@ -75,7 +96,10 @@ export class PgAllergenRepository implements AllergenRepository {
     }
   }
 
-  async UpdateAllergenData(id: string, data: Partial<CreateAllergenData>): Promise<Result<Allergen | null>> {
+  async UpdateAllergenData(
+    id: string,
+    data: Partial<CreateAllergenData>,
+  ): Promise<Result<Allergen | null>> {
     try {
       const fields = [];
       const values = [];

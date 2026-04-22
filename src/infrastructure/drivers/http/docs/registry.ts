@@ -130,25 +130,32 @@ registry.registerPath({
   path: "/allergens/{id}",
   tags: ["Allergens"],
   summary: "Update an allergen",
-  description: "Updates an allergen's data by ID. All fields are optional, but at least one must be provided.",
+  description:
+    "Updates an allergen's data by ID. All fields are optional, but at least one must be provided.",
   operationId: "updateAllergen",
   request: {
     params: z.object({
       id: z.string().uuid(),
     }),
-    body: CreateAllergenSchema.partial().refine(
-      (data) =>
-        data.code !== undefined ||
-        data.nameEs !== undefined ||
-        data.nameCa !== undefined ||
-        data.nameEn !== undefined ||
-        data.iconUrl !== undefined ||
-        data.description !== undefined ||
-        data.euNumber !== undefined,
-      {
-        message: "At least one field must be provided for update",
-      }
-    ),
+    body: {
+      content: {
+        "application/json": {
+          schema: CreateAllergenSchema.partial().refine(
+            (data) =>
+              data.code !== undefined ||
+              data.nameEs !== undefined ||
+              data.nameCa !== undefined ||
+              data.nameEn !== undefined ||
+              data.iconUrl !== undefined ||
+              data.description !== undefined ||
+              data.euNumber !== undefined,
+            {
+              message: "At least one field must be provided for update",
+            },
+          ),
+        },
+      },
+    },
   },
   responses: {
     200: {
@@ -181,7 +188,10 @@ registry.registerPath({
           schema: ErrorResponseSchema,
           example: {
             success: false,
-            error: { code: "VALIDATION_ERROR", message: "At least one field must be provided for update" },
+            error: {
+              code: "VALIDATION_ERROR",
+              message: "At least one field must be provided for update",
+            },
             meta: { timestamp: "2026-04-03T10:00:00.000Z" },
           },
         },
@@ -294,14 +304,19 @@ registry.registerPath({
     body: {
       content: {
         "application/json": {
-          schema: CreateAllergenSchema,
-          example: {
-            code: "GLU",
-            nameEs: "Gluten",
-            nameCa: "Gluten",
-            nameEn: "Gluten",
-            euNumber: 1,
-          },
+          schema: CreateAllergenSchema.partial().refine(
+            (data) =>
+              data.code !== undefined ||
+              data.nameEs !== undefined ||
+              data.nameCa !== undefined ||
+              data.nameEn !== undefined ||
+              data.iconUrl !== undefined ||
+              data.description !== undefined ||
+              data.euNumber !== undefined,
+            {
+              message: "At least one field must be provided for update",
+            },
+          ),
         },
       },
     },
