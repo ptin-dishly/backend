@@ -131,7 +131,6 @@ registry.registerPath({
   },
 });
 
-
 registry.registerPath({
   method: "get",
   path: "/allergens/eu/{euNumber}",
@@ -185,8 +184,7 @@ registry.registerPath({
     },
   },
 });
-  
-  
+
 registry.registerPath({
   method: "get",
   path: "/allergens/search",

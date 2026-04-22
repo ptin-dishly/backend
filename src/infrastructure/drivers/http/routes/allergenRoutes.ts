@@ -14,8 +14,16 @@ export function allergenRoutes(allergenService: AllergenService): Router {
   const controller = createAllergenController(allergenService);
 
   router.get("/allergens", controller.findAll);
-  router.get("/allergens/eu/:euNumber",validate({ params: EuNumberParamsSchema }),controller.findByEuNumber);
-  router.get("/allergens/search",validate({ query: AllergenSearchQuerySchema }),controller.search);
+  router.get(
+    "/allergens/eu/:euNumber",
+    validate({ params: EuNumberParamsSchema }),
+    controller.findByEuNumber,
+  );
+  router.get(
+    "/allergens/search",
+    validate({ query: AllergenSearchQuerySchema }),
+    controller.search,
+  );
   router.post("/allergens", validate({ body: CreateAllergenSchema }), controller.create);
   router.get("/allergens/:id", validate({ params: AllergenParamsSchema }), controller.findById);
   router.delete("/allergens/:id", validate({ params: AllergenParamsSchema }), controller.remove);

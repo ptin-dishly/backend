@@ -19,7 +19,7 @@ export function createAllergenController(allergenService: AllergenService) {
       const euNumber = Number(req.params.euNumber);
 
       const result = await allergenService.findByEuNumber(euNumber);
-      
+
       if (!result.ok) {
         return sendErrorByCode(res, result.error.code, result.error.message);
       }
@@ -30,7 +30,7 @@ export function createAllergenController(allergenService: AllergenService) {
 
       return sendSuccess(res, 200, result.value);
     },
-    
+
     async search(req: Request, res: Response) {
       const { q } = req.query;
 
