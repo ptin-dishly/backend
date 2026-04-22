@@ -34,6 +34,15 @@ export class AllergenService {
       return fail("VALIDATION_ERROR", "EU number must be between 1 and 14");
     }
     return await this.allergenRepository.findByEuNumber(euNumber);
+  async search(query: string): Promise<Result<Allergen[]>> {
+    return await this.allergenRepository.search(query.trim());
+  }
+
+  async findById(id: string): Promise<Result<Allergen | null>> {
+    if (!id) {
+      return fail("INVALID_ID", "Allergen ID is required");
+    }
+    return await this.allergenRepository.findById(id);
   }
 
   async delete(id: string): Promise<Result<void>> {
