@@ -54,6 +54,21 @@ export class PgAllergenRepository implements AllergenRepository {
     }
   }
 
+  async findByEuNumber(euNumber: number): Promise<Result<Allergen | null>> {
+    try {
+      const result = await this.pool.query("SELECT * FROM allergens WHERE eu_number = $1", [
+        euNumber,
+      ]);
+
+      if (result.rows.length === 0) {
+        return ok(null);
+      }
+      return ok(this.toEntity(result.rows[0]));
+    } catch (error: unknown) {
+      return fail("RETRIEVE_ERROR", "Failed to retrieve allergen by EU Number", error);
+    }
+  }
+
   async findAll(): Promise<Result<Allergen[]>> {
     try {
       const result = await this.pool.query("SELECT * FROM allergens ORDER BY eu_number ASC");

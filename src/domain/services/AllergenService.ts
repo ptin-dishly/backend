@@ -29,6 +29,13 @@ export class AllergenService {
     return await this.allergenRepository.findAll();
   }
 
+  async findByEuNumber(euNumber: number): Promise<Result<Allergen | null>> {
+    if (euNumber < 1 || euNumber > 14) {
+      return fail("VALIDATION_ERROR", "EU number must be between 1 and 14");
+    }
+    return await this.allergenRepository.findByEuNumber(euNumber);
+  }
+
   async search(query: string): Promise<Result<Allergen[]>> {
     return await this.allergenRepository.search(query.trim());
   }

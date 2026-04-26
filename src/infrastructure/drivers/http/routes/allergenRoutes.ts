@@ -5,6 +5,7 @@ import {
   AllergenParamsSchema,
   AllergenSearchQuerySchema,
   CreateAllergenSchema,
+  EuNumberParamsSchema,
 } from "@infrastructure/drivers/http/schemas/allergen";
 import { Router } from "express";
 
@@ -13,6 +14,11 @@ export function allergenRoutes(allergenService: AllergenService): Router {
   const controller = createAllergenController(allergenService);
 
   router.get("/allergens", controller.findAll);
+  router.get(
+    "/allergens/eu/:euNumber",
+    validate({ params: EuNumberParamsSchema }),
+    controller.findByEuNumber,
+  );
   router.get(
     "/allergens/search",
     validate({ query: AllergenSearchQuerySchema }),

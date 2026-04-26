@@ -133,6 +133,60 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
+  path: "/allergens/eu/{euNumber}",
+  tags: ["Allergens"],
+  summary: "Get an allergen by EU Number",
+  description: "Returns a single allergen by its EU regulation number (1-14)",
+  operationId: "getAllergenByEuNumber",
+  request: {
+    params: z.object({
+      euNumber: z.coerce.number().min(1).max(14),
+    }),
+  },
+  responses: {
+    200: {
+      description: "Allergen found",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(AllergenSchema),
+          example: {
+            success: true,
+            data: allergenExamples.gluten,
+            meta: { timestamp: "2026-04-03T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    400: {
+      description: "Invalid EU number",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "VALIDATION_ERROR",
+              message: "EU number must be an integer between 1 and 14",
+            },
+            meta: { timestamp: "2026-04-03T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    404: {
+      description: "Allergen not found",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: errorExamples.notFound,
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
   path: "/allergens/search",
   tags: ["Allergens"],
   summary: "Search allergens by name",

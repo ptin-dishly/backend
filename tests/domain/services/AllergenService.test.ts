@@ -33,6 +33,7 @@ function createMockRepo(overrides?: Partial<AllergenRepository>): AllergenReposi
   return {
     create: async (data) => ok(fakeAllergen(data)),
     findAll: async () => ok([]),
+    findByEuNumber: async () => ok(null),
     findById: async () => ok(null),
     delete: async () => ok(undefined),
     search: async () => ok([]),
@@ -204,6 +205,42 @@ describe("AllergenService", () => {
     });
   });
 
+  describe("findByEuNumber", () => {
+    it("should return an allergen when found", async () => {
+        const allergen = fakeAllergen({ ...validData(), euNumber: 1 });
+        repo = createMockRepo({ findByEuNumber: async () => ok(allergen) });
+        service = new AllergenService(repo);
+
+        const result = await service.findByEuNumber(1);
+
+        expect(result.ok).toBe(true);
+        if (result.ok) {
+            expect(result.value?.euNumber).toBe(1);
+        }
+    });
+
+    it("should fail when euNumber is out of range", async () => {
+        const result = await service.findByEuNumber(15);
+
+        expect(result.ok).toBe(false);
+        if (!result.ok) {
+            expect(result.error.code).toBe("VALIDATION_ERROR");
+        }
+    });
+
+    it("should return null when allergen not found", async () => {
+        repo = createMockRepo({ findByEuNumber: async () => ok(null) });
+        service = new AllergenService(repo);
+
+        const result = await service.findByEuNumber(5);
+
+        expect(result.ok).toBe(true);
+        if (result.ok) {
+            expect(result.value).toBeNull();
+        }
+    });
+  });
+  
   describe("search", () => {
     it("should return allergens when search is successful", async () => {
       const allergens = [fakeAllergen(validData({ nameEs: "Gluten" }))];

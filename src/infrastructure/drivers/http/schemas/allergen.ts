@@ -30,6 +30,9 @@ export const AllergenParamsSchema = z.object({
   id: z.string().uuid(),
 });
 
+export const EuNumberParamsSchema = z.object({
+  euNumber: z.coerce.number().int().min(1).max(14),
+});
 export const AllergenSearchQuerySchema = z.object({
   q: z.string().min(2),
 });
