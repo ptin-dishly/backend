@@ -12,13 +12,11 @@ export class PgMenuRepository implements MenuRepository {
     async findById(id: string): Promise<Result<Menu | null>> {
       try {
         const result = await this.pool.query("SELECT * FROM menu_cards WHERE id = $1", [id]);
-        
-        console.log("FILA RECIBIDA:", result.rows[0]); // <--- AÑADE ESTO
-  
+          
         if (result.rows.length === 0) return ok(null);
         return ok(this.toEntity(result.rows[0]));
       } catch (error) {
-        return fail("INTERNAL_ERROR", "Error", error);
+        return fail("RETRIEVE_ERROR", "Failed to retrieve menu", error);
       }
   }
 
