@@ -9,12 +9,14 @@ import { PgAllergenRepository } from "@infrastructure/drivens/persistence/pg/PgA
 import { PgRefreshTokenRepository } from "@infrastructure/drivens/persistence/pg/PgRefreshTokenRepository";
 import { PgUserRepository } from "@infrastructure/drivens/persistence/pg/PgUserRepository";
 import type pg from "pg";
+import { UserService } from "@/domain/services/UserService";
 
 export interface Container {
   pool: pg.Pool;
   allergenService: AllergenService;
   authService: AuthService;
   tokenService: TokenService;
+  userService: UserService;
 }
 
 export function createContainer(): Container {
@@ -22,6 +24,7 @@ export function createContainer(): Container {
   const allergenService = new AllergenService(allergenRepository);
 
   const userRepository = new PgUserRepository(pool);
+  const userService = new UserService(userRepository);
   const refreshTokenRepository = new PgRefreshTokenRepository(
     pool,
     authConfig.refreshExpirySeconds,
@@ -38,6 +41,7 @@ export function createContainer(): Container {
   return {
     pool,
     allergenService,
+    userService,
     authService,
     tokenService,
   };
