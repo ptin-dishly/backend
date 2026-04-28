@@ -1,4 +1,5 @@
 import { OpenAPIRegistry, OpenApiGeneratorV3 } from "@asteasolutions/zod-to-openapi";
+import { recipe_category } from "@/domain/entities/Recipe";
 import {
   ErrorResponseSchema,
   HealthReadyErrorSchema,
@@ -6,6 +7,7 @@ import {
   SuccessResponseSchema,
 } from "../responses/schemas";
 import { AllergenSchema, CreateAllergenSchema } from "../schemas/allergen";
+import { RecipeSchema } from "../schemas/recipe";
 import { LoginSchema, RefreshSchema, TokenPairSchema } from "../schemas/session";
 import { z } from "../schemas/zod";
 
@@ -85,6 +87,33 @@ const errorExamples = {
       message: "Allergen with this code or EU number already exists",
     },
     meta: { timestamp: "2026-04-03T10:00:00.000Z" },
+  },
+};
+
+const recipeExamples = {
+  Lasaña: {
+    id: "77777777-0007-0007-0007-000000000001",
+    establishmentId: "22222222-0002-0002-0002-000000000001",
+    name: "Lasaña de carne",
+    description: "Lasaña tradicional italiana con carne picada y bechamel",
+    category: recipe_category.SegundoPlato,
+    portionSizeKg: 0.4,
+    servings: 1,
+    preptime: 60,
+    version: 1,
+    createdBy: "33333333-0003-0003-0003-000000000001",
+  },
+  Salmón: {
+    id: "77777777-0007-0007-0007-000000000002",
+    establishmentId: "22222222-0002-0002-0002-000000000001",
+    name: "Salmón a la plancha",
+    description: "Salmón fresco con limón y perejil",
+    category: recipe_category.SegundoPlato,
+    portionSizeKg: 0.25,
+    servings: 1,
+    preptime: 20,
+    version: 1,
+    createdBy: "33333333-0003-0003-0003-000000000001",
   },
 };
 
@@ -532,6 +561,30 @@ registry.registerPath({
           example: {
             success: false,
             error: { code: "UNAUTHORIZED", message: "Missing or invalid Authorization header" },
+            meta: { timestamp: "2026-04-03T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/recipes",
+  tags: ["Recipes"],
+  summary: "List all recipes",
+  description: "Returns all recipes ordered by name.",
+  operationId: "listRecipes",
+  responses: {
+    200: {
+      description: "List of recipes",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(z.array(RecipeSchema)),
+          example: {
+            success: true,
+            data: [recipeExamples.Lasaña, recipeExamples.Salmón],
             meta: { timestamp: "2026-04-03T10:00:00.000Z" },
           },
         },
