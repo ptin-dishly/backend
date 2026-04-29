@@ -6,6 +6,7 @@ import {
   SuccessResponseSchema,
 } from "../responses/schemas";
 import { AllergenSchema, CreateAllergenSchema } from "../schemas/allergen";
+import { RecipeSchema } from "../schemas/recipe";
 import { LoginSchema, RefreshSchema, TokenPairSchema } from "../schemas/session";
 import { z } from "../schemas/zod";
 
@@ -26,6 +27,7 @@ registry.register("CreateAllergenBody", CreateAllergenSchema);
 registry.register("LoginBody", LoginSchema);
 registry.register("RefreshBody", RefreshSchema);
 registry.register("TokenPair", TokenPairSchema);
+registry.register("Recipe", RecipeSchema);
 
 // ======================
 // EXAMPLES
@@ -384,6 +386,78 @@ registry.registerPath({
         "application/json": {
           schema: ErrorResponseSchema,
           example: errorExamples.duplicate,
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/v1/recipes/{id}",
+  tags: ["Recipes"],
+  summary: "Get a recipe by ID",
+  description: "Returns a single recipe by its ID (supports custom seed format)",
+  operationId: "getRecipeById",
+  request: {
+    params: RecipeSchema,
+  },
+  responses: {
+    200: {
+      description: "Recipe found",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(RecipeSchema),
+          example: {
+            success: true,
+            data: {
+              id: "99999999-0009-0009-0009-000000000001",
+              establishmentId: "99999999-0009-0009-0009-000000000000",
+              name: "Paella de Marisco",
+              description: "Receta tradicional con sofrito casero",
+              category: "Arroces",
+              portionSizeKg: 0.5,
+              servings: 2,
+              preparationTime: 45,
+              version: 1,
+              createdBy: "99999999-0009-0009-0009-000000000002",
+              createdAt: "2026-03-28T10:00:00.000Z",
+              updatedAt: "2026-03-28T10:00:00.000Z",
+            },
+            meta: { timestamp: "2026-04-28T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    400: {
+      description: "Invalid ID format",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "INVALID_REQUEST",
+              message: "Invalid path parameters. Expected 8-4-4-4-12 format.",
+            },
+            meta: { timestamp: "2026-04-28T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    404: {
+      description: "Recipe not found",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "NOT_FOUND",
+              message: "Recipe not found",
+            },
+            meta: { timestamp: "2026-04-28T10:00:00.000Z" },
+          },
         },
       },
     },
