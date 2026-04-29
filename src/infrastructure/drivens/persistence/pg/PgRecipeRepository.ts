@@ -15,7 +15,7 @@ export class PgRecipeRepository implements RecipeRepository {
             return ok(this.toEntity(result.rows[0]));
 
         } catch (error) {
-            return fail("RETRIEVE_ERROR", "Failed to retrieve menu", error);
+            return fail("RETRIEVE_ERROR", "Failed to retrieve recipe", error);
         }
     }
 
