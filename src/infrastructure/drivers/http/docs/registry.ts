@@ -6,7 +6,7 @@ import {
   SuccessResponseSchema,
 } from "../responses/schemas";
 import { AllergenSchema, CreateAllergenSchema } from "../schemas/allergen";
-import { RecipeSchema } from "../schemas/recipe";
+import { RecipeIngredientSchema, RecipeSchema } from "../schemas/recipe";
 import { LoginSchema, RefreshSchema, TokenPairSchema } from "../schemas/session";
 import { z } from "../schemas/zod";
 
@@ -28,6 +28,7 @@ registry.register("LoginBody", LoginSchema);
 registry.register("RefreshBody", RefreshSchema);
 registry.register("TokenPair", TokenPairSchema);
 registry.register("Recipe", RecipeSchema);
+registry.register("RecipeIngredient", RecipeIngredientSchema);
 
 // ======================
 // EXAMPLES
@@ -455,6 +456,63 @@ registry.registerPath({
             error: {
               code: "NOT_FOUND",
               message: "Recipe not found",
+            },
+            meta: { timestamp: "2026-04-28T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/recipes/{recipeId}/ingredients",
+  tags: ["Recipes"],
+  summary: "Get recipe ingredients",
+  description:
+    "Returns a list of all ingredients that make up a specific recipe. If the recipe has no ingredients or does not exist, it returns an empty array.",
+  operationId: "getRecipeIngredients",
+  request: {
+    params: z.object({
+      recipeId: z.string().uuid(),
+    }),
+  },
+  responses: {
+    200: {
+      description: "List of ingredients retrieved successfully",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(z.array(RecipeIngredientSchema)),
+          example: {
+            success: true,
+            data: [
+              {
+                id: "123e4567-e89b-12d3-a456-426614174000",
+                recipeId: "99999999-0009-0009-0009-000000000001",
+                ingredientId: "88888888-0008-0008-0008-000000000002",
+                subRecipeId: null,
+                name: "Tomate",
+                quantity: 2,
+                unit: "kg",
+                isOptional: false,
+              },
+            ],
+            meta: { timestamp: "2026-04-28T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    400: {
+      description: "Invalid ID format",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "INVALID_REQUEST",
+              message: "Invalid path parameters. Expected UUID format.",
             },
             meta: { timestamp: "2026-04-28T10:00:00.000Z" },
           },

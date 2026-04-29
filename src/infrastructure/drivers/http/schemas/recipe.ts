@@ -35,5 +35,20 @@ export const RecipeParamsSchema = z.object({
   id: z.string().uuid(),
 });
 
+export const RecipeIngredientSchema = z.object({
+  id: z.string().uuid(),
+  recipeId: z.string().uuid(),
+  ingredientId: z.string().uuid().nullable(),
+  subRecipeId: z.string().uuid().nullable(),
+  name: z.string(),
+  quantity: z.number(),
+  unit: z.string(),
+  isOptional: z.boolean(),
+});
+
+export const RecipeIngredientsParamsSchema = z.object({
+  recipeId: z.string().uuid(),
+});
+
 export type CreateRecipeBody = z.infer<typeof CreateRecipeSchema>;
 export type RecipeResponse = z.infer<typeof RecipeSchema>;
