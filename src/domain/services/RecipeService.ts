@@ -14,4 +14,13 @@ export class RecipeService {
 
         return await this.recipeRepository.findById(id);
     }
+
+    async delete(id: string): Promise<Result<boolean>> {
+
+        if (!id || id.trim() === "") {
+            return fail("INVALID_ID", "Recipe ID cannot be empty");
+        }
+
+        return await this.recipeRepository.delete(id);
+    }
 }

@@ -17,5 +17,6 @@ export interface CreateRecipeData {
 }
 
 export interface RecipeRepository {
-  findById(id: string): Promise<Result<Recipe | null>>;
+	findById(id: string): Promise<Result<Recipe | null>>;
+	delete(id: string): Promise<Result<boolean>>;
 }

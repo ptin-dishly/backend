@@ -32,7 +32,7 @@ export const RecipeSchema = z
     .openapi("Recipe");
 
 export const RecipeParamsSchema = z.object({
-    id: z.string().uuid(),
+    id: z.string().uuid({ message: "Invalid UUID format" })
 });
 
 export type CreateRecipeBody = z.infer<typeof CreateRecipeSchema>;

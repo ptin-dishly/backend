@@ -17,5 +17,19 @@ export function createRecipeController(recipeService: RecipeService) {
 
             return sendSuccess(res, 200, result.value);
         },
+
+        async delete(req: Request<{ id: string }>, res: Response) {
+            const result = await recipeService.delete(req.params.id);
+
+            if (!result.ok) {
+                return sendErrorByCode(res, result.error.code, result.error.message);
+            }
+
+            if (result.value === false) {
+                return sendErrorByCode(res, "NOT_FOUND", "Recipe not found");
+            }
+
+            return res.status(204).send();
+        },
     };
 }

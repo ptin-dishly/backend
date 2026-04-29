@@ -45,6 +45,7 @@ describe("RecipeService", () => {
     beforeEach(() => {
         recipeRepository = {
             findById: vi.fn(),
+            delete: vi.fn(),
         } as unknown as RecipeRepository;
 
         recipeService = new RecipeService(recipeRepository);
@@ -95,5 +96,57 @@ describe("RecipeService", () => {
             expect(result.error.code).toBe("INVALID_ID");
         }
         expect(recipeRepository.findById).not.toHaveBeenCalled();
+    });
+
+    // --- TESTS DELETE ---
+
+    it("should return true when a recipe is successfully deleted", async () => {
+
+        vi.mocked(recipeRepository.delete).mockResolvedValue(ok(true));
+
+        const result = await recipeService.delete("550e8400-e29b-41d4-a716-446655440000");
+
+        expect(result.ok).toBe(true);
+        if (result.ok) {
+            expect(result.value).toBe(true);
+        }
+        expect(recipeRepository.delete).toHaveBeenCalledWith("550e8400-e29b-41d4-a716-446655440000");
+    });
+
+    it("should return false when the recipe to delete does not exist", async () => {
+
+        vi.mocked(recipeRepository.delete).mockResolvedValue(ok(false));
+
+        const result = await recipeService.delete("non-existent-id");
+
+        expect(result.ok).toBe(true);
+        if (result.ok) {
+            expect(result.value).toBe(false);
+        }
+    });
+
+    it("should return a failure when deleting with an empty ID", async () => {
+
+        const result = await recipeService.delete("   ");
+
+        expect(result.ok).toBe(false);
+        if (!result.ok) {
+            expect(result.error.code).toBe("INVALID_ID");
+        }
+        expect(recipeRepository.delete).not.toHaveBeenCalled();
+    });
+
+    it("should propagate failure when the repository fails to delete", async () => {
+
+        vi.mocked(recipeRepository.delete).mockResolvedValue(
+            fail("DELETE_ERROR", "Database connection lost")
+        );
+
+        const result = await recipeService.delete("any-id");
+
+        expect(result.ok).toBe(false);
+        if (!result.ok) {
+            expect(result.error.code).toBe("DELETE_ERROR");
+        }
     });
 });
