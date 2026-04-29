@@ -13,5 +13,19 @@ export function createRecipeController(recipeService: RecipeService) {
 
       return sendSuccess(res, 200, result.value);
     },
+    
+    async findById(req: Request<{ id: string }>, res: Response) {
+      const result = await recipeService.findById(req.params.id);
+
+      if (!result.ok) {
+        return sendErrorByCode(res, result.error.code, result.error.message);
+      }
+
+      if (result.value === null) {
+        return sendErrorByCode(res, "NOT_FOUND", "Recipe not found");
+      }
+
+      return sendSuccess(res, 200, result.value);
+    },
   };
 }
