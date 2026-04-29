@@ -1,7 +1,7 @@
 import type { TokenService } from "@domain/ports/drivens/TokenService";
 import { AllergenService } from "@domain/services/AllergenService";
 import { AuthService } from "@domain/services/AuthService";
-import { RecipeService } from "@domain/services/RecipeService"
+import { RecipeService } from "@domain/services/RecipeService";
 import { BcryptPasswordHasher } from "@infrastructure/drivens/auth/BcryptPasswordHasher";
 import { authConfig } from "@infrastructure/drivens/auth/config";
 import { JwtTokenService } from "@infrastructure/drivens/auth/JwtTokenService";
@@ -44,6 +44,6 @@ export function createContainer(): Container {
     allergenService,
     recipeService,
     authService,
-    tokenService
+    tokenService,
   };
 }

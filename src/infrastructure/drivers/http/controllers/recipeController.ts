@@ -3,19 +3,19 @@ import { sendErrorByCode, sendSuccess } from "@infrastructure/drivers/http/respo
 import type { Request, Response } from "express";
 
 export function createRecipeController(recipeService: RecipeService) {
-    return {
-        async findById(req: Request<{ id: string }>, res: Response) {
-            const result = await recipeService.findById(req.params.id);
+  return {
+    async findById(req: Request<{ id: string }>, res: Response) {
+      const result = await recipeService.findById(req.params.id);
 
-            if (!result.ok) {
-                return sendErrorByCode(res, result.error.code, result.error.message);
-            }
+      if (!result.ok) {
+        return sendErrorByCode(res, result.error.code, result.error.message);
+      }
 
-            if (result.value === null) {
-                return sendErrorByCode(res, "NOT_FOUND", "Recipe not found");
-            }
+      if (result.value === null) {
+        return sendErrorByCode(res, "NOT_FOUND", "Recipe not found");
+      }
 
-            return sendSuccess(res, 200, result.value);
-        },
-    };
+      return sendSuccess(res, 200, result.value);
+    },
+  };
 }

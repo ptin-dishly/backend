@@ -5,9 +5,9 @@ import { RecipeParamsSchema } from "@infrastructure/drivers/http/schemas/recipe"
 import { Router } from "express";
 
 export function RecipeRoutes(RecipeService: RecipeService): Router {
-    const router = Router();
-    const controller = createRecipeController(RecipeService);
+  const router = Router();
+  const controller = createRecipeController(RecipeService);
 
-    router.get("/recipes/:id", validate({ params: RecipeParamsSchema }), controller.findById);
-    return router;
+  router.get("/recipes/:id", validate({ params: RecipeParamsSchema }), controller.findById);
+  return router;
 }
