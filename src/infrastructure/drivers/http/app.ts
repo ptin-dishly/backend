@@ -9,6 +9,7 @@ import { HealthController } from "./controllers/healthController";
 import { openApiSpec } from "./docs/registry";
 import { requestLogger } from "./middleware/requestLogger";
 import { allergenRoutes } from "./routes/allergenRoutes";
+import { RecipeRoutes } from "./routes/recipeRoutes"
 import { healthRoutes } from "./routes/healthRoutes";
 import { sessionRoutes } from "./routes/sessionRoutes";
 
@@ -129,6 +130,7 @@ export function createApp(container: Container): express.Express {
   const v1 = express.Router();
   v1.use(allergenRoutes(container.allergenService));
   v1.use(sessionRoutes(container.authService, container.tokenService));
+  v1.use(RecipeRoutes(container.recipeService));
 
   app.use("/api/v1", v1);
 
