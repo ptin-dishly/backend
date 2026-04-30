@@ -1,6 +1,7 @@
 import type { TokenService } from "@domain/ports/drivens/TokenService";
 import { AllergenService } from "@domain/services/AllergenService";
 import { AuthService } from "@domain/services/AuthService";
+import { IngredientService } from "@domain/services/IngredientService";
 import { MenuService } from "@domain/services/MenuService";
 import { RecipeService } from "@domain/services/RecipeService";
 import { UserService } from "@domain/services/UserService";
@@ -14,11 +15,13 @@ import { PgRecipeRepository } from "@infrastructure/drivens/persistence/pg/PgRec
 import { PgRefreshTokenRepository } from "@infrastructure/drivens/persistence/pg/PgRefreshTokenRepository";
 import { PgUserRepository } from "@infrastructure/drivens/persistence/pg/PgUserRepository";
 import type pg from "pg";
+import { PgIngredientRepository } from "../drivens/persistence/pg/PgIngredientRepository";
 
 export interface Container {
   pool: pg.Pool;
   allergenService: AllergenService;
   recipeService: RecipeService;
+  ingredientService: IngredientService;
   authService: AuthService;
   menuService: MenuService;
   userService: UserService;
@@ -32,6 +35,8 @@ export function createContainer(): Container {
   const menuService = new MenuService(menuRepository);
   const recipeRepository = new PgRecipeRepository(pool);
   const recipeService = new RecipeService(recipeRepository);
+  const ingredientRepository = new PgIngredientRepository(pool);
+  const ingredientService = new IngredientService(ingredientRepository);
   const userRepository = new PgUserRepository(pool);
   const userService = new UserService(userRepository);
   const refreshTokenRepository = new PgRefreshTokenRepository(
@@ -52,6 +57,7 @@ export function createContainer(): Container {
     pool,
     allergenService,
     recipeService,
+    ingredientService,
     authService,
     menuService,
     userService,
