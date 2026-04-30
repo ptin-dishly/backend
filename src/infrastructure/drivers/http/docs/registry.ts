@@ -625,7 +625,8 @@ registry.registerPath({
   path: "/users/me",
   tags: ["Users"],
   summary: "Get the logged-in user",
-  description: "Returns the full profile of the currently authenticated user. Requires a valid access token.",
+  description:
+    "Returns the full profile of the currently authenticated user. Requires a valid access token.",
   operationId: "getMe",
   security: [{ bearerAuth: [] }],
   responses: {
