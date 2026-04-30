@@ -11,6 +11,7 @@ import { requestLogger } from "./middleware/requestLogger";
 import { allergenRoutes } from "./routes/allergenRoutes";
 import { healthRoutes } from "./routes/healthRoutes";
 import { MenuRoutes } from "./routes/menuRoutes";
+import { RecipeRoutes } from "./routes/recipeRoutes";
 import { sessionRoutes } from "./routes/sessionRoutes";
 
 export function createApp(container: Container): express.Express {
@@ -131,6 +132,7 @@ export function createApp(container: Container): express.Express {
   v1.use(allergenRoutes(container.allergenService));
   v1.use(sessionRoutes(container.authService, container.tokenService));
   v1.use(MenuRoutes(container.menuService));
+  v1.use(RecipeRoutes(container.recipeService));
 
   app.use("/api/v1", v1);
 
