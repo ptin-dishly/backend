@@ -18,5 +18,15 @@ export function createUserController(userService: UserService) {
       const { passwordHash: _, ...user } = result.value;
       return sendSuccess(res, 200, user);
     },
+
+    async remove(req: Request<{ id: string }>, res: Response) {
+      const result = await userService.delete(req.params.id);
+
+      if (!result.ok) {
+        return sendErrorByCode(res, result.error.code, result.error.message);
+      }
+
+      return sendSuccess(res, 200, null, "User deleted");
+    },
   };
 }

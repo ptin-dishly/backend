@@ -26,10 +26,16 @@ describe("UserService", () => {
       findByEmail: vi.fn(),
       findById: vi.fn(),
       updateLastLogin: vi.fn(),
+      delete: vi.fn(),
     };
     userService = new UserService(userRepository);
   });
 
+  // ======================
+  // getById
+  // ======================
+
+  describe("getById", () => {
   it("should return user when found", async () => {
     vi.mocked(userRepository.findById).mockResolvedValue(ok(fakeUser));
 
@@ -74,5 +80,45 @@ describe("UserService", () => {
     if (!result.ok) {
       expect(result.error.code).toBe("DB_ERROR");
     }
+  });
+});
+
+ // ======================
+  // delete
+  // ======================
+
+  describe("delete", () => {
+    it("should delete a user successfully", async () => {
+      vi.mocked(userRepository.delete).mockResolvedValue(ok(undefined));
+
+      const result = await userService.delete("some-uuid");
+
+      expect(result.ok).toBe(true);
+      expect(userRepository.delete).toHaveBeenCalledWith("some-uuid");
+    });
+
+    it("should fail when id is empty", async () => {
+      const result = await userService.delete("");
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("INVALID_ID");
+      }
+
+      expect(userRepository.delete).not.toHaveBeenCalled();
+    });
+
+    it("should propagate repository errors", async () => {
+      vi.mocked(userRepository.delete).mockResolvedValue(
+        fail("NOT_FOUND", "User not found"),
+      );
+
+      const result = await userService.delete("nonexistent-uuid");
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("NOT_FOUND");
+      }
+    });
   });
 });
