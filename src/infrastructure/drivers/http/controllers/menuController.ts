@@ -17,5 +17,15 @@ export function createMenuController(menuService: MenuService) {
 
       return sendSuccess(res, 200, result.value);
     },
+
+    async findAll(_req: Request, res: Response) {
+      const result = await menuService.findAll();
+
+      if (!result.ok) {
+        return sendErrorByCode(res, result.error.code, result.error.message);
+      }
+
+      return sendSuccess(res, 200, result.value);
+    },
   };
 }
