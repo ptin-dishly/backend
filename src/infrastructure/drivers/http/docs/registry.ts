@@ -399,9 +399,6 @@ registry.registerPath({
   },
 });
 
-
-
-
 registry.registerPath({
   method: "get",
   path: "/recipes/{recipeId}/ingredients",
