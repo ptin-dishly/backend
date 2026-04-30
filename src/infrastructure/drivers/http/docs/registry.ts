@@ -7,7 +7,9 @@ import {
 } from "../responses/schemas";
 import { AllergenSchema, CreateAllergenSchema } from "../schemas/allergen";
 import { MenuParamsSchema, MenuSchema } from "../schemas/menu";
+import { RecipeSchema } from "../schemas/recipe";
 import { LoginSchema, RefreshSchema, TokenPairSchema } from "../schemas/session";
+import { UserSchema } from "../schemas/user";
 import { z } from "../schemas/zod";
 
 const registry = new OpenAPIRegistry();
@@ -28,6 +30,8 @@ registry.register("LoginBody", LoginSchema);
 registry.register("RefreshBody", RefreshSchema);
 registry.register("TokenPair", TokenPairSchema);
 registry.register("Menu", MenuSchema);
+registry.register("Recipe", RecipeSchema);
+registry.register("User", UserSchema);
 
 // ======================
 // EXAMPLES
@@ -394,6 +398,83 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
+  path: "/api/v1/recipes/{id}",
+  tags: ["Recipes"],
+  summary: "Get a recipe by ID",
+  description: "Returns a single recipe by its ID (supports custom seed format)",
+  operationId: "getRecipeById",
+  request: {
+    params: RecipeSchema,
+  },
+  responses: {
+    200: {
+      description: "Recipe found",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(RecipeSchema),
+          example: {
+            success: true,
+            data: {
+              id: "99999999-0009-0009-0009-000000000001",
+              establishmentId: "99999999-0009-0009-0009-000000000000",
+              name: "Paella de Marisco",
+              description: "Receta tradicional con sofrito casero",
+              category: "Arroces",
+              portionSizeKg: 0.5,
+              servings: 2,
+              preparationTime: 45,
+              version: 1,
+              createdBy: "99999999-0009-0009-0009-000000000002",
+              createdAt: "2026-03-28T10:00:00.000Z",
+              updatedAt: "2026-03-28T10:00:00.000Z",
+            },
+            meta: { timestamp: "2026-04-28T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    400: {
+      description: "Invalid ID format",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "INVALID_REQUEST",
+              message: "Invalid path parameters. Expected 8-4-4-4-12 format.",
+            },
+            meta: { timestamp: "2026-04-28T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    404: {
+      description: "Recipe not found",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "NOT_FOUND",
+              message: "Recipe not found",
+            },
+            meta: { timestamp: "2026-04-28T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+  },
+});
+
+
+// ======================
+// MENU PATHS
+// ======================
+
+registry.registerPath({
+  method: "get",
   path: "/api/v1/menus/{id}",
   tags: ["Menus"],
   summary: "Get a menu by ID",
@@ -602,6 +683,72 @@ registry.registerPath({
             success: false,
             error: { code: "UNAUTHORIZED", message: "Missing or invalid Authorization header" },
             meta: { timestamp: "2026-04-03T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+  },
+});
+
+// ======================
+// USER PATHS
+// ======================
+
+registry.registerPath({
+  method: "get",
+  path: "/users/me",
+  tags: ["Users"],
+  summary: "Get the logged-in user",
+  description:
+    "Returns the full profile of the currently authenticated user. Requires a valid access token.",
+  operationId: "getMe",
+  security: [{ bearerAuth: [] }],
+  responses: {
+    200: {
+      description: "Logged-in user profile",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(UserSchema),
+          example: {
+            success: true,
+            data: {
+              id: "99999999-0009-0009-0009-000000000002",
+              establishmentId: "99999999-0009-0009-0009-000000000000",
+              email: "marc@calblay.cat",
+              name: "Marc García",
+              role: "admin",
+              isActive: true,
+              lastLoginAt: "2026-04-30T10:00:00.000Z",
+              createdAt: "2026-01-01T00:00:00.000Z",
+              updatedAt: "2026-04-30T10:00:00.000Z",
+            },
+            meta: { timestamp: "2026-04-30T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    401: {
+      description: "Missing or invalid access token",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: { code: "UNAUTHORIZED", message: "Missing or invalid Authorization header" },
+            meta: { timestamp: "2026-04-30T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    404: {
+      description: "User not found",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: { code: "NOT_FOUND", message: "User not found" },
+            meta: { timestamp: "2026-04-30T10:00:00.000Z" },
           },
         },
       },
