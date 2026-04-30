@@ -12,7 +12,6 @@ import { PgRecipeRepository } from "@infrastructure/drivens/persistence/pg/PgRec
 import { PgRefreshTokenRepository } from "@infrastructure/drivens/persistence/pg/PgRefreshTokenRepository";
 import { PgUserRepository } from "@infrastructure/drivens/persistence/pg/PgUserRepository";
 import type pg from "pg";
-import { UserService } from "@/domain/services/UserService";
 
 export interface Container {
   pool: pg.Pool;
@@ -21,7 +20,6 @@ export interface Container {
   authService: AuthService;
   userService: UserService;
   tokenService: TokenService;
-  userService: UserService;
 }
 
 export function createContainer(): Container {
@@ -43,7 +41,7 @@ export function createContainer(): Container {
     tokenService,
     passwordHasher,
   );
-  const userService = new UserService(userRepository);
+  //const userService = new UserService(userRepository);
 
   return {
     pool,
