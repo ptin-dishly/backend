@@ -1,5 +1,4 @@
 import { OpenAPIRegistry, OpenApiGeneratorV3 } from "@asteasolutions/zod-to-openapi";
-import { recipe_category } from "@/domain/entities/Recipe";
 import {
   ErrorResponseSchema,
   HealthReadyErrorSchema,
@@ -7,8 +6,11 @@ import {
   SuccessResponseSchema,
 } from "../responses/schemas";
 import { AllergenSchema, CreateAllergenSchema } from "../schemas/allergen";
-import { RecipeSchema } from "../schemas/recipe";
+import { IngredientSchema } from "../schemas/ingredient";
+import { MenuParamsSchema, MenuSchema } from "../schemas/menu";
+import { RecipeIngredientSchema, RecipeSchema } from "../schemas/recipe";
 import { LoginSchema, RefreshSchema, TokenPairSchema } from "../schemas/session";
+import { UserSchema } from "../schemas/user";
 import { z } from "../schemas/zod";
 
 const registry = new OpenAPIRegistry();
@@ -28,7 +30,11 @@ registry.register("CreateAllergenBody", CreateAllergenSchema);
 registry.register("LoginBody", LoginSchema);
 registry.register("RefreshBody", RefreshSchema);
 registry.register("TokenPair", TokenPairSchema);
+registry.register("Menu", MenuSchema);
 registry.register("Recipe", RecipeSchema);
+registry.register("RecipeIngredient", RecipeIngredientSchema);
+registry.register("Ingredient", IngredientSchema);
+registry.register("User", UserSchema);
 
 // ======================
 // EXAMPLES
@@ -88,33 +94,6 @@ const errorExamples = {
       message: "Allergen with this code or EU number already exists",
     },
     meta: { timestamp: "2026-04-03T10:00:00.000Z" },
-  },
-};
-
-const recipeExamples = {
-  Lasaña: {
-    id: "77777777-0007-0007-0007-000000000001",
-    establishmentId: "22222222-0002-0002-0002-000000000001",
-    name: "Lasaña de carne",
-    description: "Lasaña tradicional italiana con carne picada y bechamel",
-    category: recipe_category.SegundoPlato,
-    portionSizeKg: 0.4,
-    servings: 1,
-    preptime: 60,
-    version: 1,
-    createdBy: "33333333-0003-0003-0003-000000000001",
-  },
-  Salmón: {
-    id: "77777777-0007-0007-0007-000000000002",
-    establishmentId: "22222222-0002-0002-0002-000000000001",
-    name: "Salmón a la plancha",
-    description: "Salmón fresco con limón y perejil",
-    category: recipe_category.SegundoPlato,
-    portionSizeKg: 0.25,
-    servings: 1,
-    preptime: 20,
-    version: 1,
-    createdBy: "33333333-0003-0003-0003-000000000001",
   },
 };
 
@@ -422,6 +401,63 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
+  path: "/recipes/{recipeId}/ingredients",
+  tags: ["Recipes"],
+  summary: "Get recipe ingredients",
+  description:
+    "Returns a list of all ingredients that make up a specific recipe. If the recipe has no ingredients or does not exist, it returns an empty array.",
+  operationId: "getRecipeIngredients",
+  request: {
+    params: z.object({
+      recipeId: z.string().uuid(),
+    }),
+  },
+  responses: {
+    200: {
+      description: "List of ingredients retrieved successfully",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(z.array(RecipeIngredientSchema)),
+          example: {
+            success: true,
+            data: [
+              {
+                id: "123e4567-e89b-12d3-a456-426614174000",
+                recipeId: "99999999-0009-0009-0009-000000000001",
+                ingredientId: "88888888-0008-0008-0008-000000000002",
+                subRecipeId: null,
+                name: "Tomate",
+                quantity: 2,
+                unit: "kg",
+                isOptional: false,
+              },
+            ],
+            meta: { timestamp: "2026-04-28T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    400: {
+      description: "Invalid ID format",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "INVALID_REQUEST",
+              message: "Invalid path parameters. Expected UUID format.",
+            },
+            meta: { timestamp: "2026-04-28T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
   path: "/api/v1/recipes/{id}",
   tags: ["Recipes"],
   summary: "Get a recipe by ID",
@@ -483,6 +519,131 @@ registry.registerPath({
             error: {
               code: "NOT_FOUND",
               message: "Recipe not found",
+            },
+            meta: { timestamp: "2026-04-28T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/ingredients",
+  tags: ["Ingredients"],
+  summary: "List all ingredients",
+  description:
+    "Returns the complete list of all registered ingredients in the system. Returns an empty array if no ingredients exist.",
+  operationId: "listIngredients",
+  responses: {
+    200: {
+      description: "List of ingredients retrieved successfully",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(z.array(IngredientSchema)),
+          example: {
+            success: true,
+            data: [
+              {
+                id: "550e8400-e29b-41d4-a716-446655440000",
+                name: "Sal Marina",
+                description: "Sal fina de mesa",
+                isActive: true,
+              },
+              {
+                id: "550e8400-e29b-41d4-a716-446655440001",
+                name: "Pebre Negre",
+                description: null,
+                isActive: true,
+              },
+            ],
+            meta: { timestamp: "2026-04-30T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    500: {
+      description: "Internal server error or database failure",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "RETRIEVE_ERROR",
+              message: "Failed to retrieve ingredients",
+            },
+            meta: { timestamp: "2026-04-30T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+  },
+});
+
+// ======================
+// MENU PATHS
+// ======================
+
+registry.registerPath({
+  method: "get",
+  path: "/api/v1/menus/{id}",
+  tags: ["Menus"],
+  summary: "Get a menu by ID",
+  description: "Returns a single menu by its ID (supports custom seed format)",
+  operationId: "getMenuById",
+  request: {
+    params: MenuParamsSchema,
+  },
+  responses: {
+    200: {
+      description: "Menu found",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(MenuSchema),
+          example: {
+            success: true,
+            data: {
+              id: "99999999-0009-0009-0009-000000000001",
+              establishmentId: "99999999-0009-0009-0009-000000000000",
+              name: "Carta Principal Temporada",
+              isPublic: true,
+              qrCodeUrl: "https://me-qr.com/sample-qr.png",
+              createdAt: "2026-04-28T10:00:00.000Z",
+              updatedAt: "2026-04-28T10:00:00.000Z",
+            },
+            meta: { timestamp: "2026-04-28T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    400: {
+      description: "Invalid ID format",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "INVALID_REQUEST",
+              message: "Invalid path parameters. Expected 8-4-4-4-12 format.",
+            },
+            meta: { timestamp: "2026-04-28T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    404: {
+      description: "Menu not found",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "NOT_FOUND",
+              message: "Menu not found",
             },
             meta: { timestamp: "2026-04-28T10:00:00.000Z" },
           },
@@ -642,23 +803,65 @@ registry.registerPath({
   },
 });
 
+// ======================
+// USER PATHS
+// ======================
+
 registry.registerPath({
   method: "get",
-  path: "/recipes",
-  tags: ["Recipes"],
-  summary: "List all recipes",
-  description: "Returns all recipes ordered by name.",
-  operationId: "listRecipes",
+  path: "/users/me",
+  tags: ["Users"],
+  summary: "Get the logged-in user",
+  description:
+    "Returns the full profile of the currently authenticated user. Requires a valid access token.",
+  operationId: "getMe",
+  security: [{ bearerAuth: [] }],
   responses: {
     200: {
-      description: "List of recipes",
+      description: "Logged-in user profile",
       content: {
         "application/json": {
-          schema: SuccessResponseSchema(z.array(RecipeSchema)),
+          schema: SuccessResponseSchema(UserSchema),
           example: {
             success: true,
-            data: [recipeExamples.Lasaña, recipeExamples.Salmón],
-            meta: { timestamp: "2026-04-03T10:00:00.000Z" },
+            data: {
+              id: "99999999-0009-0009-0009-000000000002",
+              establishmentId: "99999999-0009-0009-0009-000000000000",
+              email: "marc@calblay.cat",
+              name: "Marc García",
+              role: "admin",
+              isActive: true,
+              lastLoginAt: "2026-04-30T10:00:00.000Z",
+              createdAt: "2026-01-01T00:00:00.000Z",
+              updatedAt: "2026-04-30T10:00:00.000Z",
+            },
+            meta: { timestamp: "2026-04-30T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    401: {
+      description: "Missing or invalid access token",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: { code: "UNAUTHORIZED", message: "Missing or invalid Authorization header" },
+            meta: { timestamp: "2026-04-30T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    404: {
+      description: "User not found",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: { code: "NOT_FOUND", message: "User not found" },
+            meta: { timestamp: "2026-04-30T10:00:00.000Z" },
           },
         },
       },
@@ -690,6 +893,10 @@ export const openApiSpec = {
       {
         name: "Allergens",
         description: "EU regulated allergens (Regulation 1169/2011)",
+      },
+      {
+        name: "Ingredients",
+        description: "Core ingredients inventory",
       },
       {
         name: "Sessions",

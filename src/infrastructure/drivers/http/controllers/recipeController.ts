@@ -13,7 +13,7 @@ export function createRecipeController(recipeService: RecipeService) {
 
       return sendSuccess(res, 200, result.value);
     },
-    
+
     async findById(req: Request<{ id: string }>, res: Response) {
       const result = await recipeService.findById(req.params.id);
 
@@ -23,6 +23,16 @@ export function createRecipeController(recipeService: RecipeService) {
 
       if (result.value === null) {
         return sendErrorByCode(res, "NOT_FOUND", "Recipe not found");
+      }
+
+      return sendSuccess(res, 200, result.value);
+    },
+
+    async getRecipeIngredients(req: Request<{ recipeId: string }>, res: Response) {
+      const result = await recipeService.findIngredientsByRecipeId(req.params.recipeId);
+
+      if (!result.ok) {
+        return sendErrorByCode(res, result.error.code, result.error.message);
       }
 
       return sendSuccess(res, 200, result.value);
