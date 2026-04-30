@@ -8,6 +8,7 @@ import {
 import { AllergenSchema, CreateAllergenSchema } from "../schemas/allergen";
 import { RecipeSchema } from "../schemas/recipe";
 import { LoginSchema, RefreshSchema, TokenPairSchema } from "../schemas/session";
+import { UserSchema } from "../schemas/user";
 import { z } from "../schemas/zod";
 
 const registry = new OpenAPIRegistry();
@@ -28,6 +29,7 @@ registry.register("LoginBody", LoginSchema);
 registry.register("RefreshBody", RefreshSchema);
 registry.register("TokenPair", TokenPairSchema);
 registry.register("Recipe", RecipeSchema);
+registry.register("User", UserSchema);
 
 // ======================
 // EXAMPLES
@@ -607,6 +609,71 @@ registry.registerPath({
             success: false,
             error: { code: "UNAUTHORIZED", message: "Missing or invalid Authorization header" },
             meta: { timestamp: "2026-04-03T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+  },
+});
+
+// ======================
+// USER PATHS
+// ======================
+
+registry.registerPath({
+  method: "get",
+  path: "/users/me",
+  tags: ["Users"],
+  summary: "Get the logged-in user",
+  description: "Returns the full profile of the currently authenticated user. Requires a valid access token.",
+  operationId: "getMe",
+  security: [{ bearerAuth: [] }],
+  responses: {
+    200: {
+      description: "Logged-in user profile",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(UserSchema),
+          example: {
+            success: true,
+            data: {
+              id: "99999999-0009-0009-0009-000000000002",
+              establishmentId: "99999999-0009-0009-0009-000000000000",
+              email: "marc@calblay.cat",
+              name: "Marc García",
+              role: "admin",
+              isActive: true,
+              lastLoginAt: "2026-04-30T10:00:00.000Z",
+              createdAt: "2026-01-01T00:00:00.000Z",
+              updatedAt: "2026-04-30T10:00:00.000Z",
+            },
+            meta: { timestamp: "2026-04-30T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    401: {
+      description: "Missing or invalid access token",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: { code: "UNAUTHORIZED", message: "Missing or invalid Authorization header" },
+            meta: { timestamp: "2026-04-30T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    404: {
+      description: "User not found",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: { code: "NOT_FOUND", message: "User not found" },
+            meta: { timestamp: "2026-04-30T10:00:00.000Z" },
           },
         },
       },
