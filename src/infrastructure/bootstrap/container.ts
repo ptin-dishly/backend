@@ -33,6 +33,7 @@ export function createContainer(): Container {
   const recipeRepository = new PgRecipeRepository(pool);
   const recipeService = new RecipeService(recipeRepository);
   const userRepository = new PgUserRepository(pool);
+  const userService = new UserService(userRepository);
   const refreshTokenRepository = new PgRefreshTokenRepository(
     pool,
     authConfig.refreshExpirySeconds,
@@ -45,7 +46,7 @@ export function createContainer(): Container {
     tokenService,
     passwordHasher,
   );
-  const userService = new UserService(userRepository);
+  //const userService = new UserService(userRepository);
 
   return {
     pool,

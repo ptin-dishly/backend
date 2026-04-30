@@ -15,3 +15,7 @@ export const UserSchema = z
   .openapi("User");
 
 export type UserResponse = z.infer<typeof UserSchema>;
+
+export const UserParamsSchema = z.object({
+  id: z.string().uuid(),
+});
