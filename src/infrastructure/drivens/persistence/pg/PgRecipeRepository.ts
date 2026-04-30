@@ -1,5 +1,8 @@
 import { Recipe } from "@domain/entities/Recipe";
-import type { RecipeRepository } from "@domain/ports/drivens/RecipeRepository";
+import type {
+  RecipeIngredientDetail,
+  RecipeRepository,
+} from "@domain/ports/drivens/RecipeRepository";
 import type { Result } from "@domain/value-objects/Result";
 import { fail, ok } from "@domain/value-objects/Result";
 import type pg from "pg";
@@ -15,6 +18,44 @@ export class PgRecipeRepository implements RecipeRepository {
       return ok(this.toEntity(result.rows[0]));
     } catch (error) {
       return fail("RETRIEVE_ERROR", "Failed to retrieve recipe", error);
+    }
+  }
+
+  async findIngredientsByRecipeId(recipeId: string): Promise<Result<RecipeIngredientDetail[]>> {
+    try {
+      const query = `
+        SELECT 
+          ri.id,
+          ri.recipe_id,
+          ri.ingredient_id,
+          ri.sub_recipe_id,
+          ri.quantity,
+          ri.unit,
+          ri.is_optional,
+          i.name
+        FROM recipe_ingredients ri
+        INNER JOIN ingredients i ON ri.ingredient_id = i.id
+        WHERE ri.recipe_id = $1;
+      `;
+
+      const result = await this.pool.query(query, [recipeId]);
+
+      const ingredientsDetail: RecipeIngredientDetail[] = result.rows.map(
+        (row: Record<string, unknown>) => ({
+          id: row.id as string,
+          recipeId: row.recipe_id as string,
+          ingredientId: row.ingredient_id as string,
+          subRecipeId: row.sub_reciper_id as string | null,
+          name: row.name as string,
+          quantity: Number(row.quantity),
+          unit: row.unit as string,
+          isOptional: row.is_optional as boolean,
+        }),
+      );
+
+      return ok(ingredientsDetail);
+    } catch (error) {
+      return fail("RETRIEVE_ERROR", "Failed to retrieve recipe ingredients", error);
     }
   }
 
