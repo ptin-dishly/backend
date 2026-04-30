@@ -6,6 +6,7 @@ import {
   SuccessResponseSchema,
 } from "../responses/schemas";
 import { AllergenSchema, CreateAllergenSchema } from "../schemas/allergen";
+import { IngredientSchema } from "../schemas/ingredient";
 import { RecipeSchema } from "../schemas/recipe";
 import { LoginSchema, RefreshSchema, TokenPairSchema } from "../schemas/session";
 import { UserSchema } from "../schemas/user";
@@ -29,6 +30,7 @@ registry.register("LoginBody", LoginSchema);
 registry.register("RefreshBody", RefreshSchema);
 registry.register("TokenPair", TokenPairSchema);
 registry.register("Recipe", RecipeSchema);
+registry.register("Ingredient", IngredientSchema);
 registry.register("User", UserSchema);
 
 // ======================
@@ -466,6 +468,60 @@ registry.registerPath({
   },
 });
 
+registry.registerPath({
+  method: "get",
+  path: "/ingredients",
+  tags: ["Ingredients"],
+  summary: "List all ingredients",
+  description:
+    "Returns the complete list of all registered ingredients in the system. Returns an empty array if no ingredients exist.",
+  operationId: "listIngredients",
+  responses: {
+    200: {
+      description: "List of ingredients retrieved successfully",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(z.array(IngredientSchema)),
+          example: {
+            success: true,
+            data: [
+              {
+                id: "550e8400-e29b-41d4-a716-446655440000",
+                name: "Sal Marina",
+                description: "Sal fina de mesa",
+                isActive: true,
+              },
+              {
+                id: "550e8400-e29b-41d4-a716-446655440001",
+                name: "Pebre Negre",
+                description: null,
+                isActive: true,
+              },
+            ],
+            meta: { timestamp: "2026-04-30T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    500: {
+      description: "Internal server error or database failure",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "RETRIEVE_ERROR",
+              message: "Failed to retrieve ingredients",
+            },
+            meta: { timestamp: "2026-04-30T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+  },
+});
+
 // ======================
 // SESSION PATHS
 // ======================
@@ -706,6 +762,10 @@ export const openApiSpec = {
       {
         name: "Allergens",
         description: "EU regulated allergens (Regulation 1169/2011)",
+      },
+      {
+        name: "Ingredients",
+        description: "Core ingredients inventory",
       },
       {
         name: "Sessions",
