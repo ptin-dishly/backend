@@ -6,6 +6,7 @@ import {
   SuccessResponseSchema,
 } from "../responses/schemas";
 import { AllergenSchema, CreateAllergenSchema } from "../schemas/allergen";
+import { MenuParamsSchema, MenuSchema } from "../schemas/menu";
 import { RecipeSchema } from "../schemas/recipe";
 import { LoginSchema, RefreshSchema, TokenPairSchema } from "../schemas/session";
 import { UserSchema } from "../schemas/user";
@@ -28,6 +29,7 @@ registry.register("CreateAllergenBody", CreateAllergenSchema);
 registry.register("LoginBody", LoginSchema);
 registry.register("RefreshBody", RefreshSchema);
 registry.register("TokenPair", TokenPairSchema);
+registry.register("Menu", MenuSchema);
 registry.register("Recipe", RecipeSchema);
 registry.register("User", UserSchema);
 
@@ -457,6 +459,77 @@ registry.registerPath({
             error: {
               code: "NOT_FOUND",
               message: "Recipe not found",
+            },
+            meta: { timestamp: "2026-04-28T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+  },
+});
+
+// ======================
+// MENU PATHS
+// ======================
+
+registry.registerPath({
+  method: "get",
+  path: "/api/v1/menus/{id}",
+  tags: ["Menus"],
+  summary: "Get a menu by ID",
+  description: "Returns a single menu by its ID (supports custom seed format)",
+  operationId: "getMenuById",
+  request: {
+    params: MenuParamsSchema,
+  },
+  responses: {
+    200: {
+      description: "Menu found",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(MenuSchema),
+          example: {
+            success: true,
+            data: {
+              id: "99999999-0009-0009-0009-000000000001",
+              establishmentId: "99999999-0009-0009-0009-000000000000",
+              name: "Carta Principal Temporada",
+              isPublic: true,
+              qrCodeUrl: "https://me-qr.com/sample-qr.png",
+              createdAt: "2026-04-28T10:00:00.000Z",
+              updatedAt: "2026-04-28T10:00:00.000Z",
+            },
+            meta: { timestamp: "2026-04-28T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    400: {
+      description: "Invalid ID format",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "INVALID_REQUEST",
+              message: "Invalid path parameters. Expected 8-4-4-4-12 format.",
+            },
+            meta: { timestamp: "2026-04-28T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    404: {
+      description: "Menu not found",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "NOT_FOUND",
+              message: "Menu not found",
             },
             meta: { timestamp: "2026-04-28T10:00:00.000Z" },
           },
