@@ -18,6 +18,18 @@ export class PgMenuRepository implements MenuRepository {
     }
   }
 
+  async findAll(): Promise<Result<Menu[]>> {
+    try {
+      const result = await this.pool.query("SELECT * FROM menu_cards");
+
+      const menus = result.rows.map((row) => this.toEntity(row));
+
+      return ok(menus);
+    } catch (error) {
+      return fail("RETRIEVE_ERROR", "Failed to retrieve menus", error);
+    }
+  }
+
   private toEntity(row: Record<string, unknown>): Menu {
     return new Menu(
       row.id as string,

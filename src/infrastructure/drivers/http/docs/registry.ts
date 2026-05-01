@@ -653,6 +653,42 @@ registry.registerPath({
   },
 });
 
+registry.registerPath({
+  method: "get",
+  path: "/api/v1/menus",
+  tags: ["Menus"],
+  summary: "Get all menus",
+  description: "Retorna el llistat complet de tots els menús (cartes) registrats al sistema.",
+  responses: {
+    200: {
+      description:
+        "Llista de menús retornada correctament. Pot ser un array buit si no hi ha menús.",
+      content: {
+        "application/json": {
+          schema: z.object({
+            success: z.literal(true),
+            data: z.array(MenuSchema),
+          }),
+        },
+      },
+    },
+    500: {
+      description: "Error intern del servidor (ex. error de base de dades)",
+      content: {
+        "application/json": {
+          schema: z.object({
+            success: z.literal(false),
+            error: z.object({
+              code: z.string(),
+              message: z.string(),
+            }),
+          }),
+        },
+      },
+    },
+  },
+});
+
 // ======================
 // SESSION PATHS
 // ======================
