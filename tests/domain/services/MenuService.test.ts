@@ -1,3 +1,4 @@
+import { describe, it, expect, vi } from "vitest";
 import { MenuService } from "@domain/services/MenuService";
 import { Menu } from "@domain/entities/Menu";
 import { ok, fail } from "@domain/value-objects/Result";

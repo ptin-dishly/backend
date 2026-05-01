@@ -10,6 +10,7 @@ import { openApiSpec } from "./docs/registry";
 import { requestLogger } from "./middleware/requestLogger";
 import { allergenRoutes } from "./routes/allergenRoutes";
 import { healthRoutes } from "./routes/healthRoutes";
+import { menuRoutes } from "./routes/menuRoutes";
 import { sessionRoutes } from "./routes/sessionRoutes";
 
 export function createApp(container: Container): express.Express {
@@ -128,6 +129,7 @@ export function createApp(container: Container): express.Express {
 
   const v1 = express.Router();
   v1.use(allergenRoutes(container.allergenService));
+  v1.use(menuRoutes(container.menuService));
   v1.use(sessionRoutes(container.authService, container.tokenService));
 
   app.use("/api/v1", v1);
