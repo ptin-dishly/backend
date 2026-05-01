@@ -653,7 +653,6 @@ registry.registerPath({
   },
 });
 
-
 registry.registerPath({
   method: "get",
   path: "/api/v1/menus",
