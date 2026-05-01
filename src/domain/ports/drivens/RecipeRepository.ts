@@ -16,6 +16,18 @@ export interface CreateRecipeData {
   updateAt: Date;
 }
 
+export interface RecipeIngredientDetail {
+  id: string;
+  recipeId: string;
+  ingredientId: string;
+  subRecipeId: string | null;
+  name: string;
+  quantity: number;
+  unit: string;
+  isOptional: boolean;
+}
+
 export interface RecipeRepository {
   findById(id: string): Promise<Result<Recipe | null>>;
+  findIngredientsByRecipeId(recipeId: string): Promise<Result<RecipeIngredientDetail[]>>;
 }

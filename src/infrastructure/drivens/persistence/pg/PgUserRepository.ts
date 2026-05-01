@@ -71,4 +71,12 @@ export class PgUserRepository implements UserRepository {
       r.updated_at,
     );
   }
+
+  async delete(id: string): Promise<Result<void>> {
+    const result = await this.pool.query("DELETE FROM users WHERE id = $1", [id]);
+    if (result.rowCount === 0) {
+      return fail("NOT_FOUND", "User not found");
+    }
+    return ok(undefined);
+  }
 }

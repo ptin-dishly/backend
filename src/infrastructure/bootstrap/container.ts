@@ -1,8 +1,10 @@
 import type { TokenService } from "@domain/ports/drivens/TokenService";
 import { AllergenService } from "@domain/services/AllergenService";
 import { AuthService } from "@domain/services/AuthService";
+import { IngredientService } from "@domain/services/IngredientService";
 import { MenuService } from "@domain/services/MenuService";
 import { RecipeService } from "@domain/services/RecipeService";
+import { UserService } from "@domain/services/UserService";
 import { BcryptPasswordHasher } from "@infrastructure/drivens/auth/BcryptPasswordHasher";
 import { authConfig } from "@infrastructure/drivens/auth/config";
 import { JwtTokenService } from "@infrastructure/drivens/auth/JwtTokenService";
@@ -13,13 +15,16 @@ import { PgRecipeRepository } from "@infrastructure/drivens/persistence/pg/PgRec
 import { PgRefreshTokenRepository } from "@infrastructure/drivens/persistence/pg/PgRefreshTokenRepository";
 import { PgUserRepository } from "@infrastructure/drivens/persistence/pg/PgUserRepository";
 import type pg from "pg";
+import { PgIngredientRepository } from "../drivens/persistence/pg/PgIngredientRepository";
 
 export interface Container {
   pool: pg.Pool;
   allergenService: AllergenService;
   recipeService: RecipeService;
+  ingredientService: IngredientService;
   authService: AuthService;
   menuService: MenuService;
+  userService: UserService;
   tokenService: TokenService;
 }
 
@@ -28,10 +33,12 @@ export function createContainer(): Container {
   const allergenService = new AllergenService(allergenRepository);
   const menuRepository = new PgMenuRepository(pool);
   const menuService = new MenuService(menuRepository);
-
   const recipeRepository = new PgRecipeRepository(pool);
   const recipeService = new RecipeService(recipeRepository);
+  const ingredientRepository = new PgIngredientRepository(pool);
+  const ingredientService = new IngredientService(ingredientRepository);
   const userRepository = new PgUserRepository(pool);
+  const userService = new UserService(userRepository);
   const refreshTokenRepository = new PgRefreshTokenRepository(
     pool,
     authConfig.refreshExpirySeconds,
@@ -44,13 +51,16 @@ export function createContainer(): Container {
     tokenService,
     passwordHasher,
   );
+  //const userService = new UserService(userRepository);
 
   return {
     pool,
     allergenService,
     recipeService,
+    ingredientService,
     authService,
     menuService,
+    userService,
     tokenService,
   };
 }
