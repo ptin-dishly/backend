@@ -1,11 +1,11 @@
 export class Menu {
   constructor(
     readonly id: string,
+    readonly establishmentId: string,
     readonly name: string,
-    readonly description: string | null,
-    readonly price: number | string,
-    readonly isActive: boolean,
+    readonly isPublic: boolean,
+    readonly qrCodeUrl: string | null,
     readonly createdAt: Date,
-    readonly updatedAt?: Date,
+    readonly updatedAt: Date,
   ) {}
 }

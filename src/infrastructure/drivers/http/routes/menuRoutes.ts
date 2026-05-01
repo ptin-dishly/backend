@@ -1,20 +1,15 @@
 import type { MenuService } from "@domain/services/MenuService";
+import { createMenuController } from "@infrastructure/drivers/http/controllers/menuController";
 import { validate } from "@infrastructure/drivers/http/middleware/validate";
+import { MenuParamsSchema } from "@infrastructure/drivers/http/schemas/menu";
 import { Router } from "express";
-import { createMenuController } from "../controllers/menuController";
-import { MenuParamsSchema } from "../schemas/menu";
 
-export function menuRoutes(menuService: MenuService): Router {
+export function MenuRoutes(MenuService: MenuService): Router {
   const router = Router();
-  const controller = createMenuController(menuService);
+  const controller = createMenuController(MenuService);
 
-  // Endpoint: GET /api/v1/menus/allergen/:allergenId
-  // Nota: El prefix /api/v1 i /menus es gestionen normalment a app.ts
-  router.get(
-    "/menus/allergen/:allergenId",
-    validate({ params: MenuParamsSchema }),
-    controller.findByAllergenId,
-  );
-
+  router.get("/menus/:id", validate({ params: MenuParamsSchema }), controller.findById);
+  router.get("/menus", controller.findAll);
+  router.get("/menus/allergen/:allergenId",validate({ params: MenuParamsSchema }),controller.findByAllergenId,);
   return router;
 }
