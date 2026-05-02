@@ -50,7 +50,6 @@ export class PgRecipeRepository implements RecipeRepository {
           );
         }
       }
-      console.error("ERROR EN SQL:", error);
       return fail("DB_ERROR", "Unexpected error creating recipe", error);
     }
   }
