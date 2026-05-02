@@ -56,3 +56,13 @@ export const RecipeIngredientsParamsSchema = z.object({
 
 export type CreateRecipeBody = z.infer<typeof CreateRecipeSchema>;
 export type RecipeResponse = z.infer<typeof RecipeSchema>;
+
+export const UpdateRecipeSchema = CreateRecipeSchema.partial().openapi("UpdateRecipeBody", {
+  description: "Esquema per actualitzar un plat. Tots els camps són opcionals.",
+  example: {
+    name: "Paella de Marisco Premium",
+    price: 25.50
+  }
+});
+
+export type UpdateRecipeBody = z.infer<typeof UpdateRecipeSchema>;
