@@ -56,12 +56,13 @@ export class RecipeService {
     }
     return await this.recipeRepository.findIngredientsByRecipeId(recipeId);
   }
-  
+
   async findByAllergenId(allergenId: string): Promise<Result<Recipe[]>> {
     if (!allergenId || allergenId.trim() === "") {
       return fail("INVALID_ID", "Allergen ID cannot be empty");
     }
     return await this.recipeRepository.findByAllergenId(allergenId);
+  }
 
   async findAll(): Promise<Result<Recipe[]>> {
     return await this.recipeRepository.findAll();

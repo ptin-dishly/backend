@@ -9,11 +9,11 @@ import { AllergenSchema, CreateAllergenSchema } from "../schemas/allergen";
 import { IngredientSchema } from "../schemas/ingredient";
 import { MenuParamsSchema, MenuSchema } from "../schemas/menu";
 import {
+  CreateRecipeSchema,
   RecipeByAllergenParamsSchema,
   RecipeIngredientSchema,
   RecipeSchema,
 } from "../schemas/recipe";
-import { CreateRecipeSchema, RecipeIngredientSchema, RecipeSchema } from "../schemas/recipe";
 import { LoginSchema, RefreshSchema, TokenPairSchema } from "../schemas/session";
 import { UserSchema } from "../schemas/user";
 import { z } from "../schemas/zod";

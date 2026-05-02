@@ -142,7 +142,7 @@ export class PgRecipeRepository implements RecipeRepository {
       return fail("RETRIEVE_ERROR", "Failed to retrieve recipes by allergen", error);
     }
   }
-  
+
   async update(id: string, data: UpdateRecipeData): Promise<Result<Recipe>> {
     try {
       const fields: string[] = [];

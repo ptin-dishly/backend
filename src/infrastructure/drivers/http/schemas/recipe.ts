@@ -19,7 +19,6 @@ export const RecipeIngredientsParamsSchema = z.object({
   recipeId: z.string().min(36).max(36), // Just check length instead of strict UUID validation
 });
 
-// Keep the rest as is...
 export const CreateRecipeSchema = z
   .object({
     establishmentId: z.string().regex(uuidRegex, "Invalid UUID"),
@@ -49,12 +48,6 @@ export const RecipeSchema = z
     updatedAt: z.string().datetime(),
   })
   .openapi("Recipe");
-
-export const RecipeParamsSchema = z.object({
-  id: z
-    .string()
-    .regex(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/),
-});
 
 export const RecipeByAllergenParamsSchema = z.object({
   allergenId: z
