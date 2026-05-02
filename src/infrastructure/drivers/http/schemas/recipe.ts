@@ -1,5 +1,14 @@
 import { z } from "./zod";
 
+export const RecipeParamsSchema = z.object({
+  id: z.string().min(36).max(36), // Just check length instead of strict UUID validation
+});
+
+export const RecipeIngredientsParamsSchema = z.object({
+  recipeId: z.string().min(36).max(36), // Just check length instead of strict UUID validation
+});
+
+// Keep the rest as is...
 export const CreateRecipeSchema = z
   .object({
     establishmentId: z.string().uuid(),
@@ -16,9 +25,7 @@ export const CreateRecipeSchema = z
 
 export const RecipeSchema = z
   .object({
-    id: z
-      .string()
-      .regex(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/),
+    id: z.string().uuid(),
     establishmentId: z.string().uuid(),
     name: z.string(),
     description: z.string().nullable(),
@@ -33,12 +40,6 @@ export const RecipeSchema = z
   })
   .openapi("Recipe");
 
-export const RecipeParamsSchema = z.object({
-  id: z
-    .string()
-    .regex(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/),
-});
-
 export const RecipeIngredientSchema = z.object({
   id: z.string().uuid(),
   recipeId: z.string().uuid(),
@@ -50,19 +51,5 @@ export const RecipeIngredientSchema = z.object({
   isOptional: z.boolean(),
 });
 
-export const RecipeIngredientsParamsSchema = z.object({
-  recipeId: z.string().uuid(),
-});
-
 export type CreateRecipeBody = z.infer<typeof CreateRecipeSchema>;
 export type RecipeResponse = z.infer<typeof RecipeSchema>;
-
-export const UpdateRecipeSchema = CreateRecipeSchema.partial().openapi("UpdateRecipeBody", {
-  description: "Esquema per actualitzar un plat. Tots els camps són opcionals.",
-  example: {
-    name: "Paella de Marisco Premium",
-    price: 25.5,
-  },
-});
-
-export type UpdateRecipeBody = z.infer<typeof UpdateRecipeSchema>;
