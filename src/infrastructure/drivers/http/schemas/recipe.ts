@@ -61,8 +61,8 @@ export const UpdateRecipeSchema = CreateRecipeSchema.partial().openapi("UpdateRe
   description: "Esquema per actualitzar un plat. Tots els camps són opcionals.",
   example: {
     name: "Paella de Marisco Premium",
-    price: 25.50
-  }
+    price: 25.5,
+  },
 });
 
 export type UpdateRecipeBody = z.infer<typeof UpdateRecipeSchema>;
