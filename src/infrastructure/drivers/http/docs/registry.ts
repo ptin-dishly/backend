@@ -8,7 +8,12 @@ import {
 import { AllergenSchema, CreateAllergenSchema } from "../schemas/allergen";
 import { IngredientSchema } from "../schemas/ingredient";
 import { MenuParamsSchema, MenuSchema, UpdateMenuSchema } from "../schemas/menu";
-import { CreateRecipeSchema, RecipeIngredientSchema, RecipeSchema } from "../schemas/recipe";
+import {
+  CreateRecipeSchema,
+  RecipeByAllergenParamsSchema,
+  RecipeIngredientSchema,
+  RecipeSchema,
+} from "../schemas/recipe";
 import { LoginSchema, RefreshSchema, TokenPairSchema } from "../schemas/session";
 import { UserSchema } from "../schemas/user";
 import { z } from "../schemas/zod";
@@ -33,6 +38,7 @@ registry.register("TokenPair", TokenPairSchema);
 registry.register("Menu", MenuSchema);
 registry.register("Recipe", RecipeSchema);
 registry.register("RecipeIngredient", RecipeIngredientSchema);
+registry.register("RecipeByAllergenParams", RecipeByAllergenParamsSchema);
 registry.register("Ingredient", IngredientSchema);
 registry.register("User", UserSchema);
 
@@ -317,6 +323,122 @@ registry.registerPath({
   },
 });
 
+registry.registerPath({
+  method: "get",
+  path: "/recipes/allergens/:allergenId",
+  tags: ["Recipes"],
+  summary: "Get all recipes that contain the specified allergen",
+  description: "Returns a list of recipes that contain the specified allergen",
+  operationId: "getRecipeByAllergenId",
+  request: {
+    params: RecipeByAllergenParamsSchema,
+  },
+  responses: {
+    200: {
+      description: "List of recipes retrieved successfully",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(z.array(RecipeSchema)),
+          example: {
+            success: true,
+            data: [
+              {
+                id: "99999999-0009-0009-0009-000000000001",
+                establishmentId: "99999999-0009-0009-0009-000000000000",
+                name: "Paella de Marisco",
+                description: "Receta tradicional con sofrito casero",
+                category: "Arroces",
+                portionSizeKg: 0.5,
+                servings: 2,
+                preparationTime: 45,
+                version: 1,
+                createdBy: "99999999-0009-0009-0009-000000000002",
+                createdAt: "2026-03-28T10:00:00.000Z",
+                updatedAt: "2026-03-28T10:00:00.000Z",
+              },
+            ],
+            meta: { timestamp: "2026-04-28T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    400: {
+      description: "Invalid allergen ID format",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "INVALID_REQUEST",
+              message: "Invalid path parameters. Expected UUID format.",
+            },
+            meta: { timestamp: "2026-04-28T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+  },
+});
+
+// ======================
+// INGREDIENTS PATHS
+// ======================
+
+registry.registerPath({
+  method: "get",
+  path: "/ingredients",
+  tags: ["Ingredients"],
+  summary: "List all ingredients",
+  description:
+    "Returns the complete list of all registered ingredients in the system. Returns an empty array if no ingredients exist.",
+  operationId: "listIngredients",
+  responses: {
+    200: {
+      description: "List of ingredients retrieved successfully",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(z.array(IngredientSchema)),
+          example: {
+            success: true,
+            data: [
+              {
+                id: "550e8400-e29b-41d4-a716-446655440000",
+                name: "Sal Marina",
+                description: "Sal fina de mesa",
+                isActive: true,
+              },
+              {
+                id: "550e8400-e29b-41d4-a716-446655440001",
+                name: "Pebre Negre",
+                description: null,
+                isActive: true,
+              },
+            ],
+            meta: { timestamp: "2026-04-30T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    500: {
+      description: "Internal server error or database failure",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "RETRIEVE_ERROR",
+              message: "Failed to retrieve ingredients",
+            },
+            meta: { timestamp: "2026-04-30T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+  },
+});
+
 // ======================
 // REGISTER PATHS: MENUS
 // ======================
@@ -354,7 +476,7 @@ registry.registerPath({
 });
 
 // ======================
-// REGISTER PATHS: MENU CARD ITEMS (NUEVO)
+// REGISTER PATHS: MENU CARD ITEMS
 // ======================
 
 registry.registerPath({

@@ -70,6 +70,15 @@ export function createRecipeController(recipeService: RecipeService) {
       return sendSuccess(res, 200, result.value);
     },
 
+    async findByAllergenId(req: Request<{ allergenId: string }>, res: Response) {
+      const result = await recipeService.findByAllergenId(req.params.allergenId);
+
+      if (!result.ok) {
+        return sendErrorByCode(res, result.error.code, result.error.message);
+      }
+      return sendSuccess(res, 200, result.value);
+    },
+
     async getRecipeIngredients(req: Request<{ recipeId: string }>, res: Response) {
       const result = await recipeService.findIngredientsByRecipeId(req.params.recipeId);
       if (!result.ok) {
