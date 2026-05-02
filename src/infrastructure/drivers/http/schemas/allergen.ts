@@ -31,7 +31,9 @@ export const AllergenParamsSchema = z.object({
 });
 
 export const IngredientIdParamsSchema = z.object({
-  ingredientId: z.string().uuid(),
+  ingredientId: z
+    .string()
+    .regex(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/),
 });
 
 export const EuNumberParamsSchema = z.object({
