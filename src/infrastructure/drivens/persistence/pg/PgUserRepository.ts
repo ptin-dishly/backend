@@ -117,9 +117,9 @@ export class PgUserRepository implements UserRepository {
       }
 
       return ok(this.toEntity(result.rows[0]));
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Control de violació d'unicitat (p. ex: ja existeix aquest email)
-      if (error.code === "23505") {
+      if (error && typeof error === "object" && "code" in error && error.code === "23505") {
         return fail("DUPLICATE_RESOURCE", "This email is already in use");
       }
       return fail("UPDATE_ERROR", "Failed to update user", error);
