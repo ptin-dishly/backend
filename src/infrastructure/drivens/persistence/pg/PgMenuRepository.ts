@@ -1,5 +1,5 @@
 import { Menu } from "@domain/entities/Menu";
-import type { MenuRepository } from "@domain/ports/drivens/MenuRepository";
+import type { MenuRepository, UpdateMenuData } from "@domain/ports/drivens/MenuRepository";
 import type { Result } from "@domain/value-objects/Result";
 import { fail, ok } from "@domain/value-objects/Result";
 import type pg from "pg";
@@ -43,6 +43,65 @@ export class PgMenuRepository implements MenuRepository {
       return ok(menus);
     } catch (error) {
       return fail("RETRIEVE_ERROR", "Failed to retrieve menus", error);
+    }
+  }
+
+  async update(id: string, data: UpdateMenuData): Promise<Result<Menu>> {
+    const setClauses: string[] = [];
+    const values: unknown[] = [id];
+    let placeholderIndex = 2;
+
+    if (data.name !== undefined) {
+      setClauses.push(`name = $${placeholderIndex++}`);
+      values.push(data.name);
+    }
+
+    if (data.establishmentId !== undefined) {
+      setClauses.push(`establishment_id = $${placeholderIndex++}`);
+      values.push(data.establishmentId);
+    }
+
+    if (data.isPublic !== undefined) {
+      setClauses.push(`is_public = $${placeholderIndex++}`);
+      values.push(data.isPublic);
+    }
+
+    if (data.qrCodeUrl !== undefined) {
+      setClauses.push(`qr_code_url = $${placeholderIndex++}`);
+      values.push(data.qrCodeUrl);
+    }
+
+    if (setClauses.length === 0) {
+      return fail("INVALID_REQUEST", "No valid fields provided to update");
+    }
+
+    setClauses.push("updated_at = NOW()");
+
+    try {
+      const query = `
+        UPDATE menu_cards 
+        SET ${setClauses.join(", ")} 
+        WHERE id = $1 
+        RETURNING *
+      `;
+
+      const result = await this.pool.query(query, values);
+
+      if (result.rowCount === 0) {
+        return fail("NOT_FOUND", "Menu not found");
+      }
+
+      return ok(this.toEntity(result.rows[0]));
+    } catch (error: unknown) {
+      if (typeof error === "object" && error !== null && "code" in error) {
+        const pgError = error as { code: string };
+
+        if (pgError.code === "23505") {
+          return fail("DUPLICATE_RESOURCE", "A menu with this name already exists", error);
+        }
+      }
+
+      return fail("UPDATE_ERROR", "Failed to update menu", error);
     }
   }
 
