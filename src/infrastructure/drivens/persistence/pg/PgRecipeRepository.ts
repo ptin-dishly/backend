@@ -10,6 +10,15 @@ import type pg from "pg";
 export class PgRecipeRepository implements RecipeRepository {
   constructor(private readonly pool: pg.Pool) {}
 
+  async findAll(): Promise<Result<Recipe[]>> {
+    try {
+      const result = await this.pool.query("SELECT * FROM recipes ORDER BY name ASC");
+      return ok(result.rows.map((row) => this.toEntity(row)));
+    } catch (error: unknown) {
+      return fail("RETRIEVE_ERROR", "Failed to retrieve recipes", error);
+    }
+  }
+
   async findById(id: string): Promise<Result<Recipe | null>> {
     try {
       const result = await this.pool.query("SELECT * FROM recipes WHERE id = $1", [id]);

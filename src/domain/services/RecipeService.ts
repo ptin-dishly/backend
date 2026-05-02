@@ -27,4 +27,8 @@ export class RecipeService {
     }
     return await this.recipeRepository.findIngredientsByRecipeId(recipeId);
   }
+
+  async findAll(): Promise<Result<Recipe[]>> {
+    return await this.recipeRepository.findAll();
+  }
 }

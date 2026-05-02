@@ -11,6 +11,7 @@ export function RecipeRoutes(RecipeService: RecipeService): Router {
   const router = Router();
   const controller = createRecipeController(RecipeService);
 
+  router.get("/recipes", controller.findAll);
   router.get("/recipes/:id", validate({ params: RecipeParamsSchema }), controller.findById);
   router.delete("/recipes/:id", validate({ params: RecipeParamsSchema }), controller.delete);
   router.get(
