@@ -1,7 +1,9 @@
 import { Recipe } from "@domain/entities/Recipe";
 import type {
+  CreateRecipeData,
   RecipeIngredientDetail,
   RecipeRepository,
+  UpdateRecipeData,
 } from "@domain/ports/drivens/RecipeRepository";
 import type { Result } from "@domain/value-objects/Result";
 import { fail, ok } from "@domain/value-objects/Result";
@@ -9,6 +11,49 @@ import type pg from "pg";
 
 export class PgRecipeRepository implements RecipeRepository {
   constructor(private readonly pool: pg.Pool) {}
+
+  async create(data: CreateRecipeData): Promise<Result<Recipe>> {
+    const query = `
+      INSERT INTO recipes (
+        establishment_id, 
+        name, 
+        description, 
+        category, 
+        portion_size_kg, 
+        servings, 
+        preparation_time, 
+        created_by,
+        version
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 1)
+      RETURNING *;
+    `;
+
+    const values = [
+      data.establishmentId,
+      data.name,
+      data.description,
+      data.category,
+      data.portionSizeKg,
+      data.servings,
+      data.preparationTime,
+      data.createdBy,
+    ];
+
+    try {
+      const result = await this.pool.query(query, values);
+      return ok(this.toEntity(result.rows[0]));
+    } catch (error: unknown) {
+      if (error !== null && typeof error === "object" && "code" in error) {
+        if ((error as { code: string }).code === "23505") {
+          return fail(
+            "DUPLICATE_RESOURCE",
+            "A recipe with this name already exists in this establishment",
+          );
+        }
+      }
+      return fail("DB_ERROR", "Unexpected error creating recipe", error);
+    }
+  }
 
   async findAll(): Promise<Result<Recipe[]>> {
     try {
@@ -73,6 +118,51 @@ export class PgRecipeRepository implements RecipeRepository {
       return ok(ingredientsDetail);
     } catch (error) {
       return fail("RETRIEVE_ERROR", "Failed to retrieve recipe ingredients", error);
+    }
+  }
+
+  async update(id: string, data: UpdateRecipeData): Promise<Result<Recipe>> {
+    try {
+      const fields: string[] = [];
+      const values: unknown[] = [];
+      let paramIndex = 1;
+
+      // Generem la query dinàmicament en funció dels camps que ens arribin
+      for (const [key, value] of Object.entries(data)) {
+        if (value !== undefined) {
+          // Convertim camelCase a snake_case per a PostgreSQL
+          const snakeCaseKey = key.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
+          fields.push(`${snakeCaseKey} = $${paramIndex}`);
+          values.push(value);
+          paramIndex++;
+        }
+      }
+
+      // Afegim l'actualització de la data de modificació
+      fields.push(`updated_at = NOW()`);
+
+      // Afegim l'ID com a últim paràmetre per al WHERE
+      values.push(id);
+
+      const query = `UPDATE recipes SET ${fields.join(", ")} WHERE id = $${paramIndex} RETURNING *`;
+      const result = await this.pool.query(query, values);
+
+      // Si el rowCount és 0, el plat no existia
+      if (result.rowCount === 0) {
+        return fail("NOT_FOUND", `Recipe with id ${id} not found`);
+      }
+
+      return ok(this.toEntity(result.rows[0]));
+    } catch (error: unknown) {
+      // Fem un cast segur per poder comprovar el codi d'error
+      const err = error as Record<string, unknown>;
+
+      // Control de violació d'unicitat (ex: ja existeix aquest nom)
+      if (err?.code === "23505") {
+        return fail("DUPLICATE_RESOURCE", "A recipe with this name already exists", error);
+      }
+
+      return fail("UPDATE_ERROR", "Failed to update recipe", error);
     }
   }
 

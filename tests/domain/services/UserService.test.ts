@@ -27,6 +27,7 @@ describe("UserService", () => {
       findById: vi.fn(),
       updateLastLogin: vi.fn(),
       delete: vi.fn(),
+      update: vi.fn(),
     };
     userService = new UserService(userRepository);
   });
@@ -121,4 +122,54 @@ describe("UserService", () => {
       }
     });
   });
+
+  describe("update", () => {
+    it("should successfully update a user", async () => {
+      vi.mocked(userRepository.update).mockResolvedValue(ok(fakeUser));
+
+      const updateData = { name: "Nou Nom" };
+      const result = await userService.update(fakeUser.id, updateData);
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value).toBe(fakeUser);
+      }
+      expect(userRepository.update).toHaveBeenCalledWith(fakeUser.id, updateData);
+    });
+
+    it("should fail when user ID is empty", async () => {
+      const result = await userService.update("", { name: "Nou Nom" });
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("INVALID_ID");
+      }
+      expect(userRepository.update).not.toHaveBeenCalled();
+    });
+
+    it("should fail when no update data is provided", async () => {
+      const result = await userService.update(fakeUser.id, {});
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        // Canvia això: expect(result.error.code).toBe("BAD_REQUEST");
+        expect(result.error.code).toBe("VALIDATION_ERROR"); // <--- Així!
+      }
+      expect(userRepository.update).not.toHaveBeenCalled();
+    });
+
+    it("should propagate repository errors (e.g. DUPLICATE_RESOURCE)", async () => {
+      vi.mocked(userRepository.update).mockResolvedValue(
+        fail("DUPLICATE_RESOURCE", "This email is already in use")
+      );
+
+      const result = await userService.update(fakeUser.id, { email: "existent@calblay.cat" });
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("DUPLICATE_RESOURCE");
+      }
+    });
+  });  
+
 });

@@ -19,3 +19,12 @@ export type UserResponse = z.infer<typeof UserSchema>;
 export const UserParamsSchema = z.object({
   id: z.string().uuid(),
 });
+
+export const UpdateUserSchema = UserSchema.omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  lastLoginAt: true,
+}).partial();
+
+export type UpdateUserBody = z.infer<typeof UpdateUserSchema>;

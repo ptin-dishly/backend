@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { RecipeService } from "@domain/services/RecipeService";
-import type { RecipeRepository, CreateRecipeData, RecipeIngredientDetail } from "@domain/ports/drivens/RecipeRepository";
+import type { RecipeRepository, CreateRecipeData, RecipeIngredientDetail, UpdateRecipeData } from "@domain/ports/drivens/RecipeRepository";
 import { Recipe } from "@domain/entities/Recipe";
 import { ok, fail } from "@domain/value-objects/Result";
 
@@ -44,13 +44,105 @@ describe("RecipeService", () => {
 
     beforeEach(() => {
         recipeRepository = {
+            create: vi.fn(),
             findAll: vi.fn(),
             findById: vi.fn(),
             delete: vi.fn(),
             findIngredientsByRecipeId: vi.fn(),
+            update: vi.fn(),
         } as unknown as RecipeRepository;
 
         recipeService = new RecipeService(recipeRepository);
+    });
+
+    // --- TESTS CREATE ---
+    describe("create", () => {
+        it("should create a recipe successfully", async () => {
+            const data = validRecipeData();
+            const recipe = fakeRecipe();
+            vi.mocked(recipeRepository.create).mockResolvedValue(ok(recipe));
+
+            const result = await recipeService.create(data as any);
+
+            expect(result.ok).toBe(true);
+            if (result.ok) {
+                expect(result.value).toBe(recipe);
+            }
+            expect(recipeRepository.create).toHaveBeenCalledWith(data);
+        });
+
+        it("should return a failure when the name is empty", async () => {
+            const data = validRecipeData({ name: "" });
+
+            const result = await recipeService.create(data as any);
+
+            expect(result.ok).toBe(false);
+            if (!result.ok) {
+                expect(result.error.code).toBe("INVALID_REQUEST");
+                expect(result.error.message).toBe("El nombre es obligatorio");
+            }
+            expect(recipeRepository.create).not.toHaveBeenCalled();
+        });
+
+        it("should return a failure when the name exceeds 150 characters", async () => {
+            const data = validRecipeData({ name: "a".repeat(151) });
+
+            const result = await recipeService.create(data as any);
+
+            expect(result.ok).toBe(false);
+            if (!result.ok) {
+                expect(result.error.code).toBe("INVALID_REQUEST");
+                expect(result.error.message).toBe("El nombre no puede superar los 150 caracteres");
+            }
+        });
+
+        it("should return a failure when portionSizeKg is 0 or negative", async () => {
+            const data = validRecipeData({ portionSizeKg: 0 });
+
+            const result = await recipeService.create(data as any);
+
+            expect(result.ok).toBe(false);
+            if (!result.ok) {
+                expect(result.error.code).toBe("INVALID_REQUEST");
+            }
+        });
+
+        it("should return a failure when servings is 0 or negative", async () => {
+            const data = validRecipeData({ servings: -1 });
+
+            const result = await recipeService.create(data as any);
+
+            expect(result.ok).toBe(false);
+            if (!result.ok) {
+                expect(result.error.code).toBe("INVALID_REQUEST");
+            }
+        });
+
+        it("should return a failure when preparationTime is negative", async () => {
+            const data = validRecipeData({ preparationTime: -5 });
+
+            const result = await recipeService.create(data as any);
+
+            expect(result.ok).toBe(false);
+            if (!result.ok) {
+                expect(result.error.code).toBe("INVALID_REQUEST");
+            }
+        });
+
+        it("should propagate DUPLICATE_RESOURCE when the repository fails", async () => {
+            const data = validRecipeData();
+            vi.mocked(recipeRepository.create).mockResolvedValue(
+                fail("DUPLICATE_RESOURCE", "Recipe already exists")
+            );
+
+            const result = await recipeService.create(data as any);
+
+            expect(result.ok).toBe(false);
+            if (!result.ok) {
+                expect(result.error.code).toBe("DUPLICATE_RESOURCE");
+            }
+            expect(recipeRepository.create).toHaveBeenCalled();
+        });
     });
 
     // --- TESTS FIND ALL ---
@@ -248,6 +340,48 @@ describe("RecipeService", () => {
             expect(result.ok).toBe(false);
             if (!result.ok) {
                 expect(result.error.code).toBe("DELETE_ERROR");
+            }
+        });
+    });
+
+    // --- TESTS UPDATE ---
+    describe("update", () => {
+        const validUpdateData: UpdateRecipeData = { name: "Nova Paella" };
+        const validId = "550e8400-e29b-41d4-a716-446655440000";
+
+        it("should successfully update a recipe", async () => {
+            const updatedRecipe = fakeRecipe({ name: "Nova Paella" });
+            vi.mocked(recipeRepository.update).mockResolvedValue(ok(updatedRecipe));
+
+            const result = await recipeService.update(validId, validUpdateData);
+
+            expect(result.ok).toBe(true);
+            if (result.ok) {
+                expect(result.value.name).toBe("Nova Paella");
+            }
+            expect(recipeRepository.update).toHaveBeenCalledWith(validId, validUpdateData);
+        });
+
+        it("should return a failure when the provided ID is empty", async () => {
+            const result = await recipeService.update("   ", validUpdateData);
+
+            expect(result.ok).toBe(false);
+            if (!result.ok) {
+                expect(result.error.code).toBe("INVALID_ID");
+            }
+            expect(recipeRepository.update).not.toHaveBeenCalled();
+        });
+
+        it("should propagate repository error (e.g. NOT_FOUND or DUPLICATE_RESOURCE)", async () => {
+            vi.mocked(recipeRepository.update).mockResolvedValue(
+                fail("NOT_FOUND", "Recipe not found")
+            );
+
+            const result = await recipeService.update(validId, validUpdateData);
+
+            expect(result.ok).toBe(false);
+            if (!result.ok) {
+                expect(result.error.code).toBe("NOT_FOUND");
             }
         });
     });

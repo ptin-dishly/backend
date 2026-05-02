@@ -4,6 +4,7 @@ import { validate } from "@infrastructure/drivers/http/middleware/validate";
 import {
   RecipeIngredientsParamsSchema,
   RecipeParamsSchema,
+  UpdateRecipeSchema,
 } from "@infrastructure/drivers/http/schemas/recipe";
 import { Router } from "express";
 
@@ -14,10 +15,16 @@ export function RecipeRoutes(RecipeService: RecipeService): Router {
   router.get("/recipes", controller.findAll);
   router.get("/recipes/:id", validate({ params: RecipeParamsSchema }), controller.findById);
   router.delete("/recipes/:id", validate({ params: RecipeParamsSchema }), controller.delete);
+  router.put(
+    "/recipes/:id",
+    validate({ params: RecipeParamsSchema, body: UpdateRecipeSchema }),
+    controller.update,
+  );
   router.get(
     "/recipes/:recipeId/ingredients",
     validate({ params: RecipeIngredientsParamsSchema }),
     controller.getRecipeIngredients,
   );
+  router.post("/recipes", controller.create);
   return router;
 }
