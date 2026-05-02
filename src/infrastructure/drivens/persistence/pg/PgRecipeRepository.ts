@@ -1,5 +1,6 @@
 import { Recipe } from "@domain/entities/Recipe";
 import type {
+  CreateRecipeData,
   RecipeIngredientDetail,
   RecipeRepository,
   UpdateRecipeData,
@@ -10,6 +11,49 @@ import type pg from "pg";
 
 export class PgRecipeRepository implements RecipeRepository {
   constructor(private readonly pool: pg.Pool) {}
+
+  async create(data: CreateRecipeData): Promise<Result<Recipe>> {
+    const query = `
+      INSERT INTO recipes (
+        establishment_id, 
+        name, 
+        description, 
+        category, 
+        portion_size_kg, 
+        servings, 
+        preparation_time, 
+        created_by,
+        version
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 1)
+      RETURNING *;
+    `;
+
+    const values = [
+      data.establishmentId,
+      data.name,
+      data.description,
+      data.category,
+      data.portionSizeKg,
+      data.servings,
+      data.preparationTime,
+      data.createdBy,
+    ];
+
+    try {
+      const result = await this.pool.query(query, values);
+      return ok(this.toEntity(result.rows[0]));
+    } catch (error: unknown) {
+      if (error !== null && typeof error === "object" && "code" in error) {
+        if ((error as { code: string }).code === "23505") {
+          return fail(
+            "DUPLICATE_RESOURCE",
+            "A recipe with this name already exists in this establishment",
+          );
+        }
+      }
+      return fail("DB_ERROR", "Unexpected error creating recipe", error);
+    }
+  }
 
   async findAll(): Promise<Result<Recipe[]>> {
     try {
