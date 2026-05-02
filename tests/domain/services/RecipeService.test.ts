@@ -44,13 +44,51 @@ describe("RecipeService", () => {
 
     beforeEach(() => {
         recipeRepository = {
+            findAll: vi.fn(),
             findById: vi.fn(),
+            delete: vi.fn(),
             findIngredientsByRecipeId: vi.fn(),
         } as unknown as RecipeRepository;
 
         recipeService = new RecipeService(recipeRepository);
     });
 
+    // --- TESTS FIND ALL ---
+    describe("findAll", () => {
+        it("should return all recipes", async () => {
+            const recipes = [fakeRecipe(), fakeRecipe({ name: "Salmón" })];
+
+            vi.mocked(recipeRepository.findAll).mockResolvedValue(ok(recipes));
+
+            const result = await recipeService.findAll();
+
+            expect(result.ok).toBe(true);
+            if (result.ok) {
+                expect(result.value).toHaveLength(2);
+            }
+        });
+
+        it("should return empty array", async () => {
+            vi.mocked(recipeRepository.findAll).mockResolvedValue(ok([]));
+
+            const result = await recipeService.findAll();
+
+            expect(result.ok).toBe(true);
+            if (result.ok) expect(result.value).toHaveLength(0);
+        });
+
+        it("should propagate repository error", async () => {
+            vi.mocked(recipeRepository.findAll).mockResolvedValue(
+                fail("DB_ERROR", "Connection failed")
+            );
+
+            const result = await recipeService.findAll();
+
+            expect(result.ok).toBe(false);
+        });
+    });
+
+    // --- TESTS FIND BY ID ---
     describe("findById", () => {
         it("should return a recipe when it exists", async () => {
             const existingRecipe = fakeRecipe();
@@ -65,7 +103,6 @@ describe("RecipeService", () => {
         });
 
         it("should return ok with null when the recipe does not exist", async () => {
-
             vi.mocked(recipeRepository.findById).mockResolvedValue(ok(null));
 
             const result = await recipeService.findById("non-existent-id");
@@ -100,6 +137,7 @@ describe("RecipeService", () => {
         });
     });
 
+    // --- TESTS FIND INGREDIENTS BY RECIPE ID ---
     describe("findIngredientsByRecipeId", () => {
         const validRecipeId = "550e8400-e29b-41d4-a716-446655440000";
 
@@ -162,6 +200,55 @@ describe("RecipeService", () => {
                 expect(result.error.code).toBe("INVALID_ID");
             }
             expect(recipeRepository.findIngredientsByRecipeId).not.toHaveBeenCalled();
+        });
+    });
+
+    // --- TESTS DELETE (Viene de dev) ---
+    describe("delete", () => {
+        it("should return true when a recipe is successfully deleted", async () => {
+            vi.mocked(recipeRepository.delete).mockResolvedValue(ok(true));
+
+            const result = await recipeService.delete("550e8400-e29b-41d4-a716-446655440000");
+
+            expect(result.ok).toBe(true);
+            if (result.ok) {
+                expect(result.value).toBe(true);
+            }
+            expect(recipeRepository.delete).toHaveBeenCalledWith("550e8400-e29b-41d4-a716-446655440000");
+        });
+
+        it("should return false when the recipe to delete does not exist", async () => {
+            vi.mocked(recipeRepository.delete).mockResolvedValue(ok(false));
+
+            const result = await recipeService.delete("non-existent-id");
+
+            expect(result.ok).toBe(true);
+            if (result.ok) {
+                expect(result.value).toBe(false);
+            }
+        });
+
+        it("should return a failure when deleting with an empty ID", async () => {
+            const result = await recipeService.delete("   ");
+
+            expect(result.ok).toBe(false);
+            if (!result.ok) {
+                expect(result.error.code).toBe("INVALID_ID");
+            }
+            expect(recipeRepository.delete).not.toHaveBeenCalled();
+        });
+
+        it("should propagate failure when the repository fails to delete", async () => {
+            vi.mocked(recipeRepository.delete).mockResolvedValue(
+                fail("DELETE_ERROR", "Database connection lost")
+            );
+
+            const result = await recipeService.delete("any-id");
+
+            expect(result.ok).toBe(false);
+            if (!result.ok) {
+                expect(result.error.code).toBe("DELETE_ERROR");
+            }
         });
     });
 });
