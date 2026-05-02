@@ -13,6 +13,7 @@ export function RecipeRoutes(RecipeService: RecipeService): Router {
 
   router.get("/recipes", controller.findAll);
   router.get("/recipes/:id", validate({ params: RecipeParamsSchema }), controller.findById);
+  router.delete("/recipes/:id", validate({ params: RecipeParamsSchema }), controller.delete);
   router.get(
     "/recipes/:recipeId/ingredients",
     validate({ params: RecipeIngredientsParamsSchema }),

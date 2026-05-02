@@ -1,93 +1,95 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { RecipeService } from "@domain/services/RecipeService";
-import type { RecipeRepository, CreateRecipeData, RecipeIngredientDetail  } from "@domain/ports/drivens/RecipeRepository";
+import type { RecipeRepository, CreateRecipeData, RecipeIngredientDetail } from "@domain/ports/drivens/RecipeRepository";
 import { Recipe } from "@domain/entities/Recipe";
 import { ok, fail } from "@domain/value-objects/Result";
 
 describe("RecipeService", () => {
-  let recipeService: RecipeService;
-  let recipeRepository: RecipeRepository;
+    let recipeService: RecipeService;
+    let recipeRepository: RecipeRepository;
 
-  const validRecipeData = (overrides: Partial<CreateRecipeData> = {}) => ({
-    id: "550e8400-e29b-41d4-a716-446655440000",
-    establishmentId: "550e8400-e29b-41d4-a716-446655441111",
-    name: "Paella de Marisco",
-    description: "Receta tradicional",
-    category: "Arroces",
-    portionSizeKg: 0.5,
-    servings: 2,
-    preparationTime: 45,
-    version: 1,
-    createdBy: "550e8400-e29b-41d4-a716-446655442222",
-    ...overrides,
-  });
+    const validRecipeData = (overrides: Partial<CreateRecipeData> = {}) => {
+        return {
+            id: "550e8400-e29b-41d4-a716-446655440000",
+            establishmentId: "550e8400-e29b-41d4-a716-446655441111",
+            name: "Paella de Marisco",
+            description: "Receta tradicional con sofrito casero",
+            category: "Arroces",
+            portionSizeKg: 0.5,
+            servings: 2,
+            preparationTime: 45,
+            version: 1,
+            createdBy: "550e8400-e29b-41d4-a716-446655442222",
+            ...overrides,
+        };
+    };
 
-  const fakeRecipe = (overrides: Partial<CreateRecipeData> = {}) => {
-    const data = validRecipeData(overrides);
-    return new Recipe(
-      data.id,
-      data.establishmentId,
-      data.name,
-      data.description,
-      data.category,
-      data.portionSizeKg,
-      data.servings,
-      data.preparationTime,
-      data.version,
-      data.createdBy,
-      new Date(),
-      new Date()
-    );
-  };
+    const fakeRecipe = (overrides: Partial<CreateRecipeData> = {}): Recipe => {
+        const data = validRecipeData(overrides);
+        return new Recipe(
+            data.id,
+            data.establishmentId,
+            data.name,
+            data.description,
+            data.category,
+            data.portionSizeKg,
+            data.servings,
+            data.preparationTime,
+            data.version,
+            data.createdBy,
+            new Date(),
+            new Date()
+        );
+    };
 
-  beforeEach(() => {
-    recipeRepository = {
-      findAll: vi.fn(),
-      findById: vi.fn(),
-      findIngredientsByRecipeId: vi.fn(),
-    } as unknown as RecipeRepository;
+    beforeEach(() => {
+        recipeRepository = {
+            findAll: vi.fn(),
+            findById: vi.fn(),
+            delete: vi.fn(),
+            findIngredientsByRecipeId: vi.fn(),
+        } as unknown as RecipeRepository;
 
-    recipeService = new RecipeService(recipeRepository);
-  });
-
-
-
-  describe("findAll", () => {
-    it("should return all recipes", async () => {
-      const recipes = [fakeRecipe(), fakeRecipe({ name: "Salmón" })];
-
-      vi.mocked(recipeRepository.findAll).mockResolvedValue(ok(recipes));
-
-      const result = await recipeService.findAll();
-
-      expect(result.ok).toBe(true);
-      if (result.ok) {
-        expect(result.value).toHaveLength(2);
-      }
+        recipeService = new RecipeService(recipeRepository);
     });
 
-    it("should return empty array", async () => {
-      vi.mocked(recipeRepository.findAll).mockResolvedValue(ok([]));
+    // --- TESTS FIND ALL ---
+    describe("findAll", () => {
+        it("should return all recipes", async () => {
+            const recipes = [fakeRecipe(), fakeRecipe({ name: "Salmón" })];
 
-      const result = await recipeService.findAll();
+            vi.mocked(recipeRepository.findAll).mockResolvedValue(ok(recipes));
 
-      expect(result.ok).toBe(true);
-      if (result.ok) expect(result.value).toHaveLength(0);
+            const result = await recipeService.findAll();
+
+            expect(result.ok).toBe(true);
+            if (result.ok) {
+                expect(result.value).toHaveLength(2);
+            }
+        });
+
+        it("should return empty array", async () => {
+            vi.mocked(recipeRepository.findAll).mockResolvedValue(ok([]));
+
+            const result = await recipeService.findAll();
+
+            expect(result.ok).toBe(true);
+            if (result.ok) expect(result.value).toHaveLength(0);
+        });
+
+        it("should propagate repository error", async () => {
+            vi.mocked(recipeRepository.findAll).mockResolvedValue(
+                fail("DB_ERROR", "Connection failed")
+            );
+
+            const result = await recipeService.findAll();
+
+            expect(result.ok).toBe(false);
+        });
     });
 
-    it("should propagate repository error", async () => {
-      vi.mocked(recipeRepository.findAll).mockResolvedValue(
-        fail("DB_ERROR", "Connection failed")
-      );
-
-      const result = await recipeService.findAll();
-
-      expect(result.ok).toBe(false);
-    });
-  });
-
-
-  describe("findById", () => {
+    // --- TESTS FIND BY ID ---
+    describe("findById", () => {
         it("should return a recipe when it exists", async () => {
             const existingRecipe = fakeRecipe();
             vi.mocked(recipeRepository.findById).mockResolvedValue(ok(existingRecipe));
@@ -101,7 +103,6 @@ describe("RecipeService", () => {
         });
 
         it("should return ok with null when the recipe does not exist", async () => {
-
             vi.mocked(recipeRepository.findById).mockResolvedValue(ok(null));
 
             const result = await recipeService.findById("non-existent-id");
@@ -136,6 +137,7 @@ describe("RecipeService", () => {
         });
     });
 
+    // --- TESTS FIND INGREDIENTS BY RECIPE ID ---
     describe("findIngredientsByRecipeId", () => {
         const validRecipeId = "550e8400-e29b-41d4-a716-446655440000";
 
@@ -198,6 +200,55 @@ describe("RecipeService", () => {
                 expect(result.error.code).toBe("INVALID_ID");
             }
             expect(recipeRepository.findIngredientsByRecipeId).not.toHaveBeenCalled();
+        });
+    });
+
+    // --- TESTS DELETE (Viene de dev) ---
+    describe("delete", () => {
+        it("should return true when a recipe is successfully deleted", async () => {
+            vi.mocked(recipeRepository.delete).mockResolvedValue(ok(true));
+
+            const result = await recipeService.delete("550e8400-e29b-41d4-a716-446655440000");
+
+            expect(result.ok).toBe(true);
+            if (result.ok) {
+                expect(result.value).toBe(true);
+            }
+            expect(recipeRepository.delete).toHaveBeenCalledWith("550e8400-e29b-41d4-a716-446655440000");
+        });
+
+        it("should return false when the recipe to delete does not exist", async () => {
+            vi.mocked(recipeRepository.delete).mockResolvedValue(ok(false));
+
+            const result = await recipeService.delete("non-existent-id");
+
+            expect(result.ok).toBe(true);
+            if (result.ok) {
+                expect(result.value).toBe(false);
+            }
+        });
+
+        it("should return a failure when deleting with an empty ID", async () => {
+            const result = await recipeService.delete("   ");
+
+            expect(result.ok).toBe(false);
+            if (!result.ok) {
+                expect(result.error.code).toBe("INVALID_ID");
+            }
+            expect(recipeRepository.delete).not.toHaveBeenCalled();
+        });
+
+        it("should propagate failure when the repository fails to delete", async () => {
+            vi.mocked(recipeRepository.delete).mockResolvedValue(
+                fail("DELETE_ERROR", "Database connection lost")
+            );
+
+            const result = await recipeService.delete("any-id");
+
+            expect(result.ok).toBe(false);
+            if (!result.ok) {
+                expect(result.error.code).toBe("DELETE_ERROR");
+            }
         });
     });
 });

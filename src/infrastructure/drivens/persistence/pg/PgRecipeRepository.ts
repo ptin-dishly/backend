@@ -22,11 +22,19 @@ export class PgRecipeRepository implements RecipeRepository {
   async findById(id: string): Promise<Result<Recipe | null>> {
     try {
       const result = await this.pool.query("SELECT * FROM recipes WHERE id = $1", [id]);
-
       if (result.rows.length === 0) return ok(null);
       return ok(this.toEntity(result.rows[0]));
     } catch (error) {
       return fail("RETRIEVE_ERROR", "Failed to retrieve recipe", error);
+    }
+  }
+
+  async delete(id: string): Promise<Result<boolean>> {
+    try {
+      const result = await this.pool.query("DELETE FROM recipes WHERE id = $1", [id]);
+      return ok(result.rowCount === 1);
+    } catch (error) {
+      return fail("DELETE_ERROR", "Failed to delete recipe", error);
     }
   }
 

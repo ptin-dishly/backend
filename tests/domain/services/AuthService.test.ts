@@ -25,6 +25,7 @@ function createMockUserRepo(overrides?: Partial<UserRepository>): UserRepository
     findByEmail: async () => ok(fakeUser),
     findById: async () => ok(fakeUser),
     updateLastLogin: async () => ok(undefined),
+    delete: async () => ok(undefined),
     ...overrides,
   };
 }

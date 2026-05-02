@@ -16,7 +16,9 @@ export const CreateRecipeSchema = z
 
 export const RecipeSchema = z
   .object({
-    id: z.string().uuid(),
+    id: z
+      .string()
+      .regex(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/),
     establishmentId: z.string().uuid(),
     name: z.string(),
     description: z.string().nullable(),
@@ -32,7 +34,24 @@ export const RecipeSchema = z
   .openapi("Recipe");
 
 export const RecipeParamsSchema = z.object({
+  id: z
+    .string()
+    .regex(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/),
+});
+
+export const RecipeIngredientSchema = z.object({
   id: z.string().uuid(),
+  recipeId: z.string().uuid(),
+  ingredientId: z.string().uuid().nullable(),
+  subRecipeId: z.string().uuid().nullable(),
+  name: z.string(),
+  quantity: z.number(),
+  unit: z.string(),
+  isOptional: z.boolean(),
+});
+
+export const RecipeIngredientsParamsSchema = z.object({
+  recipeId: z.string().uuid(),
 });
 
 export const RecipeIngredientSchema = z.object({
