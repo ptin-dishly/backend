@@ -7,13 +7,13 @@ import {
 } from "../responses/schemas";
 import { AllergenSchema, CreateAllergenSchema } from "../schemas/allergen";
 import { IngredientSchema } from "../schemas/ingredient";
+import { MenuParamsSchema, MenuSchema, UpdateMenuSchema } from "../schemas/menu";
 import {
   CreateRecipeSchema,
   RecipeByAllergenParamsSchema,
   RecipeIngredientSchema,
   RecipeSchema,
 } from "../schemas/recipe";
-import { MenuParamsSchema, MenuSchema, UpdateMenuSchema } from "../schemas/menu";
 import { LoginSchema, RefreshSchema, TokenPairSchema } from "../schemas/session";
 import { UserSchema } from "../schemas/user";
 import { z } from "../schemas/zod";
