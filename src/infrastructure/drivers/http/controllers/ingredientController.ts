@@ -23,7 +23,7 @@ export class IngredientController {
   }
 
   async update(req: Request, res: Response) {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const data = req.body;
 
     const result = await this.ingredientService.update(id, data);
