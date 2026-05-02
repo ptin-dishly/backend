@@ -15,7 +15,9 @@ import { PgRecipeRepository } from "@infrastructure/drivens/persistence/pg/PgRec
 import { PgRefreshTokenRepository } from "@infrastructure/drivens/persistence/pg/PgRefreshTokenRepository";
 import { PgUserRepository } from "@infrastructure/drivens/persistence/pg/PgUserRepository";
 import type pg from "pg";
+import { MenuCardItemService } from "../../domain/services/MenuCardItemService";
 import { PgIngredientRepository } from "../drivens/persistence/pg/PgIngredientRepository";
+import { PgMenuCardItemRepository } from "../drivens/persistence/pg/PgMenuCardItemRepository";
 
 export interface Container {
   pool: pg.Pool;
@@ -26,6 +28,7 @@ export interface Container {
   menuService: MenuService;
   userService: UserService;
   tokenService: TokenService;
+  menuCardItemService: MenuCardItemService;
 }
 
 export function createContainer(): Container {
@@ -51,6 +54,8 @@ export function createContainer(): Container {
     tokenService,
     passwordHasher,
   );
+  const menuCardItemRepository = new PgMenuCardItemRepository(pool);
+  const menuCardItemService = new MenuCardItemService(menuCardItemRepository);
   //const userService = new UserService(userRepository);
 
   return {
@@ -62,5 +67,6 @@ export function createContainer(): Container {
     menuService,
     userService,
     tokenService,
+    menuCardItemService,
   };
 }
