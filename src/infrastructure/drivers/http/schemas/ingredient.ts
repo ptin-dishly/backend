@@ -6,3 +6,6 @@ export const IngredientSchema = z.object({
   description: z.string().nullable(),
   isActive: z.boolean(),
 });
+
+export const UpdateIngredientSchema = IngredientSchema.omit({ id: true }).partial();
+export type UpdateIngredientBody = z.infer<typeof UpdateIngredientSchema>;

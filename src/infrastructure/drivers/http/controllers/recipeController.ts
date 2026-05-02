@@ -59,6 +59,17 @@ export function createRecipeController(recipeService: RecipeService) {
       return res.status(204).send();
     },
 
+    async update(req: Request<{ id: string }>, res: Response) {
+      // req.body ja vindrà validat pel middleware de Zod
+      const result = await recipeService.update(req.params.id, req.body);
+
+      if (!result.ok) {
+        return sendErrorByCode(res, result.error.code, result.error.message);
+      }
+
+      return sendSuccess(res, 200, result.value);
+    },
+
     async getRecipeIngredients(req: Request<{ recipeId: string }>, res: Response) {
       const result = await recipeService.findIngredientsByRecipeId(req.params.recipeId);
       if (!result.ok) {

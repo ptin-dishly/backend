@@ -33,4 +33,16 @@ export interface RecipeRepository {
   findAll(): Promise<Result<Recipe[]>>;
   findIngredientsByRecipeId(recipeId: string): Promise<Result<RecipeIngredientDetail[]>>;
   create(data: CreateRecipeData): Promise<Result<Recipe>>;
+  update(id: string, data: UpdateRecipeData): Promise<Result<Recipe>>;
+}
+
+export interface UpdateRecipeData {
+  establishmentId?: string;
+  name?: string;
+  description?: string | null;
+  category?: string;
+  portionSizeKg?: number;
+  servings?: number;
+  preparationTime?: number;
+  version?: number;
 }
