@@ -59,6 +59,28 @@ export class PgRecipeRepository implements RecipeRepository {
     }
   }
 
+  async findByAllergenId(allergenId: string): Promise<Result<Recipe[]>> {
+    try {
+      const query = `
+        SELECT r.*
+        FROM recipes r
+        INNER JOIN recipe_ingredients ri ON r.id = ri.recipe_id
+        INNER JOIN ingredient_allergens ia ON ri.ingredient_id = ia.ingredient_id
+        WHERE ia.allergen_id = $1;
+      `;
+
+      const result = await this.pool.query(query, [allergenId]);
+
+      const recipes: Recipe[] = result.rows.map((row: Record<string, unknown>) =>
+        this.toEntity(row),
+      );
+
+      return ok(recipes);
+    } catch (error) {
+      return fail("RETRIEVE_ERROR", "Failed to retrieve recipes by allergen", error);
+    }
+  }
+
   private toEntity(row: Record<string, unknown>): Recipe {
     return new Recipe(
       row.id as string,

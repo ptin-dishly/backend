@@ -46,6 +46,7 @@ describe("RecipeService", () => {
         recipeRepository = {
             findById: vi.fn(),
             findIngredientsByRecipeId: vi.fn(),
+            findByAllergenId: vi.fn(),
         } as unknown as RecipeRepository;
 
         recipeService = new RecipeService(recipeRepository);
@@ -162,6 +163,62 @@ describe("RecipeService", () => {
                 expect(result.error.code).toBe("INVALID_ID");
             }
             expect(recipeRepository.findIngredientsByRecipeId).not.toHaveBeenCalled();
+        });
+    });
+
+    describe("findByAllergenId", () => {
+        const validAllergenId = "0fb75f83-9c5d-41bd-a2a9-e4f8b9d82e3c";
+
+        it("should return a list of recipes containing the allergen", async () => {
+            const mockRecipes: Recipe[] = [
+                fakeRecipe({ id: "recipe-1", name: "Paella de Marisco" }),
+            ];
+            vi.mocked(recipeRepository.findByAllergenId).mockResolvedValue(ok(mockRecipes));
+
+            const result = await recipeService.findByAllergenId(validAllergenId);
+
+            expect(recipeRepository.findByAllergenId).toHaveBeenCalledWith(validAllergenId);
+            expect(result.ok).toBe(true);
+            if (result.ok) {
+                expect(result.value).toHaveLength(1);
+                expect(result.value[0].name).toBe("Paella de Marisco");
+            }
+        });
+
+        it("should return ok with an empty array when no recipes contain the allergen", async () => {
+            vi.mocked(recipeRepository.findByAllergenId).mockResolvedValue(ok([]));
+
+            const result = await recipeService.findByAllergenId(validAllergenId);
+
+            expect(recipeRepository.findByAllergenId).toHaveBeenCalledWith(validAllergenId);
+            expect(result.ok).toBe(true);
+            if (result.ok) {
+                expect(result.value).toHaveLength(0);
+            }
+        });
+
+        it("should return a failure when the repository fails", async () => {
+            vi.mocked(recipeRepository.findByAllergenId).mockResolvedValue(
+                fail("RETRIEVE_ERROR", "Database connection lost")
+            );
+
+            const result = await recipeService.findByAllergenId(validAllergenId);
+
+            expect(recipeRepository.findByAllergenId).toHaveBeenCalledWith(validAllergenId);
+            expect(result.ok).toBe(false);
+            if (!result.ok) {
+                expect(result.error.code).toBe("RETRIEVE_ERROR");
+            }
+        });
+
+        it("should return a failure when the provided allergen ID is empty", async () => {
+            const result = await recipeService.findByAllergenId("   ");
+
+            expect(result.ok).toBe(false);
+            if (!result.ok) {
+                expect(result.error.code).toBe("INVALID_ID");
+            }
+            expect(recipeRepository.findByAllergenId).not.toHaveBeenCalled();
         });
     });
 });

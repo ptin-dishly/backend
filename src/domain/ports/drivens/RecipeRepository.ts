@@ -30,4 +30,5 @@ export interface RecipeIngredientDetail {
 export interface RecipeRepository {
   findById(id: string): Promise<Result<Recipe | null>>;
   findIngredientsByRecipeId(recipeId: string): Promise<Result<RecipeIngredientDetail[]>>;
+  findByAllergenId(allergenId: string): Promise<Result<Recipe[]>>;
 }
