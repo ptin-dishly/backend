@@ -787,52 +787,52 @@ registry.registerPath({
 });
 
 registry.registerPath({
-    method: "delete",
-    path: "/api/v1/recipes/{id}",
-    tags: ["Recipes"],
-    summary: "Delete a recipe",
-    description: "Deletes a recipe by its ID. Returns 204 if successful.",
-    operationId: "deleteRecipe",
-    request: {
-        params: RecipeSchema,
+  method: "delete",
+  path: "/api/v1/recipes/{id}",
+  tags: ["Recipes"],
+  summary: "Delete a recipe",
+  description: "Deletes a recipe by its ID. Returns 204 if successful.",
+  operationId: "deleteRecipe",
+  request: {
+    params: RecipeSchema,
+  },
+  responses: {
+    204: {
+      description: "No content. Recipe successfully deleted.",
     },
-    responses: {
-        204: {
-            description: "No content. Recipe successfully deleted.",
-        },
-        400: {
-            description: "Invalid ID format",
-            content: {
-                "application/json": {
-                    schema: ErrorResponseSchema,
-                    example: {
-                        success: false,
-                        error: {
-                            code: "INVALID_REQUEST",
-                            message: "Invalid path parameters. Expected UUID format.",
-                        },
-                        meta: { timestamp: "2026-04-29T10:00:00.000Z" },
-                    },
-                },
+    400: {
+      description: "Invalid ID format",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "INVALID_REQUEST",
+              message: "Invalid path parameters. Expected UUID format.",
             },
+            meta: { timestamp: "2026-04-29T10:00:00.000Z" },
+          },
         },
-        404: {
-            description: "Recipe not found",
-            content: {
-                "application/json": {
-                    schema: ErrorResponseSchema,
-                    example: {
-                        success: false,
-                        error: {
-                            code: "NOT_FOUND",
-                            message: "Recipe not found",
-                        },
-                        meta: { timestamp: "2026-04-29T10:00:00.000Z" },
-                    },
-                },
-            },
-        },
+      },
     },
+    404: {
+      description: "Recipe not found",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "NOT_FOUND",
+              message: "Recipe not found",
+            },
+            meta: { timestamp: "2026-04-29T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+  },
 });
 
 // ======================
