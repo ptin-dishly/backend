@@ -19,5 +19,6 @@ export function RecipeRoutes(RecipeService: RecipeService): Router {
     validate({ params: RecipeIngredientsParamsSchema }),
     controller.getRecipeIngredients,
   );
+  router.post("/recipes", controller.create);
   return router;
 }

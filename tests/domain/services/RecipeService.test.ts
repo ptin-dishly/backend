@@ -44,6 +44,7 @@ describe("RecipeService", () => {
 
     beforeEach(() => {
         recipeRepository = {
+            create: vi.fn(),
             findAll: vi.fn(),
             findById: vi.fn(),
             delete: vi.fn(),
@@ -51,6 +52,96 @@ describe("RecipeService", () => {
         } as unknown as RecipeRepository;
 
         recipeService = new RecipeService(recipeRepository);
+    });
+
+    // --- TESTS CREATE ---
+    describe("create", () => {
+        it("should create a recipe successfully", async () => {
+            const data = validRecipeData();
+            const recipe = fakeRecipe();
+            vi.mocked(recipeRepository.create).mockResolvedValue(ok(recipe));
+
+            const result = await recipeService.create(data as any);
+
+            expect(result.ok).toBe(true);
+            if (result.ok) {
+                expect(result.value).toBe(recipe);
+            }
+            expect(recipeRepository.create).toHaveBeenCalledWith(data);
+        });
+
+        it("should return a failure when the name is empty", async () => {
+            const data = validRecipeData({ name: "" });
+
+            const result = await recipeService.create(data as any);
+
+            expect(result.ok).toBe(false);
+            if (!result.ok) {
+                expect(result.error.code).toBe("INVALID_REQUEST");
+                expect(result.error.message).toBe("El nombre es obligatorio");
+            }
+            expect(recipeRepository.create).not.toHaveBeenCalled();
+        });
+
+        it("should return a failure when the name exceeds 150 characters", async () => {
+            const data = validRecipeData({ name: "a".repeat(151) });
+
+            const result = await recipeService.create(data as any);
+
+            expect(result.ok).toBe(false);
+            if (!result.ok) {
+                expect(result.error.code).toBe("INVALID_REQUEST");
+                expect(result.error.message).toBe("El nombre no puede superar los 150 caracteres");
+            }
+        });
+
+        it("should return a failure when portionSizeKg is 0 or negative", async () => {
+            const data = validRecipeData({ portionSizeKg: 0 });
+
+            const result = await recipeService.create(data as any);
+
+            expect(result.ok).toBe(false);
+            if (!result.ok) {
+                expect(result.error.code).toBe("INVALID_REQUEST");
+            }
+        });
+
+        it("should return a failure when servings is 0 or negative", async () => {
+            const data = validRecipeData({ servings: -1 });
+
+            const result = await recipeService.create(data as any);
+
+            expect(result.ok).toBe(false);
+            if (!result.ok) {
+                expect(result.error.code).toBe("INVALID_REQUEST");
+            }
+        });
+
+        it("should return a failure when preparationTime is negative", async () => {
+            const data = validRecipeData({ preparationTime: -5 });
+
+            const result = await recipeService.create(data as any);
+
+            expect(result.ok).toBe(false);
+            if (!result.ok) {
+                expect(result.error.code).toBe("INVALID_REQUEST");
+            }
+        });
+
+        it("should propagate DUPLICATE_RESOURCE when the repository fails", async () => {
+            const data = validRecipeData();
+            vi.mocked(recipeRepository.create).mockResolvedValue(
+                fail("DUPLICATE_RESOURCE", "Recipe already exists")
+            );
+
+            const result = await recipeService.create(data as any);
+
+            expect(result.ok).toBe(false);
+            if (!result.ok) {
+                expect(result.error.code).toBe("DUPLICATE_RESOURCE");
+            }
+            expect(recipeRepository.create).toHaveBeenCalled();
+        });
     });
 
     // --- TESTS FIND ALL ---

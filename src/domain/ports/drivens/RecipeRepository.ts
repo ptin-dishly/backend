@@ -32,4 +32,5 @@ export interface RecipeRepository {
   delete(id: string): Promise<Result<boolean>>;
   findAll(): Promise<Result<Recipe[]>>;
   findIngredientsByRecipeId(recipeId: string): Promise<Result<RecipeIngredientDetail[]>>;
+  create(data: CreateRecipeData): Promise<Result<Recipe>>;
 }

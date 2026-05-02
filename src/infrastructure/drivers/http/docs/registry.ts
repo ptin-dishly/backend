@@ -8,7 +8,7 @@ import {
 import { AllergenSchema, CreateAllergenSchema } from "../schemas/allergen";
 import { IngredientSchema } from "../schemas/ingredient";
 import { MenuParamsSchema, MenuSchema } from "../schemas/menu";
-import { RecipeIngredientSchema, RecipeSchema } from "../schemas/recipe";
+import { CreateRecipeSchema, RecipeIngredientSchema, RecipeSchema } from "../schemas/recipe";
 import { LoginSchema, RefreshSchema, TokenPairSchema } from "../schemas/session";
 import { UserSchema } from "../schemas/user";
 import { z } from "../schemas/zod";
@@ -490,6 +490,111 @@ registry.registerPath({
         "application/json": {
           schema: ErrorResponseSchema,
           example: errorExamples.duplicate,
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/recipes",
+  tags: ["Recipes"],
+  summary: "Create a new recipe",
+  description:
+    "Creates a new recipe associated with a specific establishment. It validates that the name is unique for that establishment and that all IDs and categories are valid.",
+  operationId: "createRecipe",
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: CreateRecipeSchema,
+          example: {
+            establishmentId: "22222222-0002-0002-0002-000000000001",
+            name: "Arroz a banda",
+            description: "Receta tradicional con caldo de pescado de roca.",
+            category: "primer_plato",
+            portionSizeKg: 0.45,
+            servings: 2,
+            preparationTime: 40,
+            createdBy: "33333333-0003-0003-0003-000000000001",
+          },
+        },
+      },
+    },
+  },
+  responses: {
+    201: {
+      description: "Recipe created successfully",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(RecipeSchema),
+          example: {
+            success: true,
+            data: {
+              id: "da3ea67a-5c8a-4515-b8d8-418633be4487",
+              establishmentId: "22222222-0002-0002-0002-000000000001",
+              name: "Arroz a banda",
+              description: "Receta tradicional con caldo de pescado de roca.",
+              category: "primer_plato",
+              portionSizeKg: 0.45,
+              servings: 2,
+              preparationTime: 40,
+              version: 1,
+              createdBy: "33333333-0003-0003-0003-000000000001",
+              createdAt: "2026-05-02T14:40:48.728Z",
+              updatedAt: "2026-05-02T14:40:48.728Z",
+            },
+            meta: { timestamp: "2026-05-02T14:40:48.728Z" },
+          },
+        },
+      },
+    },
+    400: {
+      description: "Invalid request data",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "INVALID_REQUEST",
+              message: "Invalid UUID format or category value.",
+            },
+            meta: { timestamp: "2026-05-02T14:40:48.728Z" },
+          },
+        },
+      },
+    },
+    409: {
+      description: "Recipe name already exists in this establishment",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "DUPLICATE_RESOURCE",
+              message: "A recipe with this name already exists for this establishment.",
+            },
+            meta: { timestamp: "2026-05-02T14:40:48.728Z" },
+          },
+        },
+      },
+    },
+    503: {
+      description: "Database service unavailable",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "DB_ERROR",
+              message: "Unexpected error creating recipe in database.",
+            },
+            meta: { timestamp: "2026-05-02T14:40:48.728Z" },
+          },
         },
       },
     },
