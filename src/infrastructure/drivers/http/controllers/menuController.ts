@@ -1,6 +1,7 @@
 import type { MenuService } from "@domain/services/MenuService";
 import { sendErrorByCode, sendSuccess } from "@infrastructure/drivers/http/responses";
 import type { Request, Response } from "express";
+import { MenuParamsSchema, UpdateMenuSchema } from "../schemas/menu";
 
 export function createMenuController(menuService: MenuService) {
   return {
@@ -42,6 +43,19 @@ export function createMenuController(menuService: MenuService) {
 
     async findAll(_req: Request, res: Response) {
       const result = await menuService.findAll();
+
+      if (!result.ok) {
+        return sendErrorByCode(res, result.error.code, result.error.message);
+      }
+
+      return sendSuccess(res, 200, result.value);
+    },
+
+    async update(req: Request, res: Response) {
+      const { id } = MenuParamsSchema.parse(req.params);
+      const validatedData = UpdateMenuSchema.parse(req.body);
+
+      const result = await menuService.update(id, validatedData);
 
       if (!result.ok) {
         return sendErrorByCode(res, result.error.code, result.error.message);
