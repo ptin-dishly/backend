@@ -149,6 +149,40 @@ registry.registerPath({
 });
 
 registry.registerPath({
+  method: "get",
+  path: "/allergens/ingredient/{ingredientId}",
+  tags: ["Allergens"],
+  summary: "Finds allergens by ingredient ID",
+  responses: {
+    200: {
+      description: "Allergen found",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(AllergenSchema),
+          example: { success: true, data: allergenExamples.gluten },
+        },
+      },
+    },
+    400: {
+      description: "Invalid ingredient ID",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "INVALID_REQUEST",
+              message: "Invalid ingredient ID format.",
+            },
+            meta: { timestamp: "2026-05-02T14:40:48.728Z" },
+          },
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
   method: "post",
   path: "/allergens",
   tags: ["Allergens"],

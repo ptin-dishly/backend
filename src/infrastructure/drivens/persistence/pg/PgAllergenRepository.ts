@@ -99,6 +99,22 @@ export class PgAllergenRepository implements AllergenRepository {
     }
   }
 
+  async findByIngredientId(ingredientId: string): Promise<Result<Allergen[]>> {
+    try {
+      const result = await this.pool.query(
+        `SELECT a.* FROM allergens a
+         JOIN ingredient_allergens ia ON a.id = ia.allergen_id
+         WHERE ia.ingredient_id = $1
+         AND ia.contains = TRUE
+         ORDER BY a.eu_number ASC`,
+        [ingredientId],
+      );
+      return ok(result.rows.map((row) => this.toEntity(row)));
+    } catch (error: unknown) {
+      return fail("RETRIEVE_ERROR", "Failed to retrieve allergens by ingredient ID", error);
+    }
+  }
+
   async search(query: string): Promise<Result<Allergen[]>> {
     try {
       const pattern = `%${query}%`;

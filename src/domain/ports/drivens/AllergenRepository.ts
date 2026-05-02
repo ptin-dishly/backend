@@ -17,6 +17,7 @@ export interface AllergenRepository {
   findByEuNumber(euNumber: number): Promise<Result<Allergen | null>>;
   search(query: string): Promise<Result<Allergen[]>>;
   findById(id: string): Promise<Result<Allergen | null>>;
+  findByIngredientId(ingredientId: string): Promise<Result<Allergen[]>>;
   UpdateAllergenData(
     id: string,
     data: Partial<CreateAllergenData>,
