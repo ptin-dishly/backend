@@ -47,6 +47,25 @@ export class AllergenService {
     return await this.allergenRepository.findById(id);
   }
 
+  async UpdateAllergenData(
+    id: string,
+    data: Partial<CreateAllergenData>,
+  ): Promise<Result<Allergen | null>> {
+    if (!id) {
+      return fail("INVALID_ID", "Allergen ID is required");
+    }
+
+    if (data.code && data.code.length > 10) {
+      return fail("VALIDATION_ERROR", "Code must be at most 10 characters");
+    }
+
+    if (data.euNumber !== undefined && (data.euNumber < 1 || data.euNumber > 14)) {
+      return fail("VALIDATION_ERROR", "EU number must be between 1 and 14");
+    }
+
+    return await this.allergenRepository.UpdateAllergenData(id, data);
+  }
+
   async delete(id: string): Promise<Result<void>> {
     if (!id) {
       return fail("INVALID_ID", "Allergen ID is required");
