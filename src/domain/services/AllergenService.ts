@@ -47,6 +47,13 @@ export class AllergenService {
     return await this.allergenRepository.findById(id);
   }
 
+  async findByIngredientId(ingredientId: string): Promise<Result<Allergen[]>> {
+    if (!ingredientId) {
+      return fail("INVALID_ID", "Ingredient ID is required");
+    }
+    return await this.allergenRepository.findByIngredientId(ingredientId);
+  }
+
   async UpdateAllergenData(
     id: string,
     data: Partial<CreateAllergenData>,
