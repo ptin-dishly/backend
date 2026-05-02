@@ -149,7 +149,7 @@ registry.registerPath({
   summary: "Create an allergen",
   request: {
     body: {
-      content: { "application/json": { schema: CreateAllergenSchema } }
+      content: { "application/json": { schema: CreateAllergenSchema } },
     },
   },
   responses: {
