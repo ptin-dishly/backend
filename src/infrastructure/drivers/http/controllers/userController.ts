@@ -28,5 +28,19 @@ export function createUserController(userService: UserService) {
 
       return sendSuccess(res, 200, null, "User deleted");
     },
+
+    async update(req: Request, res: Response) {
+      const id = req.params.id as string;
+      const data = req.body;
+
+      const result = await userService.update(id, data);
+
+      if (!result.ok) {
+        return sendErrorByCode(res, result.error.code, result.error.message);
+      }
+
+      const { passwordHash: _, ...updatedUser } = result.value;
+      return sendSuccess(res, 200, updatedUser, "User updated successfully");
+    },
   };
 }
