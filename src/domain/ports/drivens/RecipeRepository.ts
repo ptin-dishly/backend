@@ -29,6 +29,21 @@ export interface RecipeIngredientDetail {
 
 export interface RecipeRepository {
   findById(id: string): Promise<Result<Recipe | null>>;
+  delete(id: string): Promise<Result<boolean>>;
+  findAll(): Promise<Result<Recipe[]>>;
   findIngredientsByRecipeId(recipeId: string): Promise<Result<RecipeIngredientDetail[]>>;
   findByAllergenId(allergenId: string): Promise<Result<Recipe[]>>;
+  create(data: CreateRecipeData): Promise<Result<Recipe>>;
+  update(id: string, data: UpdateRecipeData): Promise<Result<Recipe>>;
+}
+
+export interface UpdateRecipeData {
+  establishmentId?: string;
+  name?: string;
+  description?: string | null;
+  category?: string;
+  portionSizeKg?: number;
+  servings?: number;
+  preparationTime?: number;
+  version?: number;
 }

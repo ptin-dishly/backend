@@ -13,6 +13,7 @@ import {
   RecipeIngredientSchema,
   RecipeSchema,
 } from "../schemas/recipe";
+import { CreateRecipeSchema, RecipeIngredientSchema, RecipeSchema } from "../schemas/recipe";
 import { LoginSchema, RefreshSchema, TokenPairSchema } from "../schemas/session";
 import { UserSchema } from "../schemas/user";
 import { z } from "../schemas/zod";
@@ -139,6 +140,98 @@ registry.registerPath({
         "application/json": {
           schema: ErrorResponseSchema,
           example: errorExamples.notFound,
+        },
+      },
+    },
+  },
+});
+registry.registerPath({
+  method: "put",
+  path: "/allergens/{id}",
+  tags: ["Allergens"],
+  summary: "Update an allergen",
+  description:
+    "Updates an allergen's data by ID. All fields are optional, but at least one must be provided.",
+  operationId: "updateAllergen",
+  request: {
+    params: z.object({
+      id: z.string().uuid(),
+    }),
+    body: {
+      content: {
+        "application/json": {
+          schema: CreateAllergenSchema.partial().refine(
+            (data) =>
+              data.code !== undefined ||
+              data.nameEs !== undefined ||
+              data.nameCa !== undefined ||
+              data.nameEn !== undefined ||
+              data.iconUrl !== undefined ||
+              data.description !== undefined ||
+              data.euNumber !== undefined,
+            {
+              message: "At least one field must be provided for update",
+            },
+          ),
+        },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: "Allergen updated successfully",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(AllergenSchema),
+          example: {
+            success: true,
+            data: {
+              id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+              code: "GLU",
+              nameEs: "Gluten",
+              nameCa: "Gluten",
+              nameEn: "Gluten",
+              iconUrl: null,
+              description: "Updated description",
+              euNumber: 1,
+              createdAt: "2026-04-03T10:00:00.000Z",
+            },
+            meta: { timestamp: "2026-04-03T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    400: {
+      description: "Validation error",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "VALIDATION_ERROR",
+              message: "At least one field must be provided for update",
+            },
+            meta: { timestamp: "2026-04-03T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    404: {
+      description: "Allergen not found",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: errorExamples.notFound,
+        },
+      },
+    },
+    409: {
+      description: "Allergen with this code or EU number already exists",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: errorExamples.duplicate,
         },
       },
     },
@@ -357,14 +450,19 @@ registry.registerPath({
     body: {
       content: {
         "application/json": {
-          schema: CreateAllergenSchema,
-          example: {
-            code: "GLU",
-            nameEs: "Gluten",
-            nameCa: "Gluten",
-            nameEn: "Gluten",
-            euNumber: 1,
-          },
+          schema: CreateAllergenSchema.partial().refine(
+            (data) =>
+              data.code !== undefined ||
+              data.nameEs !== undefined ||
+              data.nameCa !== undefined ||
+              data.nameEn !== undefined ||
+              data.iconUrl !== undefined ||
+              data.description !== undefined ||
+              data.euNumber !== undefined,
+            {
+              message: "At least one field must be provided for update",
+            },
+          ),
         },
       },
     },
@@ -407,6 +505,111 @@ registry.registerPath({
 // ======================
 // RECIPES PATHS
 // ======================
+
+registry.registerPath({
+  method: "post",
+  path: "/recipes",
+  tags: ["Recipes"],
+  summary: "Create a new recipe",
+  description:
+    "Creates a new recipe associated with a specific establishment. It validates that the name is unique for that establishment and that all IDs and categories are valid.",
+  operationId: "createRecipe",
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: CreateRecipeSchema,
+          example: {
+            establishmentId: "22222222-0002-0002-0002-000000000001",
+            name: "Arroz a banda",
+            description: "Receta tradicional con caldo de pescado de roca.",
+            category: "primer_plato",
+            portionSizeKg: 0.45,
+            servings: 2,
+            preparationTime: 40,
+            createdBy: "33333333-0003-0003-0003-000000000001",
+          },
+        },
+      },
+    },
+  },
+  responses: {
+    201: {
+      description: "Recipe created successfully",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(RecipeSchema),
+          example: {
+            success: true,
+            data: {
+              id: "da3ea67a-5c8a-4515-b8d8-418633be4487",
+              establishmentId: "22222222-0002-0002-0002-000000000001",
+              name: "Arroz a banda",
+              description: "Receta tradicional con caldo de pescado de roca.",
+              category: "primer_plato",
+              portionSizeKg: 0.45,
+              servings: 2,
+              preparationTime: 40,
+              version: 1,
+              createdBy: "33333333-0003-0003-0003-000000000001",
+              createdAt: "2026-05-02T14:40:48.728Z",
+              updatedAt: "2026-05-02T14:40:48.728Z",
+            },
+            meta: { timestamp: "2026-05-02T14:40:48.728Z" },
+          },
+        },
+      },
+    },
+    400: {
+      description: "Invalid request data",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "INVALID_REQUEST",
+              message: "Invalid UUID format or category value.",
+            },
+            meta: { timestamp: "2026-05-02T14:40:48.728Z" },
+          },
+        },
+      },
+    },
+    409: {
+      description: "Recipe name already exists in this establishment",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "DUPLICATE_RESOURCE",
+              message: "A recipe with this name already exists for this establishment.",
+            },
+            meta: { timestamp: "2026-05-02T14:40:48.728Z" },
+          },
+        },
+      },
+    },
+    503: {
+      description: "Database service unavailable",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "DB_ERROR",
+              message: "Unexpected error creating recipe in database.",
+            },
+            meta: { timestamp: "2026-05-02T14:40:48.728Z" },
+          },
+        },
+      },
+    },
+  },
+});
 
 registry.registerPath({
   method: "get",
@@ -717,6 +920,91 @@ registry.registerPath({
               message: "Menu not found",
             },
             meta: { timestamp: "2026-04-28T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/v1/menus",
+  tags: ["Menus"],
+  summary: "Get all menus",
+  description: "Retorna el llistat complet de tots els menús (cartes) registrats al sistema.",
+  responses: {
+    200: {
+      description:
+        "Llista de menús retornada correctament. Pot ser un array buit si no hi ha menús.",
+      content: {
+        "application/json": {
+          schema: z.object({
+            success: z.literal(true),
+            data: z.array(MenuSchema),
+          }),
+        },
+      },
+    },
+    500: {
+      description: "Error intern del servidor (ex. error de base de dades)",
+      content: {
+        "application/json": {
+          schema: z.object({
+            success: z.literal(false),
+            error: z.object({
+              code: z.string(),
+              message: z.string(),
+            }),
+          }),
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "delete",
+  path: "/api/v1/recipes/{id}",
+  tags: ["Recipes"],
+  summary: "Delete a recipe",
+  description: "Deletes a recipe by its ID. Returns 204 if successful.",
+  operationId: "deleteRecipe",
+  request: {
+    params: RecipeSchema,
+  },
+  responses: {
+    204: {
+      description: "No content. Recipe successfully deleted.",
+    },
+    400: {
+      description: "Invalid ID format",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "INVALID_REQUEST",
+              message: "Invalid path parameters. Expected UUID format.",
+            },
+            meta: { timestamp: "2026-04-29T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    404: {
+      description: "Recipe not found",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "NOT_FOUND",
+              message: "Recipe not found",
+            },
+            meta: { timestamp: "2026-04-29T10:00:00.000Z" },
           },
         },
       },

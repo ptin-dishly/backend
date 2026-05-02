@@ -9,5 +9,11 @@ export function MenuRoutes(MenuService: MenuService): Router {
   const controller = createMenuController(MenuService);
 
   router.get("/menus/:id", validate({ params: MenuParamsSchema }), controller.findById);
+  router.get("/menus", controller.findAll);
+  router.get(
+    "/menus/allergen/:allergenId",
+    validate({ params: MenuParamsSchema }),
+    controller.findByAllergenId,
+  );
   return router;
 }

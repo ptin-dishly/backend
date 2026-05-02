@@ -13,4 +13,6 @@ export interface CreateMenuData {
 
 export interface MenuRepository {
   findById(id: string): Promise<Result<Menu | null>>;
+  findAll(): Promise<Result<Menu[]>>;
+  findByAllergen(allergenId: string): Promise<Result<Menu[]>>;
 }

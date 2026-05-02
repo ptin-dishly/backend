@@ -36,66 +36,144 @@ describe("MenuService", () => {
   beforeEach(() => {
     menuRepository = {
       findById: vi.fn(),
+      findAll: vi.fn(),
+      findByAllergen: vi.fn(),
     } as unknown as MenuRepository;
 
     menuService = new MenuService(menuRepository);
   });
+  
+  // --- TESTS: findByAllergenId ---
+  
+   describe("findByAllergenId", () => {
+    it("hauria de retornar una llista de menús (Cas OK)", async () => {
+      vi.mocked(menuRepository.findByAllergen).mockResolvedValue(ok([fakeMenu()]));
 
-  // --- TESTS ---
-
-  it("should return a menu when it exists", async () => {
-    // GIVEN: Un menú que existe en la DB
-    const existingMenu = fakeMenu();
-    vi.mocked(menuRepository.findById).mockResolvedValue(ok(existingMenu));
-
-    // WHEN: Consultamos al servicio
-    const result = await menuService.findById(existingMenu.id);
-
-    // THEN: El resultado es exitoso y contiene el menú
+      const result = await menuService.findByAllergenId("allergen-123");
+    
     expect(result.ok).toBe(true);
-    if (result.ok) { // Este IF es para que TypeScript te deje acceder a .value
-      expect(result.value).toBe(existingMenu);
-    }
+    if (result.ok) expect(result.value).toHaveLength(1);
   });
 
-  it("should return ok with null when the menu does not exist", async () => {
-    // GIVEN: El repositorio no encuentra nada (Estilo Alérgenos)
-    vi.mocked(menuRepository.findById).mockResolvedValue(ok(null));
-
-    // WHEN: Consultamos un ID que no existe
-    const result = await menuService.findById("non-existent-id");
-
-    // THEN: El resultado es OK pero el valor es null
-    expect(result.ok).toBe(true);
-    if (result.ok) {
-      expect(result.value).toBeNull();
-    }
-  });
-
-  it("should return a failure when the repository fails", async () => {
-    // GIVEN: Un error interno de base de datos
-    vi.mocked(menuRepository.findById).mockResolvedValue(
-      fail("INTERNAL_ERROR", "Database connection lost")
-    );
-
-    // WHEN
-    const result = await menuService.findById("any-id");
-
-    // THEN: El servicio propaga el fallo
-    expect(result.ok).toBe(false);
-    if (!result.ok) {
-      expect(result.error.code).toBe("INTERNAL_ERROR");
-    }
-  });
-
-  it("should return a failure when the provided ID is empty", async () => {
-    // WHEN: Pasamos un ID vacío
-    const result = await menuService.findById("");
-
-    // THEN: Validación de negocio fallida
+  it("hauria de retornar INVALID_ID si l'ID és buit", async () => {
+    const result = await menuService.findByAllergenId("");
+    
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.error.code).toBe("INVALID_ID");
     }
+  });
+
+  it("hauria de retornar un array buit si l'al·lergen no té receptes", async () => {
+    vi.mocked(menuRepository.findByAllergen).mockResolvedValue(ok([]));
+    
+    const result = await menuService.findByAllergenId("sense-alergen");
+    
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.value).toEqual([]);
+  });
+
+  it("hauria de propagar l'error si el repositori falla", async () => {
+    vi.mocked(menuRepository.findByAllergen).mockResolvedValue(fail("RETRIEVE_ERROR", "DB Error"));
+    
+    const result = await menuService.findByAllergenId("123");
+    
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe("RETRIEVE_ERROR");
+    }
+  });
+ });
+
+  // --- TESTS: findById ---
+
+  describe("findById", () => {
+    it("should return a menu when it exists", async () => {
+      const existingMenu = fakeMenu();
+      vi.mocked(menuRepository.findById).mockResolvedValue(ok(existingMenu));
+
+      const result = await menuService.findById(existingMenu.id);
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value).toBe(existingMenu);
+      }
+    });
+
+    it("should return ok with null when the menu does not exist", async () => {
+      vi.mocked(menuRepository.findById).mockResolvedValue(ok(null));
+
+      const result = await menuService.findById("non-existent-id");
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value).toBeNull();
+      }
+    });
+
+    it("should return a failure when the repository fails", async () => {
+      vi.mocked(menuRepository.findById).mockResolvedValue(
+        fail("INTERNAL_ERROR", "Database connection lost")
+      );
+
+      const result = await menuService.findById("any-id");
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("INTERNAL_ERROR");
+      }
+    });
+
+    it("should return a failure when the provided ID is empty", async () => {
+      const result = await menuService.findById("");
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("INVALID_ID");
+      }
+    });
+  });
+
+  // --- TESTS: findAll ---
+
+  describe("findAll", () => {
+    it("should return a list of menus when they exist (cas OK)", async () => {
+      const menus = [fakeMenu({ id: "id-1" }), fakeMenu({ id: "id-2" })];
+      vi.mocked(menuRepository.findAll).mockResolvedValue(ok(menus));
+
+      const result = await menuService.findAll();
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value).toHaveLength(2);
+        expect(result.value).toEqual(menus);
+      }
+    });
+
+    it("should return an empty list when no menus are registered", async () => {
+      vi.mocked(menuRepository.findAll).mockResolvedValue(ok([]));
+
+      const result = await menuService.findAll();
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value).toBeInstanceOf(Array);
+        expect(result.value).toHaveLength(0);
+      }
+    });
+
+    it("should propagate failure when the repository fails", async () => {
+      vi.mocked(menuRepository.findAll).mockResolvedValue(
+        fail("DB_ERROR", "Unexpected DB error")
+      );
+
+      const result = await menuService.findAll();
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("DB_ERROR");
+        expect(result.error.message).toBe("Unexpected DB error");
+      }
+    });
   });
 });

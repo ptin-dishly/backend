@@ -35,6 +35,7 @@ function createMockRepo(overrides?: Partial<AllergenRepository>): AllergenReposi
     findAll: async () => ok([]),
     findByEuNumber: async () => ok(null),
     findById: async () => ok(null),
+    UpdateAllergenData: async () => ok(null),
     delete: async () => ok(undefined),
     search: async () => ok([]),
     ...overrides,
@@ -332,6 +333,49 @@ describe("AllergenService", () => {
       expect(result.ok).toBe(false);
       if (!result.ok) {
         expect(result.error.code).toBe("RETRIEVE_ERROR");
+      }
+    });
+  });
+
+  describe("UpdateAllergenData", () => {
+    it("should update an allergen with valid data", async () => {
+      const updatedAllergen = fakeAllergen(validData({ nameEs: "Gluten Updated" }));
+      repo = createMockRepo({
+        UpdateAllergenData: async () => ok(updatedAllergen),
+      });
+      service = new AllergenService(repo);
+
+      const result = await service.UpdateAllergenData("some-uuid", { nameEs: "Gluten Updated" });
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value?.nameEs).toBe("Gluten Updated");
+      }
+    });
+
+    it("should fail when id is empty", async () => {
+      const result = await service.UpdateAllergenData("", { nameEs: "Gluten Updated" });
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("INVALID_ID");
+      }
+    });
+    
+    it("should propagate repository errors", async () => {
+      repo = createMockRepo({
+        UpdateAllergenData: async () => ({
+          ok: false,
+          error: { code: "UPDATE_ERROR", message: "Failed to update allergen" },
+        }),
+      });
+      service = new AllergenService(repo);
+
+      const result = await service.UpdateAllergenData("some-uuid", { nameEs: "Gluten Updated" });
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("UPDATE_ERROR");
       }
     });
   });

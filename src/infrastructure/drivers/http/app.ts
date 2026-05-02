@@ -11,6 +11,7 @@ import { requestLogger } from "./middleware/requestLogger";
 import { allergenRoutes } from "./routes/allergenRoutes";
 import { healthRoutes } from "./routes/healthRoutes";
 import { ingredientRoutes } from "./routes/ingredientRoutes";
+import { MenuCardItemRoutes } from "./routes/menuCardItemRoutes";
 import { MenuRoutes } from "./routes/menuRoutes";
 import { RecipeRoutes } from "./routes/recipeRoutes";
 import { sessionRoutes } from "./routes/sessionRoutes";
@@ -137,6 +138,7 @@ export function createApp(container: Container): express.Express {
   v1.use(RecipeRoutes(container.recipeService));
   v1.use(ingredientRoutes(container.ingredientService));
   v1.use(userRoutes(container.userService, container.tokenService));
+  v1.use(MenuCardItemRoutes(container.menuCardItemService));
 
   app.use("/api/v1", v1);
 

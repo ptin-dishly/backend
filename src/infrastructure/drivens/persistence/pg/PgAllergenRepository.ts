@@ -10,6 +10,27 @@ import type pg from "pg";
 export class PgAllergenRepository implements AllergenRepository {
   constructor(private pool: pg.Pool) {}
 
+  private toDbField(key: string): string {
+    switch (key) {
+      case "code":
+        return "code";
+      case "nameEs":
+        return "name_es";
+      case "nameCa":
+        return "name_ca";
+      case "nameEn":
+        return "name_en";
+      case "iconUrl":
+        return "icon_url";
+      case "description":
+        return "description";
+      case "euNumber":
+        return "eu_number";
+      default:
+        throw new Error(`Unsupported update field: ${key}`);
+    }
+  }
+
   async create(data: CreateAllergenData): Promise<Result<Allergen>> {
     try {
       const result = await this.pool.query(
@@ -104,6 +125,51 @@ export class PgAllergenRepository implements AllergenRepository {
       return ok(this.toEntity(result.rows[0]));
     } catch (error: unknown) {
       return fail("RETRIEVE_ERROR", "Failed to retrieve allergen", error);
+    }
+  }
+
+  async UpdateAllergenData(
+    id: string,
+    data: Partial<CreateAllergenData>,
+  ): Promise<Result<Allergen | null>> {
+    try {
+      const fields = [];
+      const values = [];
+      let index = 1;
+
+      for (const [key, value] of Object.entries(data)) {
+        if (value !== undefined) {
+          fields.push(`${this.toDbField(key)} = $${index}`);
+          values.push(value);
+          index++;
+        }
+      }
+
+      if (fields.length === 0) {
+        return fail("VALIDATION_ERROR", "No data provided for update");
+      }
+
+      values.push(id);
+
+      const result = await this.pool.query(
+        `UPDATE allergens SET ${fields.join(", ")} WHERE id = $${index} RETURNING *`,
+        values,
+      );
+
+      if (result.rows.length === 0) {
+        return ok(null);
+      }
+
+      return ok(this.toEntity(result.rows[0]));
+    } catch (error: unknown) {
+      if (
+        error instanceof Error &&
+        "code" in error &&
+        (error as { code: string }).code === "23505"
+      ) {
+        return fail("DUPLICATE_RESOURCE", "Allergen with this code or EU number already exists");
+      }
+      return fail("UPDATE_ERROR", "Failed to update allergen", error);
     }
   }
 
