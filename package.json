@@ -30,6 +30,9 @@
     "typescript": "5.9.3",
     "vitest": "^4.1.0"
   },
+  "optionalDependencies": {
+    "@rolldown/binding-darwin-arm64": "1.0.0-rc.12"
+  },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^8.5.0",
     "@scalar/express-api-reference": "^0.9.6",

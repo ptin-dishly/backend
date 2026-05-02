@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { RecipeService } from "@domain/services/RecipeService";
-import type { RecipeRepository, CreateRecipeData } from "@domain/ports/drivens/RecipeRepository";
+import type { RecipeRepository, CreateRecipeData, RecipeIngredientDetail } from "@domain/ports/drivens/RecipeRepository";
 import { Recipe } from "@domain/entities/Recipe";
 import { ok, fail } from "@domain/value-objects/Result";
 
@@ -46,56 +46,124 @@ describe("RecipeService", () => {
         recipeRepository = {
             findById: vi.fn(),
             delete: vi.fn(),
+            findIngredientsByRecipeId: vi.fn(),
         } as unknown as RecipeRepository;
 
         recipeService = new RecipeService(recipeRepository);
     });
 
-    it("should return a recipe when it exists", async () => {
-        const existingRecipe = fakeRecipe();
-        vi.mocked(recipeRepository.findById).mockResolvedValue(ok(existingRecipe));
+    describe("findById", () => {
+        it("should return a recipe when it exists", async () => {
+            const existingRecipe = fakeRecipe();
+            vi.mocked(recipeRepository.findById).mockResolvedValue(ok(existingRecipe));
 
-        const result = await recipeService.findById(existingRecipe.id);
+            const result = await recipeService.findById(existingRecipe.id);
 
-        expect(result.ok).toBe(true);
-        if (result.ok) {
-            expect(result.value).toBe(existingRecipe);
-        }
+            expect(result.ok).toBe(true);
+            if (result.ok) {
+                expect(result.value).toBe(existingRecipe);
+            }
+        });
+
+        it("should return ok with null when the recipe does not exist", async () => {
+
+            vi.mocked(recipeRepository.findById).mockResolvedValue(ok(null));
+
+            const result = await recipeService.findById("non-existent-id");
+
+            expect(result.ok).toBe(true);
+            if (result.ok) {
+                expect(result.value).toBeNull();
+            }
+        });
+
+        it("should return a failure when the repository fails", async () => {
+            vi.mocked(recipeRepository.findById).mockResolvedValue(
+                fail("RETRIEVE_ERROR", "Database connection lost")
+            );
+
+            const result = await recipeService.findById("any-id");
+
+            expect(result.ok).toBe(false);
+            if (!result.ok) {
+                expect(result.error.code).toBe("RETRIEVE_ERROR");
+            }
+        });
+
+        it("should return a failure when the provided ID is empty", async () => {
+            const result = await recipeService.findById("   ");
+
+            expect(result.ok).toBe(false);
+            if (!result.ok) {
+                expect(result.error.code).toBe("INVALID_ID");
+            }
+            expect(recipeRepository.findById).not.toHaveBeenCalled();
+        });
     });
 
-    it("should return ok with null when the recipe does not exist", async () => {
+    describe("findIngredientsByRecipeId", () => {
+        const validRecipeId = "550e8400-e29b-41d4-a716-446655440000";
 
-        vi.mocked(recipeRepository.findById).mockResolvedValue(ok(null));
+        it("should return a list of ingredients when it exists", async () => {
+            const mockIngredients: RecipeIngredientDetail[] = [
+                {
+                    id: "ing-1",
+                    recipeId: validRecipeId,
+                    ingredientId: "raw-ing-1",
+                    subRecipeId: null,
+                    name: "Tomate",
+                    quantity: 2,
+                    unit: "kg",
+                    isOptional: false,
+                },
+            ];
+            vi.mocked(recipeRepository.findIngredientsByRecipeId).mockResolvedValue(ok(mockIngredients));
 
-        const result = await recipeService.findById("non-existent-id");
+            const result = await recipeService.findIngredientsByRecipeId(validRecipeId);
 
-        expect(result.ok).toBe(true);
-        if (result.ok) {
-            expect(result.value).toBeNull();
-        }
-    });
+            expect(recipeRepository.findIngredientsByRecipeId).toHaveBeenCalledWith(validRecipeId);
+            expect(result.ok).toBe(true);
+            if (result.ok) {
+                expect(result.value).toHaveLength(1);
+                expect(result.value[0].name).toBe("Tomate");
+            }
+        });
 
-    it("should return a failure when the repository fails", async () => {
-        vi.mocked(recipeRepository.findById).mockResolvedValue(
-            fail("RETRIEVE_ERROR", "Database connection lost")
-        );
+        it("should return ok with an empty array when the recipe does not exist or has no ingredients", async () => {
+            vi.mocked(recipeRepository.findIngredientsByRecipeId).mockResolvedValue(ok([]));
 
-        const result = await recipeService.findById("any-id");
+            const result = await recipeService.findIngredientsByRecipeId(validRecipeId);
 
-        expect(result.ok).toBe(false);
-        if (!result.ok) {
-            expect(result.error.code).toBe("RETRIEVE_ERROR");
-        }
-    });
+            expect(recipeRepository.findIngredientsByRecipeId).toHaveBeenCalledWith(validRecipeId);
+            expect(result.ok).toBe(true);
+            if (result.ok) {
+                expect(result.value).toEqual([]);
+            }
+        });
 
-    it("should return a failure when the provided ID is empty", async () => {
-        const result = await recipeService.findById("   ");
+        it("should return a failure when the repository fails", async () => {
+            vi.mocked(recipeRepository.findIngredientsByRecipeId).mockResolvedValue(
+                fail("RETRIEVE_ERROR", "Database connection lost")
+            );
 
-        expect(result.ok).toBe(false);
-        if (!result.ok) {
-            expect(result.error.code).toBe("INVALID_ID");
-        }
-        expect(recipeRepository.findById).not.toHaveBeenCalled();
+            const result = await recipeService.findIngredientsByRecipeId(validRecipeId);
+
+            expect(recipeRepository.findIngredientsByRecipeId).toHaveBeenCalledWith(validRecipeId);
+            expect(result.ok).toBe(false);
+            if (!result.ok) {
+                expect(result.error.code).toBe("RETRIEVE_ERROR");
+            }
+        });
+
+        it("should return a failure when the provided recipe ID is empty", async () => {
+            const result = await recipeService.findIngredientsByRecipeId("   ");
+
+            expect(result.ok).toBe(false);
+            if (!result.ok) {
+                expect(result.error.code).toBe("INVALID_ID");
+            }
+            expect(recipeRepository.findIngredientsByRecipeId).not.toHaveBeenCalled();
+        });
     });
 
     // --- TESTS DELETE ---
