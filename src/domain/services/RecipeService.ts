@@ -1,5 +1,9 @@
 import type { Recipe } from "../entities/Recipe";
-import type { RecipeIngredientDetail, RecipeRepository } from "../ports/drivens/RecipeRepository";
+import type {
+  RecipeIngredientDetail,
+  RecipeRepository,
+  UpdateRecipeData,
+} from "../ports/drivens/RecipeRepository";
 import type { Result } from "../value-objects/Result";
 import { fail } from "../value-objects/Result";
 
@@ -30,5 +34,17 @@ export class RecipeService {
 
   async findAll(): Promise<Result<Recipe[]>> {
     return await this.recipeRepository.findAll();
+  }
+
+  async update(id: string, data: UpdateRecipeData): Promise<Result<Recipe>> {
+    if (!id || id.trim() === "") {
+      return fail("INVALID_ID", "Recipe ID cannot be empty");
+    }
+
+    if (Object.keys(data).length === 0) {
+      return fail("VALIDATION_ERROR", "No data provided to update");
+    }
+
+    return await this.recipeRepository.update(id, data);
   }
 }
