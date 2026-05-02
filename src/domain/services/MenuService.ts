@@ -14,7 +14,7 @@ export class MenuService {
 
     return await this.menuRepository.findByAllergen(allergenId);
   }
-  
+
   async findById(id: string): Promise<Result<Menu | null>> {
     if (!id) {
       return fail("INVALID_ID", "Menu ID is required");

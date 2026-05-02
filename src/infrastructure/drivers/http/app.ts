@@ -132,7 +132,6 @@ export function createApp(container: Container): express.Express {
 
   const v1 = express.Router();
   v1.use(allergenRoutes(container.allergenService));
-  v1.use(menuRoutes(container.menuService));
   v1.use(sessionRoutes(container.authService, container.tokenService));
   v1.use(MenuRoutes(container.menuService));
   v1.use(RecipeRoutes(container.recipeService));

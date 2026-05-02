@@ -6,7 +6,7 @@ import type pg from "pg";
 
 export class PgMenuRepository implements MenuRepository {
   constructor(private pool: pg.Pool) {}
-  
+
   async findByAllergen(allergenId: string): Promise<Result<Menu[]>> {
     try {
       const query = `

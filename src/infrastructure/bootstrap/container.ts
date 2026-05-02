@@ -26,7 +26,6 @@ export interface Container {
   menuService: MenuService;
   userService: UserService;
   tokenService: TokenService;
-  menuService: MenuService;
 }
 
 export function createContainer(): Container {
@@ -63,6 +62,5 @@ export function createContainer(): Container {
     menuService,
     userService,
     tokenService,
-    menuService,
   };
 }

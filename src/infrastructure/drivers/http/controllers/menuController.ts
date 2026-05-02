@@ -4,7 +4,6 @@ import type { Request, Response } from "express";
 
 export function createMenuController(menuService: MenuService) {
   return {
-    
     findByAllergenId: async (req: Request, res: Response) => {
       const { allergenId } = req.params;
 
@@ -26,7 +25,7 @@ export function createMenuController(menuService: MenuService) {
         data: result.value,
       });
     },
-    
+
     async findById(req: Request<{ id: string }>, res: Response) {
       const result = await menuService.findById(req.params.id);
 
