@@ -1,6 +1,6 @@
 import type { IngredientService } from "@domain/services/IngredientService";
-import { Router } from "express";
 import { validate } from "@infrastructure/drivers/http/middleware/validate";
+import { Router } from "express";
 import { IngredientController } from "../controllers/ingredientController";
 import { UpdateIngredientSchema } from "../schemas/ingredient";
 
