@@ -37,10 +37,53 @@ describe("MenuService", () => {
     menuRepository = {
       findById: vi.fn(),
       findAll: vi.fn(),
+      findByAllergen: vi.fn(),
     } as unknown as MenuRepository;
 
     menuService = new MenuService(menuRepository);
   });
+  
+  // --- TESTS: findByAllergenId ---
+  
+   describe("findByAllergenId", () => {
+    it("hauria de retornar una llista de menús (Cas OK)", async () => {
+      vi.mocked(menuRepository.findByAllergen).mockResolvedValue(ok([fakeMenu()]));
+
+      const result = await menuService.findByAllergenId("allergen-123");
+    
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.value).toHaveLength(1);
+  });
+
+  it("hauria de retornar INVALID_ID si l'ID és buit", async () => {
+    const result = await menuService.findByAllergenId("");
+    
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe("INVALID_ID");
+    }
+  });
+
+  it("hauria de retornar un array buit si l'al·lergen no té receptes", async () => {
+    vi.mocked(menuRepository.findByAllergen).mockResolvedValue(ok([]));
+    
+    const result = await menuService.findByAllergenId("sense-alergen");
+    
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.value).toEqual([]);
+  });
+
+  it("hauria de propagar l'error si el repositori falla", async () => {
+    vi.mocked(menuRepository.findByAllergen).mockResolvedValue(fail("RETRIEVE_ERROR", "DB Error"));
+    
+    const result = await menuService.findByAllergenId("123");
+    
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe("RETRIEVE_ERROR");
+    }
+  });
+ });
 
   // --- TESTS: findById ---
 

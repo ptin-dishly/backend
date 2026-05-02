@@ -7,6 +7,22 @@ import type pg from "pg";
 export class PgMenuRepository implements MenuRepository {
   constructor(private pool: pg.Pool) {}
 
+  async findByAllergen(allergenId: string): Promise<Result<Menu[]>> {
+    try {
+      const query = `
+        SELECT m.* FROM menus m
+        INNER JOIN menu_allergens ma ON m.id = ma.menu_id
+        WHERE ma.allergen_id = $1
+      `;
+      const result = await this.pool.query(query, [allergenId]);
+
+      // Si no hi ha resultats, result.rows serà [], que compleix el criteri d'acceptació
+      return ok(result.rows.map((row) => this.toEntity(row)));
+    } catch (error: unknown) {
+      return fail("RETRIEVE_ERROR", "Failed to retrieve menus by allergen", error);
+    }
+  }
+
   async findById(id: string): Promise<Result<Menu | null>> {
     try {
       const result = await this.pool.query("SELECT * FROM menu_cards WHERE id = $1", [id]);
