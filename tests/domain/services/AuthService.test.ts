@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest"; // <-- Afegeix 'vi' aquí
 import { AuthService } from "@domain/services/AuthService";
 import type { PasswordHasher } from "@domain/services/AuthService";
 import type { UserRepository } from "@domain/ports/drivens/UserRepository";
@@ -22,10 +22,11 @@ const fakeUser = new User(
 
 function createMockUserRepo(overrides?: Partial<UserRepository>): UserRepository {
   return {
-    findByEmail: async () => ok(fakeUser),
-    findById: async () => ok(fakeUser),
-    updateLastLogin: async () => ok(undefined),
-    delete: async () => ok(undefined),
+    findByEmail: vi.fn().mockResolvedValue(ok(fakeUser)),
+    findById: vi.fn().mockResolvedValue(ok(fakeUser)),
+    updateLastLogin: vi.fn().mockResolvedValue(ok(undefined)),
+    delete: vi.fn().mockResolvedValue(ok(undefined)),
+    update: vi.fn().mockResolvedValue(ok(fakeUser)) as any,
     ...overrides,
   };
 }
