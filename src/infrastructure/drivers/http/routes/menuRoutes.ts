@@ -15,5 +15,6 @@ export function MenuRoutes(MenuService: MenuService): Router {
     validate({ params: MenuParamsSchema }),
     controller.findByAllergenId,
   );
+  router.put("/menus/:id", controller.update);
   return router;
 }

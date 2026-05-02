@@ -7,7 +7,7 @@ import {
 } from "../responses/schemas";
 import { AllergenSchema, CreateAllergenSchema } from "../schemas/allergen";
 import { IngredientSchema } from "../schemas/ingredient";
-import { MenuParamsSchema, MenuSchema } from "../schemas/menu";
+import { MenuParamsSchema, MenuSchema, UpdateMenuSchema } from "../schemas/menu";
 import { RecipeIngredientSchema, RecipeSchema } from "../schemas/recipe";
 import { LoginSchema, RefreshSchema, TokenPairSchema } from "../schemas/session";
 import { UserSchema } from "../schemas/user";
@@ -780,6 +780,82 @@ registry.registerPath({
               message: z.string(),
             }),
           }),
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "put",
+  path: "/menus/{id}",
+  summary: "Update a menu",
+  description: "Updates one or more fields of an existing menu by its ID.",
+  tags: ["Menus"],
+  request: {
+    params: MenuParamsSchema,
+    body: {
+      content: {
+        "application/json": {
+          schema: UpdateMenuSchema,
+        },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: "Menu updated successfully",
+      content: {
+        "application/json": {
+          schema: z.object({
+            success: z.boolean(),
+            data: MenuSchema,
+          }),
+        },
+      },
+    },
+    400: {
+      description: "Invalid ID format or empty request body",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "INVALID_REQUEST",
+              message: "At least one field must be provided",
+            },
+          },
+        },
+      },
+    },
+    404: {
+      description: "Menu not found",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "NOT_FOUND",
+              message: "The requested menu was not found",
+            },
+          },
+        },
+      },
+    },
+    409: {
+      description: "Conflict - Name already exists",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "DUPLICATE_RESOURCE",
+              message: "A menu with this name already exists",
+            },
+          },
         },
       },
     },

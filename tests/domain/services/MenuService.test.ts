@@ -38,6 +38,7 @@ describe("MenuService", () => {
       findById: vi.fn(),
       findAll: vi.fn(),
       findByAllergen: vi.fn(),
+      update: vi.fn(),
     } as unknown as MenuRepository;
 
     menuService = new MenuService(menuRepository);
@@ -173,6 +174,71 @@ describe("MenuService", () => {
       if (!result.ok) {
         expect(result.error.code).toBe("DB_ERROR");
         expect(result.error.message).toBe("Unexpected DB error");
+      }
+    });
+  });
+
+  // --- TESTS: update (#107) ---
+
+  describe("update", () => {
+    const updateId = "550e8400-e29b-41d4-a716-446655440000";
+
+    it("should update a menu successfully (cas OK)", async () => {
+      const updateData = { name: "Nuevo Nombre", isPublic: false };
+      const updatedMenu = fakeMenu({ ...updateData });
+      
+      vi.mocked(menuRepository.update).mockResolvedValue(ok(updatedMenu));
+
+      const result = await menuService.update(updateId, updateData);
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value.name).toBe("Nuevo Nombre");
+        expect(result.value.isPublic).toBe(false);
+      }
+    });
+
+    it("should return INVALID_ID when the provided ID is empty", async () => {
+      const result = await menuService.update("", { name: "Test" });
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("INVALID_ID");
+      }
+    });
+
+    it("should return INVALID_REQUEST when no data is provided to update", async () => {
+      const result = await menuService.update(updateId, {});
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("INVALID_REQUEST");
+      }
+    });
+
+    it("should propagate NOT_FOUND if the menu does not exist", async () => {
+      vi.mocked(menuRepository.update).mockResolvedValue(
+        fail("NOT_FOUND", "Menu not found")
+      );
+
+      const result = await menuService.update(updateId, { name: "Test" });
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("NOT_FOUND");
+      }
+    });
+
+    it("should propagate DUPLICATE_RESOURCE when name already exists", async () => {
+      vi.mocked(menuRepository.update).mockResolvedValue(
+        fail("DUPLICATE_RESOURCE", "Name already exists")
+      );
+
+      const result = await menuService.update(updateId, { name: "Nombre Duplicado" });
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("DUPLICATE_RESOURCE");
       }
     });
   });

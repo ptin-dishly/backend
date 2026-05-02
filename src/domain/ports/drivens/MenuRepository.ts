@@ -11,8 +11,16 @@ export interface CreateMenuData {
   updatedAt: Date;
 }
 
+export interface UpdateMenuData {
+  establishmentId?: string;
+  name?: string;
+  isPublic?: boolean;
+  qrCodeUrl?: string | null;
+}
+
 export interface MenuRepository {
   findById(id: string): Promise<Result<Menu | null>>;
   findAll(): Promise<Result<Menu[]>>;
   findByAllergen(allergenId: string): Promise<Result<Menu[]>>;
+  update(id: string, data: UpdateMenuData): Promise<Result<Menu>>;
 }
