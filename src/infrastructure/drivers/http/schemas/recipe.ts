@@ -53,3 +53,6 @@ export const RecipeIngredientSchema = z.object({
 
 export type CreateRecipeBody = z.infer<typeof CreateRecipeSchema>;
 export type RecipeResponse = z.infer<typeof RecipeSchema>;
+
+export const UpdateRecipeSchema = CreateRecipeSchema.partial().openapi("UpdateRecipeBody");
+export type UpdateRecipeBody = z.infer<typeof UpdateRecipeSchema>;
