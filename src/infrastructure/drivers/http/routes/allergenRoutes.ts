@@ -7,6 +7,7 @@ import {
   CreateAllergenSchema,
   EuNumberParamsSchema,
   IngredientIdParamsSchema,
+  MenuIdParamsSchema,
 } from "@infrastructure/drivers/http/schemas/allergen";
 import { Router } from "express";
 
@@ -29,6 +30,11 @@ export function allergenRoutes(allergenService: AllergenService): Router {
     "/allergens/ingredient/:ingredientId",
     validate({ params: IngredientIdParamsSchema }),
     controller.findByIngredientId,
+  );
+  router.get(
+    "/allergens/menu/:menuId",
+    validate({ params: MenuIdParamsSchema }),
+    controller.findByMenuId,
   );
   router.post("/allergens", validate({ body: CreateAllergenSchema }), controller.create);
   router.get("/allergens/:id", validate({ params: AllergenParamsSchema }), controller.findById);

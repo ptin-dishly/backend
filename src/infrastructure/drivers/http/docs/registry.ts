@@ -183,6 +183,43 @@ registry.registerPath({
 });
 
 registry.registerPath({
+  method: "get",
+  path: "/allergens/menu/{menuId}",
+  tags: ["Allergens"],
+  summary: "Finds allergens by menu ID",
+  responses: {
+    200: {
+      description: "Allergens found",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(z.array(AllergenSchema)),
+          example: {
+            success: true,
+            data: [allergenExamples.gluten, allergenExamples.eggs],
+          },
+        },
+      },
+    },
+    400: {
+      description: "Invalid menu ID",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "INVALID_REQUEST",
+              message: "Invalid menu ID format.",
+            },
+            meta: { timestamp: "2026-05-02T14:40:48.728Z" },
+          },
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
   method: "post",
   path: "/allergens",
   tags: ["Allergens"],

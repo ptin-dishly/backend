@@ -25,6 +25,16 @@ export function createAllergenController(allergenService: AllergenService) {
       return sendSuccess(res, 200, result.value);
     },
 
+    async findByMenuId(req: Request<{ menuId: string }>, res: Response) {
+      const result = await allergenService.findByMenuId(req.params.menuId);
+
+      if (!result.ok) {
+        return sendErrorByCode(res, result.error.code, result.error.message);
+      }
+
+      return sendSuccess(res, 200, result.value);
+    },
+
     async findByEuNumber(req: Request<{ euNumber: string }>, res: Response) {
       const euNumber = Number(req.params.euNumber);
 
