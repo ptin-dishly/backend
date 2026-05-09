@@ -3,6 +3,7 @@ import { validate } from "@infrastructure/drivers/http/middleware/validate";
 import { Router } from "express";
 import { IngredientController } from "../controllers/ingredientController";
 import { UpdateIngredientSchema } from "../schemas/ingredient";
+import { DeleteIngredientSchema } from "../schemas/ingredient";
 
 export function ingredientRoutes(ingredientService: IngredientService): Router {
   const router = Router();
@@ -13,6 +14,10 @@ export function ingredientRoutes(ingredientService: IngredientService): Router {
   router.put("/ingredients/:id", validate({ body: UpdateIngredientSchema }), (req, res) =>
     controller.update(req, res),
   );
-
+router.delete(
+  "/ingredients/:id",
+  validate({ params: DeleteIngredientSchema }),
+  controller.remove.bind(controller)
+);
   return router;
 }
