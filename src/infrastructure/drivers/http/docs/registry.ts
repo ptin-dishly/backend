@@ -373,7 +373,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "delete",
-  path: "/api/v1/recipes/{id}",
+  path: "/recipes/{id}",
   tags: ["Recipes"],
   summary: "Delete a recipe",
   operationId: "deleteRecipe",
@@ -607,6 +607,45 @@ registry.registerPath({
 // ======================
 
 registry.registerPath({
+  method: "get",
+  path: "/menus/establishment/{establishmentId}",
+  tags: ["Menus"],
+  summary: "Get menus by establishment",
+  description:
+    "Returns the complete list of all menus associated with a specific establishment. Returns an empty array if no menus exist.",
+  operationId: "getMenusByEstablishment",
+  request: {
+    params: z.object({ establishmentId: z.string().uuid() }),
+  },
+  responses: {
+    200: {
+      description: "List of menus retrieved successfully. Returns an empty array if none are found.",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(z.array(MenuSchema)),
+        },
+      },
+    },
+    400: {
+      description: "Invalid establishment ID format",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+        },
+      },
+    },
+    500: {
+      description: "Internal server error",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
   method: "put",
   path: "/menus/{id}",
   tags: ["Menus"],
@@ -644,7 +683,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
-  path: "/api/v1/menu-card-items",
+  path: "/menu-card-items",
   tags: ["Menu Card Items"],
   summary: "List all items with recipe details",
   description: "Returns all menu card items joined with their recipe data, excluding timestamps.",

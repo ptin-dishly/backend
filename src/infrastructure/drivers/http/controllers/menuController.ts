@@ -41,8 +41,8 @@ export function createMenuController(menuService: MenuService) {
       return sendSuccess(res, 200, result.value);
     },
 
-    async findAll(_req: Request, res: Response) {
-      const result = await menuService.findAll();
+    async findByEstablishmentId(req: Request<{ establishmentId: string }>, res: Response) {
+      const result = await menuService.findByEstablishmentId(req.params.establishmentId);
 
       if (!result.ok) {
         return sendErrorByCode(res, result.error.code, result.error.message);

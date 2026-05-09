@@ -20,6 +20,12 @@ export const MenuParamsSchema = z.object({
     .regex(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/),
 });
 
+export const MenuEstablishmentParamsSchema = z.object({
+  establishmentId:  z
+    .string()
+    .regex(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/),
+});
+
 export const MenuByAllergenParamsSchema = z.object({
   allergenId: z
     .string()
