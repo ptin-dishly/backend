@@ -1,5 +1,6 @@
 import { Ingredient } from "@domain/entities/Ingredient";
 import type {
+  CreateIngredientData,
   IngredientRepository,
   UpdateIngredientData,
 } from "@domain/ports/drivens/IngredientRepository";
@@ -64,6 +65,31 @@ export class PgIngredientRepository implements IngredientRepository {
       return ok(undefined);
     } catch (error) {
       return fail("DELETE_ERROR", "Failed to delete ingredient", error);
+  async create(data: CreateIngredientData): Promise<Result<Ingredient>> {
+    try {
+      const checkQuery = "SELECT id FROM ingredients WHERE name = $1 LIMIT 1";
+      const checkResult = await this.pool.query(checkQuery, [data.name]);
+
+      if (checkResult.rowCount && checkResult.rowCount > 0) {
+        return fail("DUPLICATE_RESOURCE", "An ingredient with this name already exists");
+      }
+
+      const query = `
+        INSERT INTO ingredients (name, description, is_active)
+        VALUES ($1, $2, $3)
+        RETURNING *;
+      `;
+
+      const values = [data.name, data.description ?? null, data.isActive];
+
+      const result = await this.pool.query(query, values);
+      return ok(this.toEntity(result.rows[0]));
+    } catch (error: unknown) {
+      const err = error as Record<string, unknown>;
+      if (err?.code === "23505") {
+        return fail("DUPLICATE_RESOURCE", "An ingredient with this name already exists");
+      }
+      return fail("CREATE_ERROR", "Failed to create ingredient", error);
     }
   }
 

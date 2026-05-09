@@ -12,3 +12,6 @@ export type UpdateIngredientBody = z.infer<typeof UpdateIngredientSchema>;
 export const DeleteIngredientSchema = z.object({
   id: z.string().uuid(),
 });
+
+export const CreateIngredientSchema = IngredientSchema.omit({ id: true });
+export type CreateIngredientBody = z.infer<typeof CreateIngredientSchema>;

@@ -4,6 +4,7 @@ import { Router } from "express";
 import { IngredientController } from "../controllers/ingredientController";
 import { UpdateIngredientSchema } from "../schemas/ingredient";
 import { DeleteIngredientSchema } from "../schemas/ingredient";
+import { CreateIngredientSchema, UpdateIngredientSchema } from "../schemas/ingredient";
 
 export function ingredientRoutes(ingredientService: IngredientService): Router {
   const router = Router();
@@ -19,5 +20,9 @@ router.delete(
   validate({ params: DeleteIngredientSchema }),
   controller.remove.bind(controller)
 );
+
+  router.post("/ingredients", validate({ body: CreateIngredientSchema }), (req, res) =>
+    controller.create(req, res),
+  );
   return router;
 }
