@@ -36,6 +36,12 @@ export const IngredientIdParamsSchema = z.object({
     .regex(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/),
 });
 
+export const MenuIdParamsSchema = z.object({
+  menuId: z
+    .string()
+    .regex(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/),
+});
+
 export const EuNumberParamsSchema = z.object({
   euNumber: z.coerce.number().int().min(1).max(14),
 });
