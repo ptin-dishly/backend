@@ -1,5 +1,6 @@
 import type { Ingredient } from "../entities/Ingredient";
 import type {
+  CreateIngredientData,
   IngredientRepository,
   UpdateIngredientData,
 } from "../ports/drivens/IngredientRepository";
@@ -23,5 +24,13 @@ export class IngredientService {
     }
 
     return await this.ingredientRepository.update(id, data);
+  }
+
+  async create(data: CreateIngredientData): Promise<Result<Ingredient>> {
+    if (!data.name || data.name.trim().length === 0) {
+      return fail("VALIDATION_ERROR", "Ingredient name is required");
+    }
+
+    return await this.ingredientRepository.create(data);
   }
 }

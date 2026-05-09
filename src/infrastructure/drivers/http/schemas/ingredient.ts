@@ -9,3 +9,6 @@ export const IngredientSchema = z.object({
 
 export const UpdateIngredientSchema = IngredientSchema.omit({ id: true }).partial();
 export type UpdateIngredientBody = z.infer<typeof UpdateIngredientSchema>;
+
+export const CreateIngredientSchema = IngredientSchema.omit({ id: true });
+export type CreateIngredientBody = z.infer<typeof CreateIngredientSchema>;

@@ -3,6 +3,8 @@ import { IngredientService } from "@domain/services/IngredientService";
 import type { IngredientRepository } from "@domain/ports/drivens/IngredientRepository";
 import { Ingredient } from "@domain/entities/Ingredient";
 import { ok, fail } from "@domain/value-objects/Result";
+import type { CreateIngredientData } from "@domain/ports/drivens/IngredientRepository";
+
 
 describe("IngredientService", () => {
     let ingredientService: IngredientService;
@@ -12,6 +14,7 @@ describe("IngredientService", () => {
         mockIngredientRepository = {
             findAll: vi.fn(),
             update: vi.fn(),
+            create: vi.fn(),
         } as unknown as IngredientRepository;
 
         ingredientService = new IngredientService(mockIngredientRepository);
@@ -106,6 +109,64 @@ describe("IngredientService", () => {
             expect(result.ok).toBe(false);
             if (!result.ok) {
                 expect(result.error.code).toBe("NOT_FOUND");
+            }
+        });
+    });
+
+    describe("create", () => {
+        it("should successfully create an ingredient", async () => {
+            const ingredientData = { name: "Pimienta", description: "Negra", isActive: true };
+            const mockIngredient = new Ingredient("id-new", "Pimienta", "Negra", true);
+            
+            vi.mocked(mockIngredientRepository.create).mockResolvedValue(ok(mockIngredient));
+
+            const result = await ingredientService.create(ingredientData);
+
+            expect(mockIngredientRepository.create).toHaveBeenCalledWith(ingredientData);
+            expect(result.ok).toBe(true);
+            if (result.ok) {
+                expect(result.value.id).toBe("id-new");
+                expect(result.value.name).toBe("Pimienta");
+            }
+        });
+
+        it("should fail when the repository returns a DUPLICATE_RESOURCE error", async () => {
+            const ingredientData = { name: "Sal", isActive: true };
+            vi.mocked(mockIngredientRepository.create).mockResolvedValue(
+                fail("DUPLICATE_RESOURCE", "An ingredient with this name already exists")
+            );
+
+            const result = await ingredientService.create(ingredientData);
+
+            expect(mockIngredientRepository.create).toHaveBeenCalledOnce();
+            expect(result.ok).toBe(false);
+            if (!result.ok) {
+                expect(result.error.code).toBe("DUPLICATE_RESOURCE");
+            }
+        });
+
+        it("should propagate other repository errors", async () => {
+            const ingredientData = { name: "Error", isActive: true };
+            vi.mocked(mockIngredientRepository.create).mockResolvedValue(
+                fail("CREATE_ERROR", "Database error")
+            );
+
+            const result = await ingredientService.create(ingredientData);
+
+            expect(result.ok).toBe(false);
+            if (!result.ok) {
+                expect(result.error.code).toBe("CREATE_ERROR");
+            }
+        });
+
+        it("should fail if name is empty or only whitespace", async () => {
+            const result = await ingredientService.create({ name: "   ", isActive: true });
+        
+            expect(mockIngredientRepository.create).not.toHaveBeenCalled();
+            expect(result.ok).toBe(false);
+            if (!result.ok) {
+                expect(result.error.code).toBe("VALIDATION_ERROR");
+                expect(result.error.message).toBe("Ingredient name is required");
             }
         });
     });

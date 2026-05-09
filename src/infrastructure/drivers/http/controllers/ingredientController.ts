@@ -1,5 +1,7 @@
 import type { IngredientService } from "@domain/services/IngredientService";
+import { sendErrorByCode, sendSuccess } from "@infrastructure/drivers/http/responses";
 import type { Request, Response } from "express";
+import type { CreateIngredientBody } from "../schemas/ingredient";
 
 export class IngredientController {
   constructor(private readonly ingredientService: IngredientService) {}
@@ -53,5 +55,15 @@ export class IngredientController {
       },
       meta: { timestamp: new Date().toISOString() },
     });
+  }
+
+  async create(req: Request<unknown, unknown, CreateIngredientBody>, res: Response) {
+    const result = await this.ingredientService.create(req.body);
+
+    if (!result.ok) {
+      return sendErrorByCode(res, result.error.code, result.error.message);
+    }
+
+    return sendSuccess(res, 201, result.value);
   }
 }
