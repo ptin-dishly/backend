@@ -2,7 +2,7 @@ import type { IngredientService } from "@domain/services/IngredientService";
 import { validate } from "@infrastructure/drivers/http/middleware/validate";
 import { Router } from "express";
 import { IngredientController } from "../controllers/ingredientController";
-import { UpdateIngredientSchema } from "../schemas/ingredient";
+import { CreateIngredientSchema, UpdateIngredientSchema } from "../schemas/ingredient";
 
 export function ingredientRoutes(ingredientService: IngredientService): Router {
   const router = Router();
@@ -14,5 +14,8 @@ export function ingredientRoutes(ingredientService: IngredientService): Router {
     controller.update(req, res),
   );
 
+  router.post("/ingredients", validate({ body: CreateIngredientSchema }), (req, res) =>
+    controller.create(req, res),
+  );
   return router;
 }

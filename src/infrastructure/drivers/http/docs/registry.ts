@@ -6,7 +6,7 @@ import {
   SuccessResponseSchema,
 } from "../responses/schemas";
 import { AllergenSchema, CreateAllergenSchema } from "../schemas/allergen";
-import { IngredientSchema } from "../schemas/ingredient";
+import { CreateIngredientSchema, IngredientSchema } from "../schemas/ingredient";
 import { MenuParamsSchema, MenuSchema, UpdateMenuSchema } from "../schemas/menu";
 import {
   CreateRecipeSchema,
@@ -466,6 +466,98 @@ registry.registerPath({
               message: "Failed to retrieve ingredients",
             },
             meta: { timestamp: "2026-04-30T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/ingredients",
+  tags: ["Ingredients"],
+  summary: "Create a new ingredient",
+  description:
+    "Adds a new ingredient to the system. Validates that the name is unique and returns the created ingredient with its generated ID.",
+  operationId: "createIngredient",
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: CreateIngredientSchema,
+          example: {
+            name: "Pimienta Negra Molida",
+            description: "Pimienta de gran calidad para aderezos",
+            isActive: true,
+          },
+        },
+      },
+    },
+  },
+  responses: {
+    201: {
+      description: "Ingredient created successfully",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(IngredientSchema),
+          example: {
+            success: true,
+            data: {
+              id: "550e8400-e29b-41d4-a716-446655440002",
+              name: "Pimienta Negra Molida",
+              description: "Pimienta de gran calidad para aderezos",
+              isActive: true,
+            },
+            meta: { timestamp: new Date().toISOString() },
+          },
+        },
+      },
+    },
+    400: {
+      description: "Invalid request data",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "INVALID_REQUEST",
+              message: "Invalid input data. Name is required.",
+            },
+            meta: { timestamp: new Date().toISOString() },
+          },
+        },
+      },
+    },
+    409: {
+      description: "Ingredient name already exists",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "DUPLICATE_RESOURCE",
+              message: "An ingredient with this name already exists.",
+            },
+            meta: { timestamp: new Date().toISOString() },
+          },
+        },
+      },
+    },
+    500: {
+      description: "Internal server error",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "CREATE_ERROR",
+              message: "Failed to create ingredient",
+            },
+            meta: { timestamp: new Date().toISOString() },
           },
         },
       },

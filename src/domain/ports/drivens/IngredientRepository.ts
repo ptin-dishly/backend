@@ -7,7 +7,14 @@ export interface UpdateIngredientData {
   isActive?: boolean;
 }
 
+export interface CreateIngredientData {
+  name: string;
+  description?: string | null;
+  isActive: boolean;
+}
+
 export interface IngredientRepository {
   findAll(): Promise<Result<Ingredient[]>>;
   update(id: string, data: UpdateIngredientData): Promise<Result<Ingredient>>;
+  create(data: CreateIngredientData): Promise<Result<Ingredient>>;
 }
