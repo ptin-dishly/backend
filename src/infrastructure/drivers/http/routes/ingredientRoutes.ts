@@ -4,7 +4,7 @@ import { Router } from "express";
 import { IngredientController } from "../controllers/ingredientController";
 import { UpdateIngredientSchema } from "../schemas/ingredient";
 import { DeleteIngredientSchema } from "../schemas/ingredient";
-import { CreateIngredientSchema, UpdateIngredientSchema } from "../schemas/ingredient";
+import { CreateIngredientSchema } from "../schemas/ingredient";
 
 export function ingredientRoutes(ingredientService: IngredientService): Router {
   const router = Router();

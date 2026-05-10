@@ -53,18 +53,7 @@ export class PgIngredientRepository implements IngredientRepository {
       return fail("UPDATE_ERROR", "Failed to update ingredient", error);
     }
   }
-
-  async delete(id: string): Promise<Result<void>> {
-    try {
-      const result = await this.pool.query("DELETE FROM ingredients WHERE id = $1", [id]);
-
-      if (result.rowCount === 0) {
-        return fail("NOT_FOUND", `Ingredient with id ${id} not found`);
-      }
-
-      return ok(undefined);
-    } catch (error) {
-      return fail("DELETE_ERROR", "Failed to delete ingredient", error);
+  
   async create(data: CreateIngredientData): Promise<Result<Ingredient>> {
     try {
       const checkQuery = "SELECT id FROM ingredients WHERE name = $1 LIMIT 1";
@@ -92,6 +81,21 @@ export class PgIngredientRepository implements IngredientRepository {
       return fail("CREATE_ERROR", "Failed to create ingredient", error);
     }
   }
+
+  async delete(id: string): Promise<Result<void>> {
+    try {
+      const result = await this.pool.query("DELETE FROM ingredients WHERE id = $1", [id]);
+
+      if (result.rowCount === 0) {
+        return fail("NOT_FOUND", `Ingredient with id ${id} not found`);
+      }
+
+      return ok(undefined);
+    } catch (error) {
+      return fail("DELETE_ERROR", "Failed to delete ingredient", error);
+    }
+  }
+
 
   private toEntity(row: Record<string, unknown>): Ingredient {
     return new Ingredient(
