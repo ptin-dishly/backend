@@ -34,9 +34,11 @@ export class PgMenuRepository implements MenuRepository {
     }
   }
 
-  async findAll(): Promise<Result<Menu[]>> {
+  async findByEstablishmentId(establishmentId: string): Promise<Result<Menu[]>> {
     try {
-      const result = await this.pool.query("SELECT * FROM menu_cards");
+      const result = await this.pool.query("SELECT * FROM menu_cards WHERE establishment_id = $1", [
+        establishmentId,
+      ]);
 
       const menus = result.rows.map((row) => this.toEntity(row));
 

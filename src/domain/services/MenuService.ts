@@ -22,8 +22,8 @@ export class MenuService {
     return await this.menuRepository.findById(id);
   }
 
-  async findAll(): Promise<Result<Menu[]>> {
-    return this.menuRepository.findAll();
+  async findByEstablishmentId(establishmentId: string): Promise<Result<Menu[]>> {
+    return this.menuRepository.findByEstablishmentId(establishmentId);
   }
 
   async update(id: string, data: UpdateMenuData): Promise<Result<Menu>> {

@@ -20,7 +20,7 @@ export interface UpdateMenuData {
 
 export interface MenuRepository {
   findById(id: string): Promise<Result<Menu | null>>;
-  findAll(): Promise<Result<Menu[]>>;
+  findByEstablishmentId(establishmentId: string): Promise<Result<Menu[]>>;
   findByAllergen(allergenId: string): Promise<Result<Menu[]>>;
   update(id: string, data: UpdateMenuData): Promise<Result<Menu>>;
 }

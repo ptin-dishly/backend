@@ -36,7 +36,7 @@ describe("MenuService", () => {
   beforeEach(() => {
     menuRepository = {
       findById: vi.fn(),
-      findAll: vi.fn(),
+      findByEstablishmentId: vi.fn(),
       findByAllergen: vi.fn(),
       update: vi.fn(),
     } as unknown as MenuRepository;
@@ -135,14 +135,16 @@ describe("MenuService", () => {
     });
   });
 
-  // --- TESTS: findAll ---
+  // --- TESTS: findByEstablishmentId ---
 
-  describe("findAll", () => {
+  describe("findByEstablishmentId", () => {
+    const validEstablishmentId = "550e8400-e29b-41d4-a716-446655441111";
+
     it("should return a list of menus when they exist (cas OK)", async () => {
       const menus = [fakeMenu({ id: "id-1" }), fakeMenu({ id: "id-2" })];
-      vi.mocked(menuRepository.findAll).mockResolvedValue(ok(menus));
+      vi.mocked(menuRepository.findByEstablishmentId).mockResolvedValue(ok(menus));
 
-      const result = await menuService.findAll();
+      const result = await menuService.findByEstablishmentId(validEstablishmentId);
 
       expect(result.ok).toBe(true);
       if (result.ok) {
@@ -152,9 +154,9 @@ describe("MenuService", () => {
     });
 
     it("should return an empty list when no menus are registered", async () => {
-      vi.mocked(menuRepository.findAll).mockResolvedValue(ok([]));
+      vi.mocked(menuRepository.findByEstablishmentId).mockResolvedValue(ok([]));
 
-      const result = await menuService.findAll();
+      const result = await menuService.findByEstablishmentId(validEstablishmentId);
 
       expect(result.ok).toBe(true);
       if (result.ok) {
@@ -164,11 +166,11 @@ describe("MenuService", () => {
     });
 
     it("should propagate failure when the repository fails", async () => {
-      vi.mocked(menuRepository.findAll).mockResolvedValue(
+      vi.mocked(menuRepository.findByEstablishmentId).mockResolvedValue(
         fail("DB_ERROR", "Unexpected DB error")
       );
 
-      const result = await menuService.findAll();
+      const result = await menuService.findByEstablishmentId(validEstablishmentId);
 
       expect(result.ok).toBe(false);
       if (!result.ok) {
