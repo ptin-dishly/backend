@@ -33,4 +33,17 @@ export class IngredientService {
 
     return await this.ingredientRepository.create(data);
   }
+
+  async delete(id: string): Promise<Result<void>> {
+    if (!id || id.trim() === "") {
+      return fail("INVALID_ID", "Ingredient ID cannot be empty");
+    }
+
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(id)) {
+      return fail("INVALID_ID", "Ingredient ID must be a valid UUID");
+    }
+
+    return await this.ingredientRepository.delete(id);
+  }
 }

@@ -602,6 +602,55 @@ registry.registerPath({
   },
 });
 
+registry.registerPath({
+  method: "delete",
+  path: "/ingredients/{id}",
+  tags: ["Ingredients"],
+  summary: "Delete an ingredient",
+  description: "Deletes an existing ingredient by its UUID. Returns 204 if successful.",
+  operationId: "deleteIngredient",
+  request: {
+    params: z.object({ id: z.string().uuid() }),
+  },
+  responses: {
+    204: {
+      description: "Ingredient deleted successfully",
+    },
+    400: {
+      description: "Invalid UUID format",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "INVALID_ID",
+              message: "Ingredient ID must be a valid UUID",
+            },
+            meta: { timestamp: "2026-05-10T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    404: {
+      description: "Ingredient not found",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "NOT_FOUND",
+              message: "Ingredient not found",
+            },
+            meta: { timestamp: "2026-05-10T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+  },
+});
+
 // ======================
 // REGISTER PATHS: MENUS
 // ======================

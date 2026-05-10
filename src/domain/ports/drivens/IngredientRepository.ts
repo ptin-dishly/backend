@@ -16,5 +16,6 @@ export interface CreateIngredientData {
 export interface IngredientRepository {
   findAll(): Promise<Result<Ingredient[]>>;
   update(id: string, data: UpdateIngredientData): Promise<Result<Ingredient>>;
+  delete(id: string): Promise<Result<void>>;
   create(data: CreateIngredientData): Promise<Result<Ingredient>>;
 }
