@@ -33,7 +33,7 @@ export class IngredientService {
 
     return await this.ingredientRepository.create(data);
   }
-  
+
   async delete(id: string): Promise<Result<void>> {
     if (!id || id.trim() === "") {
       return fail("INVALID_ID", "Ingredient ID cannot be empty");
@@ -41,5 +41,4 @@ export class IngredientService {
 
     return await this.ingredientRepository.delete(id);
   }
-
 }

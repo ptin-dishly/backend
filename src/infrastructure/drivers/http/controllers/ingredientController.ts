@@ -1,7 +1,6 @@
 import type { IngredientService } from "@domain/services/IngredientService";
 import { sendErrorByCode, sendSuccess } from "@infrastructure/drivers/http/responses";
 import type { Request, Response } from "express";
-import { send } from "node:process";  
 import type { CreateIngredientBody } from "../schemas/ingredient";
 
 export class IngredientController {
@@ -57,7 +56,7 @@ export class IngredientController {
       meta: { timestamp: new Date().toISOString() },
     });
   }
-  
+
   async create(req: Request<unknown, unknown, CreateIngredientBody>, res: Response) {
     const result = await this.ingredientService.create(req.body);
 
@@ -68,13 +67,11 @@ export class IngredientController {
     return sendSuccess(res, 201, result.value);
   }
 
-  async remove(req: Request<{id: string}>, res: Response) {
+  async remove(req: Request<{ id: string }>, res: Response) {
     const result = await this.ingredientService.delete(req.params.id);
     if (!result.ok) {
       return sendErrorByCode(res, result.error.code, result.error.message);
     }
     return sendSuccess(res, 200, null, "Ingredient deleted");
   }
-
-
 }

@@ -53,7 +53,7 @@ export class PgIngredientRepository implements IngredientRepository {
       return fail("UPDATE_ERROR", "Failed to update ingredient", error);
     }
   }
-  
+
   async create(data: CreateIngredientData): Promise<Result<Ingredient>> {
     try {
       const checkQuery = "SELECT id FROM ingredients WHERE name = $1 LIMIT 1";
@@ -95,7 +95,6 @@ export class PgIngredientRepository implements IngredientRepository {
       return fail("DELETE_ERROR", "Failed to delete ingredient", error);
     }
   }
-
 
   private toEntity(row: Record<string, unknown>): Ingredient {
     return new Ingredient(
