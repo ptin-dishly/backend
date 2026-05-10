@@ -27,6 +27,7 @@ function createMockUserRepo(overrides?: Partial<UserRepository>): UserRepository
     updateLastLogin: vi.fn().mockResolvedValue(ok(undefined)),
     delete: vi.fn().mockResolvedValue(ok(undefined)),
     update: vi.fn().mockResolvedValue(ok(fakeUser)) as any,
+    save: vi.fn().mockResolvedValue(ok(undefined)),
     ...overrides,
   };
 }

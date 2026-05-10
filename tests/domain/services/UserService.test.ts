@@ -28,6 +28,7 @@ describe("UserService", () => {
       updateLastLogin: vi.fn(),
       delete: vi.fn(),
       update: vi.fn(),
+      save: vi.fn(),
     };
     userService = new UserService(userRepository);
   });
@@ -171,5 +172,78 @@ describe("UserService", () => {
       }
     });
   });  
+
+  // ======================
+  // create
+  // ======================
+
+  describe("create", () => {
+    const validCreateData = {
+      establishmentId: "d8b5a84d-2c81-4b13-a442-98446b78fb2a",
+      email: "new@calblay.cat",
+      password: "Password123!",
+      name: "Nou Usuari",
+      role: "waiter" as const,
+    };
+
+    it("should successfully create a new user", async () => {
+      vi.mocked(userRepository.findByEmail).mockResolvedValue(ok(null));
+      vi.mocked(userRepository.save).mockResolvedValue(ok(undefined));
+
+      const result = await userService.create(validCreateData);
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value.email).toBe(validCreateData.email);
+        expect(result.value.name).toBe(validCreateData.name);
+        expect(result.value.role).toBe(validCreateData.role);
+        expect(result.value.isActive).toBe(true);
+        expect(result.value.passwordHash).not.toBe(validCreateData.password);
+      }
+      
+      expect(userRepository.findByEmail).toHaveBeenCalledWith(validCreateData.email);
+      expect(userRepository.save).toHaveBeenCalled();
+    });
+
+    it("should fail when email is already registered", async () => {
+      vi.mocked(userRepository.findByEmail).mockResolvedValue(ok(fakeUser));
+
+      const result = await userService.create(validCreateData);
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("DUPLICATE_RESOURCE");
+      }
+      expect(userRepository.save).not.toHaveBeenCalled();
+    });
+
+    it("should propagate error if findByEmail fails", async () => {
+      vi.mocked(userRepository.findByEmail).mockResolvedValue(
+        fail("DB_ERROR", "Connection failed")
+      );
+
+      const result = await userService.create(validCreateData);
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("DB_ERROR");
+      }
+      expect(userRepository.save).not.toHaveBeenCalled();
+    });
+
+    it("should propagate error if save fails", async () => {
+      vi.mocked(userRepository.findByEmail).mockResolvedValue(ok(null));
+      vi.mocked(userRepository.save).mockResolvedValue(
+        fail("CREATE_ERROR", "Failed to insert into DB")
+      );
+
+      const result = await userService.create(validCreateData);
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("CREATE_ERROR");
+      }
+    });
+  });
 
 });

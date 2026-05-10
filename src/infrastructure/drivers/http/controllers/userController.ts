@@ -1,6 +1,7 @@
 import type { UserService } from "@domain/services/UserService";
 import { sendErrorByCode, sendNotFound, sendSuccess } from "@infrastructure/drivers/http/responses";
 import type { Request, Response } from "express";
+import { CreateUserSchema } from "../schemas/user";
 
 export function createUserController(userService: UserService) {
   return {
@@ -41,6 +42,23 @@ export function createUserController(userService: UserService) {
 
       const { passwordHash: _, ...updatedUser } = result.value;
       return sendSuccess(res, 200, updatedUser, "User updated successfully");
+    },
+
+    async create(req: Request, res: Response) {
+      const validation = CreateUserSchema.safeParse(req.body);
+
+      if (!validation.success) {
+        return sendErrorByCode(res, "VALIDATION_ERROR", "Invalid request data");
+      }
+
+      const result = await userService.create(validation.data);
+
+      if (!result.ok) {
+        return sendErrorByCode(res, result.error.code, result.error.message);
+      }
+
+      const { passwordHash: _, ...newUser } = result.value;
+      return sendSuccess(res, 201, newUser, "User created successfully");
     },
   };
 }
