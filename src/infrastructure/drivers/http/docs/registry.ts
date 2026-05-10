@@ -619,7 +619,8 @@ registry.registerPath({
   },
   responses: {
     200: {
-      description: "List of menus retrieved successfully. Returns an empty array if none are found.",
+      description:
+        "List of menus retrieved successfully. Returns an empty array if none are found.",
       content: {
         "application/json": {
           schema: SuccessResponseSchema(z.array(MenuSchema)),

@@ -21,7 +21,7 @@ export const MenuParamsSchema = z.object({
 });
 
 export const MenuEstablishmentParamsSchema = z.object({
-  establishmentId:  z
+  establishmentId: z
     .string()
     .regex(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/),
 });
