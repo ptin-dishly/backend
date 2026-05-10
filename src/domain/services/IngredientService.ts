@@ -26,12 +26,6 @@ export class IngredientService {
     return await this.ingredientRepository.update(id, data);
   }
 
-  async delete(id: string): Promise<Result<void>> {
-    if (!id || id.trim() === "") {
-      return fail("INVALID_ID", "Ingredient ID cannot be empty");
-    }
-
-    return await this.ingredientRepository.delete(id);
   async create(data: CreateIngredientData): Promise<Result<Ingredient>> {
     if (!data.name || data.name.trim().length === 0) {
       return fail("VALIDATION_ERROR", "Ingredient name is required");
@@ -39,4 +33,13 @@ export class IngredientService {
 
     return await this.ingredientRepository.create(data);
   }
+  
+  async delete(id: string): Promise<Result<void>> {
+    if (!id || id.trim() === "") {
+      return fail("INVALID_ID", "Ingredient ID cannot be empty");
+    }
+
+    return await this.ingredientRepository.delete(id);
+  }
+
 }
