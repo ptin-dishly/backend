@@ -35,6 +35,16 @@ export function createAllergenController(allergenService: AllergenService) {
       return sendSuccess(res, 200, result.value);
     },
 
+    async findByRecipeId(req: Request<{ recipeId: string }>, res: Response) {
+      const result = await allergenService.findByRecipeId(req.params.recipeId);
+
+      if (!result.ok) {
+        return sendErrorByCode(res, result.error.code, result.error.message);
+      }
+
+      return sendSuccess(res, 200, result.value);
+    },
+
     async findByEuNumber(req: Request<{ euNumber: string }>, res: Response) {
       const euNumber = Number(req.params.euNumber);
 

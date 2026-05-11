@@ -37,6 +37,7 @@ function createMockRepo(overrides?: Partial<AllergenRepository>): AllergenReposi
     findById: async () => ok(null),
     findByIngredientId: async () => ok([]),
     findByMenuId: async () => ok([]),
+    findByRecipeId: async () => ok([]),
     UpdateAllergenData: async () => ok(null),
     delete: async () => ok(undefined),
     search: async () => ok([]),
@@ -325,6 +326,64 @@ describe("AllergenService", () => {
       service = new AllergenService(repo);
 
       const result = await service.findByMenuId("any-menu-uuid");
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("DB_ERROR");
+      }
+    });
+  });
+
+  describe("findByRecipeId", () => {
+    it("should return allergens associated with the recipe", async () => {
+      const allergens = [
+        fakeAllergen(validData()),
+        fakeAllergen(validData({ code: "CRU", nameEs: "Crustáceos", nameCa: "Crustacis", nameEn: "Crustaceans", euNumber: 2 })),
+      ];
+      repo = createMockRepo({ findByRecipeId: async () => ok(allergens) });
+      service = new AllergenService(repo);
+
+      const result = await service.findByRecipeId("some-recipe-uuid");
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value).toHaveLength(2);
+        expect(result.value[0].code).toBe("GLU");
+        expect(result.value[1].code).toBe("CRU");
+      }
+    });
+
+    it("should fail when recipeId is empty", async () => {
+      const result = await service.findByRecipeId("");
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("INVALID_ID");
+      }
+    });
+
+    it("should return empty array when no allergens are associated", async () => {
+      repo = createMockRepo({ findByRecipeId: async () => ok([]) });
+      service = new AllergenService(repo);
+
+      const result = await service.findByRecipeId("some-recipe-uuid");
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value).toHaveLength(0);
+      }
+    });
+
+    it("should propagate repository errors", async () => {
+      repo = createMockRepo({
+        findByRecipeId: async () => ({
+          ok: false,
+          error: { code: "DB_ERROR", message: "Connection failed" },
+        }),
+      });
+      service = new AllergenService(repo);
+
+      const result = await service.findByRecipeId("some-recipe-uuid");
 
       expect(result.ok).toBe(false);
       if (!result.ok) {
