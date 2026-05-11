@@ -19,6 +19,7 @@ export interface AllergenRepository {
   findById(id: string): Promise<Result<Allergen | null>>;
   findByIngredientId(ingredientId: string): Promise<Result<Allergen[]>>;
   findByMenuId(menuId: string): Promise<Result<Allergen[]>>;
+  findByRecipeId(recipeId: string): Promise<Result<Allergen[]>>;
   UpdateAllergenData(
     id: string,
     data: Partial<CreateAllergenData>,
