@@ -25,9 +25,9 @@ export function MenuRoutes(MenuService: MenuService): Router {
   );
   router.put("/menus/:id", controller.update);
   router.post(
-    "/menus", 
+    "/menus",
     validate({ body: CreateMenuSchema }), // Passem el validador amb el nou schema
-    controller.create
+    controller.create,
   );
   return router;
 }
