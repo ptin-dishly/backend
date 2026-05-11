@@ -8,18 +8,17 @@ export class PgMenuRepository implements MenuRepository {
   constructor(private pool: pg.Pool) {}
 
   async findByAllergen(allergenId: string): Promise<Result<Menu[]>> {
+    const query = `
+      SELECT DISTINCT m.* FROM menu_cards m
+      INNER JOIN menu_card_items mci ON m.id = mci.menu_card_id
+      INNER JOIN recipe_allergens ra ON mci.recipe_id = ra.recipe_id
+      WHERE ra.allergen_id = $1
+    `;
     try {
-      const query = `
-        SELECT m.* FROM menus m
-        INNER JOIN menu_allergens ma ON m.id = ma.menu_id
-        WHERE ma.allergen_id = $1
-      `;
       const result = await this.pool.query(query, [allergenId]);
-
-      // Si no hi ha resultats, result.rows serà [], que compleix el criteri d'acceptació
-      return ok(result.rows.map((row) => this.toEntity(row)));
-    } catch (error: unknown) {
-      return fail("RETRIEVE_ERROR", "Failed to retrieve menus by allergen", error);
+      return ok(result.rows.map(row => this.toEntity(row)));
+    } catch (error) {
+      return fail("DB_ERROR", "Error consultant al·lèrgens", error);
     }
   }
 
@@ -45,6 +44,41 @@ export class PgMenuRepository implements MenuRepository {
       return ok(menus);
     } catch (error) {
       return fail("RETRIEVE_ERROR", "Failed to retrieve menus", error);
+    }
+  }
+
+  async create(data: CreateMenuInput): Promise<Result<Menu>> {
+    const client = await this.pool.connect();
+    try {
+      await client.query("BEGIN");
+
+      // Inserim a menu_cards (imatge 50006a)
+      const menuResult = await client.query(`
+        INSERT INTO menu_cards (establishment_id, name, is_public, qr_code_url, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, NOW(), NOW()) RETURNING *
+      `, [data.establishmentId, data.name, data.isPublic, data.qrCodeUrl]);
+
+      const newMenu = this.toEntity(menuResult.rows[0]);
+
+      // Inserim a menu_card_items (imatge 5000c5)
+      for (const item of data.items) {
+        await client.query(`
+          INSERT INTO menu_card_items (menu_card_id, recipe_id, price, display_order, is_available, created_at, updated_at)
+          VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
+        `, [newMenu.id, item.recipeId, item.price, item.displayOrder, item.isAvailable]);
+      }
+
+      await client.query("COMMIT");
+      return ok(newMenu);
+    } catch (error: any) {
+      await client.query("ROLLBACK");
+      // Gestió de l'error de duplicats segons la constraint de la imatge
+      if (error.code === "23505") {
+        return fail("DUPLICATE_RESOURCE", "Aquesta recepta ja existeix al menú.");
+      }
+      return fail("CREATE_ERROR", "Error creant el menú", error);
+    } finally {
+      client.release();
     }
   }
 
@@ -106,6 +140,8 @@ export class PgMenuRepository implements MenuRepository {
       return fail("UPDATE_ERROR", "Failed to update menu", error);
     }
   }
+
+
 
   private toEntity(row: Record<string, unknown>): Menu {
     return new Menu(

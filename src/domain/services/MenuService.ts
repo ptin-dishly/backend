@@ -26,6 +26,13 @@ export class MenuService {
     return this.menuRepository.findByEstablishmentId(establishmentId);
   }
 
+  async create(data: CreateMenuInput): Promise<Result<Menu>> {
+    if (!data.items || data.items.length === 0) {
+      return fail("INVALID_REQUEST", "Un menú ha de tenir almenys un ítem.");
+    }
+    return await this.menuRepository.create(data);
+  }
+
   async update(id: string, data: UpdateMenuData): Promise<Result<Menu>> {
     if (!id || id.trim() === "") {
       return fail("INVALID_ID", "Menu ID is required for update");

@@ -7,5 +7,6 @@ export class Menu {
     readonly qrCodeUrl: string | null,
     readonly createdAt: Date,
     readonly updatedAt: Date,
+    readonly items?: any[]
   ) {}
 }

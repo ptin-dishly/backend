@@ -24,5 +24,10 @@ export function MenuRoutes(MenuService: MenuService): Router {
     controller.findByAllergenId,
   );
   router.put("/menus/:id", controller.update);
+  router.post(
+    "/menus", 
+    validate({ body: CreateMenuSchema }), // Passem el validador amb el nou schema
+    controller.create
+  );
   return router;
 }

@@ -33,17 +33,50 @@ describe("MenuService", () => {
     );
   };
 
-  beforeEach(() => {
-    menuRepository = {
-      findById: vi.fn(),
-      findByEstablishmentId: vi.fn(),
-      findByAllergen: vi.fn(),
-      update: vi.fn(),
-    } as unknown as MenuRepository;
+beforeEach(() => {
+  menuRepository = {
+    findById: vi.fn(),
+    findByEstablishmentId: vi.fn(),
+    findByAllergen: vi.fn(),
+    update: vi.fn(),
+    create: vi.fn(),
+  } as unknown as MenuRepository;
 
-    menuService = new MenuService(menuRepository);
-  });
+  menuService = new MenuService(menuRepository);
+});
   
+
+  // --- TESTS: create ---
+
+  describe("create", () => {
+    it("hauria de fallar si el menú no té ítems", async () => {
+      const inputBuit = { 
+        establishmentId: "uuid", name: "Test", isPublic: true, 
+        qrCodeUrl: null, items: [] 
+      };
+
+      const result = await menuService.create(inputBuit);
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("INVALID_REQUEST");
+      }
+    });
+
+    it("hauria de cridar al repositori si les dades són vàlides", async () => {
+      const inputValid = {
+        establishmentId: "uuid", name: "Menú OK", isPublic: true, qrCodeUrl: null,
+        items: [{ recipeId: "r1", price: 10, displayOrder: 1, isAvailable: true }]
+      };
+      vi.mocked(menuRepository.create).mockResolvedValue(ok(fakeMenu({ name: "Menú OK" })));
+
+      const result = await menuService.create(inputValid);
+
+      expect(result.ok).toBe(true);
+      expect(menuRepository.create).toHaveBeenCalledWith(inputValid);
+    });
+  });
+
   // --- TESTS: findByAllergenId ---
   
    describe("findByAllergenId", () => {
