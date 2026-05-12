@@ -5,6 +5,8 @@ import { IngredientService } from "@domain/services/IngredientService";
 import { MenuService } from "@domain/services/MenuService";
 import { OrderService } from "@domain/services/OrderService";
 import { RecipeService } from "@domain/services/RecipeService";
+import { RoomService } from "@domain/services/RoomService";
+import { TableService } from "@domain/services/TableService";
 import { UserService } from "@domain/services/UserService";
 import { BcryptPasswordHasher } from "@infrastructure/drivens/auth/BcryptPasswordHasher";
 import { authConfig } from "@infrastructure/drivens/auth/config";
@@ -20,6 +22,8 @@ import type pg from "pg";
 import { MenuCardItemService } from "../../domain/services/MenuCardItemService";
 import { PgIngredientRepository } from "../drivens/persistence/pg/PgIngredientRepository";
 import { PgMenuCardItemRepository } from "../drivens/persistence/pg/PgMenuCardItemRepository";
+import { PgRoomRepository } from "../drivens/persistence/pg/PgRoomRepository";
+import { PgTableRepository } from "../drivens/persistence/pg/PgTableRepository";
 
 export interface Container {
   pool: pg.Pool;
@@ -32,6 +36,8 @@ export interface Container {
   tokenService: TokenService;
   menuCardItemService: MenuCardItemService;
   orderService: OrderService;
+  roomService: RoomService;
+  tableService: TableService;
 }
 
 export function createContainer(): Container {
@@ -61,6 +67,10 @@ export function createContainer(): Container {
   const menuCardItemService = new MenuCardItemService(menuCardItemRepository);
   const orderRepository = new PgOrderRepository(pool);
   const orderService = new OrderService(orderRepository);
+  const roomRepository = new PgRoomRepository(pool);
+  const roomService = new RoomService(roomRepository);
+  const tableRepository = new PgTableRepository(pool);
+  const tableService = new TableService(tableRepository);
 
   return {
     pool,
@@ -73,5 +83,7 @@ export function createContainer(): Container {
     tokenService,
     menuCardItemService,
     orderService,
+    roomService,
+    tableService,
   };
 }

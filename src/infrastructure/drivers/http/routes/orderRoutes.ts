@@ -1,15 +1,16 @@
 import type { OrderService } from "@domain/services/OrderService";
+import type { RoomService } from "@domain/services/RoomService";
+import type { TableService } from "@domain/services/TableService";
 import { createOrderController } from "@infrastructure/drivers/http/controllers/orderController";
 import { createRoomController } from "@infrastructure/drivers/http/controllers/roomController";
 import { createTableController } from "@infrastructure/drivers/http/controllers/tableController";
 import { Router } from "express";
-import type pg from "pg";
 
-export function OrderRoutes(orderService: OrderService, pool: pg.Pool): Router {
+export function OrderRoutes(orderService: OrderService, roomService: RoomService, tableService: TableService): Router {
   const router = Router();
   const orderCtrl = createOrderController(orderService);
-  const tableCtrl = createTableController(pool);
-  const roomCtrl = createRoomController(pool);
+  const tableCtrl = createTableController(tableService);
+  const roomCtrl = createRoomController(roomService);
 
   router.get("/rooms", roomCtrl.findAll);
   router.get("/tables", tableCtrl.findAll);

@@ -140,7 +140,7 @@ export function createApp(container: Container): express.Express {
   v1.use(ingredientRoutes(container.ingredientService));
   v1.use(userRoutes(container.userService, container.tokenService));
   v1.use(MenuCardItemRoutes(container.menuCardItemService));
-  v1.use(OrderRoutes(container.orderService, container.pool));
+  v1.use(OrderRoutes(container.orderService, container.roomService, container.tableService));
 
   app.use("/api/v1", v1);
 
