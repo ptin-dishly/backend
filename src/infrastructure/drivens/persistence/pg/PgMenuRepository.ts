@@ -77,16 +77,18 @@ export class PgMenuRepository implements MenuRepository {
 
       await client.query("COMMIT");
       return ok(newMenu);
-    } catch (error: unknown) {
-      await client.query("ROLLBACK");
-      // Gestió de l'error de duplicats segons la constraint de la imatge
-      if ((error as any).code === "23505") {
-        return fail("DUPLICATE_RESOURCE", "Aquesta recepta ja existeix al menú.");
+      } catch (error: unknown) {
+          await client.query("ROLLBACK");
+          if (typeof error === "object" && error !== null && "code" in error) {
+              const pgError = error as { code: string };
+              if (pgError.code === "23505") {
+                  return fail("DUPLICATE_RESOURCE", "Aquesta recepta ja existeix al menú.");
+              }
+          }
+          return fail("CREATE_ERROR", "Error creant el menú", error);
+      } finally {
+          client.release();
       }
-      return fail("CREATE_ERROR", "Error creant el menú", error);
-    } finally {
-      client.release();
-    }
   }
 
   async update(id: string, data: UpdateMenuData): Promise<Result<Menu>> {
