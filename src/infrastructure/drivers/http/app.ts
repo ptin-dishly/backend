@@ -1,11 +1,11 @@
 import type { Container } from "@infrastructure/bootstrap/container";
+import { rateLimiter } from "@infrastructure/drivers/http/middleware/rateLimiter";
 import { apiReference } from "@scalar/express-api-reference";
 import compression from "compression";
 import cors from "cors";
 import express, { type NextFunction, type Request, type Response } from "express";
 import helmet from "helmet";
 import { httpConfig } from "./config";
-import { rateLimiter } from "@infrastructure/drivers/http/middleware/rateLimiter";
 import { HealthController } from "./controllers/healthController";
 import { openApiSpec } from "./docs/registry";
 import { requestLogger } from "./middleware/requestLogger";
