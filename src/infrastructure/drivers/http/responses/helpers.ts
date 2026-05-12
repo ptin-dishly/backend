@@ -33,6 +33,9 @@ function getHttpStatusFromErrorCode(errorCode: ErrorCode): number {
     DUPLICATE_RESOURCE: 409,
 
     INTERNAL_ERROR: 500,
+
+    RATE_LIMIT: 429,
+    
     CREATE_ERROR: 500,
     UPDATE_ERROR: 500,
     DELETE_ERROR: 500,

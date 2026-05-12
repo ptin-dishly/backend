@@ -5,6 +5,7 @@ import cors from "cors";
 import express, { type NextFunction, type Request, type Response } from "express";
 import helmet from "helmet";
 import { httpConfig } from "./config";
+import { rateLimiter } from "@infrastructure/drivers/http/middleware/rateLimiter";
 import { HealthController } from "./controllers/healthController";
 import { openApiSpec } from "./docs/registry";
 import { requestLogger } from "./middleware/requestLogger";
@@ -132,6 +133,7 @@ export function createApp(container: Container): express.Express {
   // ======================
 
   const v1 = express.Router();
+  app.use(rateLimiter);
   v1.use(allergenRoutes(container.allergenService));
   v1.use(sessionRoutes(container.authService, container.tokenService));
   v1.use(MenuRoutes(container.menuService));
