@@ -1,5 +1,9 @@
 import { Menu } from "@domain/entities/Menu";
-import type { MenuRepository, UpdateMenuData, CreateMenuInput } from "@domain/ports/drivens/MenuRepository";
+import type {
+  CreateMenuInput,
+  MenuRepository,
+  UpdateMenuData,
+} from "@domain/ports/drivens/MenuRepository";
 import type { Result } from "@domain/value-objects/Result";
 import { fail, ok } from "@domain/value-objects/Result";
 import type pg from "pg";
@@ -16,7 +20,7 @@ export class PgMenuRepository implements MenuRepository {
     `;
     try {
       const result = await this.pool.query(query, [allergenId]);
-      return ok(result.rows.map(row => this.toEntity(row)));
+      return ok(result.rows.map((row) => this.toEntity(row)));
     } catch (error) {
       return fail("DB_ERROR", "Error consultant al·lèrgens", error);
     }
@@ -53,28 +57,36 @@ export class PgMenuRepository implements MenuRepository {
       await client.query("BEGIN");
 
       // Inserim a menu_cards (imatge 50006a)
-      const menuResult = await client.query(`
+      const menuResult = await client.query(
+        `
         INSERT INTO menu_cards (establishment_id, name, is_public, qr_code_url, created_at, updated_at)
         VALUES ($1, $2, $3, $4, NOW(), NOW()) RETURNING *
-      `, [data.establishmentId, data.name, data.isPublic, data.qrCodeUrl]);
+      `,
+        [data.establishmentId, data.name, data.isPublic, data.qrCodeUrl],
+      );
 
       const newMenu = this.toEntity(menuResult.rows[0]);
 
       // Inserim a menu_card_items (imatge 5000c5)
       for (const item of data.items) {
-        await client.query(`
+        await client.query(
+          `
           INSERT INTO menu_card_items (menu_card_id, recipe_id, price, display_order, is_available, created_at, updated_at)
           VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
-        `, [newMenu.id, item.recipeId, item.price, item.displayOrder, item.isAvailable]);
+        `,
+          [newMenu.id, item.recipeId, item.price, item.displayOrder, item.isAvailable],
+        );
       }
 
       await client.query("COMMIT");
       return ok(newMenu);
-    } catch (error: any) {
+    } catch (error: unknown) {
       await client.query("ROLLBACK");
-      // Gestió de l'error de duplicats segons la constraint de la imatge
-      if (error.code === "23505") {
-        return fail("DUPLICATE_RESOURCE", "Aquesta recepta ja existeix al menú.");
+      if (typeof error === "object" && error !== null && "code" in error) {
+        const pgError = error as { code: string };
+        if (pgError.code === "23505") {
+          return fail("DUPLICATE_RESOURCE", "Aquesta recepta ja existeix al menú.");
+        }
       }
       return fail("CREATE_ERROR", "Error creant el menú", error);
     } finally {
@@ -162,8 +174,6 @@ export class PgMenuRepository implements MenuRepository {
       return fail("UPDATE_ERROR", "Failed to update menu", error);
     }
   }
-
-
 
   private toEntity(row: Record<string, unknown>): Menu {
     return new Menu(

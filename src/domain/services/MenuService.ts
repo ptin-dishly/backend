@@ -1,5 +1,9 @@
 import type { Menu } from "@domain/entities/Menu";
-import type { MenuRepository, UpdateMenuData, CreateMenuInput } from "@domain/ports/drivens/MenuRepository";
+import type {
+  CreateMenuInput,
+  MenuRepository,
+  UpdateMenuData,
+} from "@domain/ports/drivens/MenuRepository";
 import type { Result } from "@domain/value-objects/Result";
 import { fail } from "@domain/value-objects/Result";
 

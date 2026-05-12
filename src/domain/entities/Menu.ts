@@ -1,3 +1,5 @@
+import type { MenuCardItem } from "./MenuCardItem";
+
 export class Menu {
   constructor(
     readonly id: string,
@@ -7,6 +9,6 @@ export class Menu {
     readonly qrCodeUrl: string | null,
     readonly createdAt: Date,
     readonly updatedAt: Date,
-    readonly items?: any[]
+    readonly items?: MenuCardItem[],
   ) {}
 }

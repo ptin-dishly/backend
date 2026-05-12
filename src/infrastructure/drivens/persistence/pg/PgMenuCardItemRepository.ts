@@ -57,6 +57,4 @@ export class PgMenuCardItemRepository implements MenuCardItemRepository {
       return fail("RETRIEVE_ERROR", "Failed to retrieve menu card items with recipes", error);
     }
   }
-
-  
 }
