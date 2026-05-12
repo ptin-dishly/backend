@@ -5,6 +5,7 @@ import {
   MenuByAllergenParamsSchema,
   MenuEstablishmentParamsSchema,
   MenuParamsSchema,
+  CreateMenuSchema,
 } from "@infrastructure/drivers/http/schemas/menu";
 import { Router } from "express";
 
@@ -26,8 +27,13 @@ export function MenuRoutes(MenuService: MenuService): Router {
   router.put("/menus/:id", controller.update);
   router.post(
     "/menus", 
-    validate({ body: CreateMenuSchema }), // Passem el validador amb el nou schema
+    validate({ body: CreateMenuSchema }),
     controller.create
+  );
+  router.delete(
+    "/menus/:id",
+    validate({ params: MenuParamsSchema }),
+    controller.delete
   );
   return router;
 }
