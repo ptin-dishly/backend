@@ -2,7 +2,7 @@ import type { Menu } from "@domain/entities/Menu";
 import type { MenuRepository, UpdateMenuData } from "@domain/ports/drivens/MenuRepository";
 import type { Result } from "@domain/value-objects/Result";
 import { fail } from "@domain/value-objects/Result";
-import { CreateMenuInput } from "../ports/drivens/MenuRepository";
+import type { CreateMenuInput } from "../ports/drivens/MenuRepository";
 
 export class MenuService {
   constructor(private menuRepository: MenuRepository) {}
