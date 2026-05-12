@@ -19,6 +19,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.3.14",
+    "@rolldown/binding-darwin-arm64": "1.0.0-rc.12",
     "@types/compression": "1.8.1",
     "@types/cors": "2.8.19",
     "@types/express": "5.0.6",
@@ -29,9 +30,6 @@
     "tsx": "4.21.0",
     "typescript": "5.9.3",
     "vitest": "^4.1.0"
-  },
-  "optionalDependencies": {
-    "@rolldown/binding-darwin-arm64": "1.0.0-rc.12"
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^8.5.0",
