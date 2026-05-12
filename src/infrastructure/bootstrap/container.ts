@@ -3,6 +3,7 @@ import { AllergenService } from "@domain/services/AllergenService";
 import { AuthService } from "@domain/services/AuthService";
 import { IngredientService } from "@domain/services/IngredientService";
 import { MenuService } from "@domain/services/MenuService";
+import { OrderService } from "@domain/services/OrderService";
 import { RecipeService } from "@domain/services/RecipeService";
 import { UserService } from "@domain/services/UserService";
 import { BcryptPasswordHasher } from "@infrastructure/drivens/auth/BcryptPasswordHasher";
@@ -11,6 +12,7 @@ import { JwtTokenService } from "@infrastructure/drivens/auth/JwtTokenService";
 import { pool } from "@infrastructure/drivens/persistence/pg/db";
 import { PgAllergenRepository } from "@infrastructure/drivens/persistence/pg/PgAllergenRepository";
 import { PgMenuRepository } from "@infrastructure/drivens/persistence/pg/PgMenuRepository";
+import { PgOrderRepository } from "@infrastructure/drivens/persistence/pg/PgOrderRepository";
 import { PgRecipeRepository } from "@infrastructure/drivens/persistence/pg/PgRecipeRepository";
 import { PgRefreshTokenRepository } from "@infrastructure/drivens/persistence/pg/PgRefreshTokenRepository";
 import { PgUserRepository } from "@infrastructure/drivens/persistence/pg/PgUserRepository";
@@ -29,6 +31,7 @@ export interface Container {
   userService: UserService;
   tokenService: TokenService;
   menuCardItemService: MenuCardItemService;
+  orderService: OrderService;
 }
 
 export function createContainer(): Container {
@@ -56,7 +59,8 @@ export function createContainer(): Container {
   );
   const menuCardItemRepository = new PgMenuCardItemRepository(pool);
   const menuCardItemService = new MenuCardItemService(menuCardItemRepository);
-  //const userService = new UserService(userRepository);
+  const orderRepository = new PgOrderRepository(pool);
+  const orderService = new OrderService(orderRepository);
 
   return {
     pool,
@@ -68,5 +72,6 @@ export function createContainer(): Container {
     userService,
     tokenService,
     menuCardItemService,
+    orderService,
   };
 }

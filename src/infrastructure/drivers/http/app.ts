@@ -13,6 +13,7 @@ import { healthRoutes } from "./routes/healthRoutes";
 import { ingredientRoutes } from "./routes/ingredientRoutes";
 import { MenuCardItemRoutes } from "./routes/menuCardItemRoutes";
 import { MenuRoutes } from "./routes/menuRoutes";
+import { OrderRoutes } from "./routes/orderRoutes";
 import { RecipeRoutes } from "./routes/recipeRoutes";
 import { sessionRoutes } from "./routes/sessionRoutes";
 import { userRoutes } from "./routes/userRoutes";
@@ -139,6 +140,7 @@ export function createApp(container: Container): express.Express {
   v1.use(ingredientRoutes(container.ingredientService));
   v1.use(userRoutes(container.userService, container.tokenService));
   v1.use(MenuCardItemRoutes(container.menuCardItemService));
+  v1.use(OrderRoutes(container.orderService, container.pool));
 
   app.use("/api/v1", v1);
 
