@@ -15,7 +15,7 @@ import {
   RecipeSchema,
 } from "../schemas/recipe";
 import { LoginSchema, RefreshSchema, TokenPairSchema } from "../schemas/session";
-import { UserSchema } from "../schemas/user";
+import { CreateUserSchema, UserSchema } from "../schemas/user";
 import { z } from "../schemas/zod";
 
 const registry = new OpenAPIRegistry();
@@ -41,6 +41,7 @@ registry.register("RecipeIngredient", RecipeIngredientSchema);
 registry.register("RecipeByAllergenParams", RecipeByAllergenParamsSchema);
 registry.register("Ingredient", IngredientSchema);
 registry.register("User", UserSchema);
+registry.register("CreateUserBody", CreateUserSchema);
 
 // Esquema específico para el detalle de Menu Card Items con Recipe
 const MenuCardItemRecipeDetailSchema = z.object({
@@ -781,6 +782,91 @@ registry.registerPath({
       content: {
         "application/json": {
           schema: SuccessResponseSchema(z.array(MenuCardItemRecipeDetailSchema)),
+        },
+      },
+    },
+  },
+});
+
+// ======================
+// REGISTER PATHS: USERS
+// ======================
+
+registry.registerPath({
+  method: "post",
+  path: "/users",
+  tags: ["Users"],
+  summary: "Create a new user",
+  description: "Registers a new user in the system for a specific establishment.",
+  operationId: "createUser",
+  security: [{ bearerAuth: [] }],
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: CreateUserSchema,
+          example: {
+            establishmentId: "d8b5a84d-2c81-4b13-a442-98446b78fb2a",
+            email: "nuevo@usuario.com",
+            password: "Password123!",
+            name: "Juan Pérez",
+            role: "waiter",
+          },
+        },
+      },
+    },
+  },
+  responses: {
+    201: {
+      description: "User created successfully",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(UserSchema),
+          example: {
+            success: true,
+            message: "User created successfully",
+            data: {
+              id: "a1c6760d-0616-4937-afea-ecf732d4c7e0",
+              establishmentId: "d8b5a84d-2c81-4b13-a442-98446b78fb2a",
+              email: "nuevo@usuario.com",
+              name: "Juan Pérez",
+              role: "waiter",
+              isActive: true,
+              lastLoginAt: null,
+              createdAt: "2026-05-10T16:25:06.288Z",
+              updatedAt: "2026-05-10T16:25:06.288Z",
+            },
+            meta: { timestamp: "2026-05-10T16:25:06.291Z" },
+          },
+        },
+      },
+    },
+    400: {
+      description: "Validation Error",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: { code: "VALIDATION_ERROR", message: "Invalid request data" },
+            meta: { timestamp: "2026-05-10T16:25:06.291Z" },
+          },
+        },
+      },
+    },
+    409: {
+      description: "Duplicate Resource Error",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "DUPLICATE_RESOURCE",
+              message: "User with that email already registred",
+            },
+            meta: { timestamp: "2026-05-10T16:25:06.291Z" },
+          },
         },
       },
     },

@@ -17,6 +17,7 @@ export function userRoutes(userService: UserService, tokenService: TokenService)
     validate({ params: UserParamsSchema, body: UpdateUserSchema }),
     controller.update,
   );
+  router.post("/users", controller.create);
 
   return router;
 }

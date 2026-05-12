@@ -28,3 +28,15 @@ export const UpdateUserSchema = UserSchema.omit({
 }).partial();
 
 export type UpdateUserBody = z.infer<typeof UpdateUserSchema>;
+
+export const CreateUserSchema = UserSchema.omit({
+  id: true,
+  isActive: true,
+  lastLoginAt: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  password: z.string().min(8, "La contrasenya ha de tenir al menys 8 caracters"),
+});
+
+export type CreateUserBody = z.infer<typeof CreateUserSchema>;
