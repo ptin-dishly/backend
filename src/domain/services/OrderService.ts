@@ -1,5 +1,5 @@
 import type { Order, OrderStatus } from "@domain/entities/Order";
-import type { CreateOrderInput, OrderRepository } from "@domain/ports/drivens/OrderRepository";
+import type { CreateOrderInput, DashboardOrderSummary, OrderRepository } from "@domain/ports/drivens/OrderRepository";
 import type { Result } from "@domain/value-objects/Result";
 
 export class OrderService {
@@ -11,6 +11,10 @@ export class OrderService {
 
   getActiveTableIds(): Promise<Result<string[]>> {
     return this.orderRepository.findActiveTableIds();
+  }
+
+  getAllActiveForDashboard(): Promise<Result<DashboardOrderSummary[]>> {
+    return this.orderRepository.findAllActiveForDashboard();
   }
 
   createOrder(input: CreateOrderInput): Promise<Result<Order>> {

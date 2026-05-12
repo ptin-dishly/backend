@@ -1,6 +1,16 @@
 import type { Order, OrderStatus } from "@domain/entities/Order";
 import type { Result } from "@domain/value-objects/Result";
 
+export interface DashboardOrderSummary {
+  id: string;
+  tableId: string | null;
+  tableNumber: string | null;
+  status: string;
+  createdAt: Date;
+  items: { name: string; quantity: number; price: number }[];
+  total: number;
+}
+
 export interface CreateOrderItemInput {
   recipeId: string;
   menuCardItemId: string | null;
@@ -22,6 +32,7 @@ export interface CreateOrderInput {
 export interface OrderRepository {
   findActiveByTableId(tableId: string): Promise<Result<Order | null>>;
   findActiveTableIds(): Promise<Result<string[]>>;
+  findAllActiveForDashboard(): Promise<Result<DashboardOrderSummary[]>>;
   create(input: CreateOrderInput): Promise<Result<Order>>;
   updateItemStatus(orderId: string, itemId: string, status: OrderStatus): Promise<Result<void>>;
   closeOrder(orderId: string): Promise<Result<void>>;

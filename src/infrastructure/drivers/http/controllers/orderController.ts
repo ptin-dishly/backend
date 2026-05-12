@@ -4,6 +4,12 @@ import type { Request, Response } from "express";
 
 export function createOrderController(orderService: OrderService) {
   return {
+    async getAllActiveForDashboard(_req: Request, res: Response) {
+      const result = await orderService.getAllActiveForDashboard();
+      if (!result.ok) return sendErrorByCode(res, result.error.code, result.error.message);
+      return sendSuccess(res, 200, result.value);
+    },
+
     async getActiveTableIds(_req: Request, res: Response) {
       const result = await orderService.getActiveTableIds();
       if (!result.ok) return sendErrorByCode(res, result.error.code, result.error.message);

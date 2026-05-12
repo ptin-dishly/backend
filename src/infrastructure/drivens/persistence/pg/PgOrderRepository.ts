@@ -1,5 +1,5 @@
 import { Order, OrderItem, type OrderStatus } from "@domain/entities/Order";
-import type { CreateOrderInput, OrderRepository } from "@domain/ports/drivens/OrderRepository";
+import type { CreateOrderInput, DashboardOrderSummary, OrderRepository } from "@domain/ports/drivens/OrderRepository";
 import type { Result } from "@domain/value-objects/Result";
 import { fail, ok } from "@domain/value-objects/Result";
 import type pg from "pg";
@@ -83,6 +83,55 @@ export class PgOrderRepository implements OrderRepository {
       return ok(result.rows.map((r) => r.table_id as string));
     } catch (error) {
       return fail("RETRIEVE_ERROR", "Error fetching active table IDs", error);
+    }
+  }
+
+  async findAllActiveForDashboard(): Promise<Result<DashboardOrderSummary[]>> {
+    try {
+      const query = `
+        SELECT
+          o.id,
+          o.table_id,
+          t.table_number,
+          o.status,
+          o.created_at,
+          oi.name           AS item_name,
+          oi.quantity,
+          COALESCE(mci.price, 0) AS price
+        FROM orders o
+        LEFT JOIN tables t ON t.id = o.table_id
+        LEFT JOIN order_items oi ON oi.order_id = o.id
+        LEFT JOIN menu_card_items mci ON mci.id = oi.menu_card_item_id
+        WHERE o.status NOT IN ('served', 'cancelled')
+        ORDER BY o.created_at ASC, oi.name ASC
+      `;
+      const result = await this.pool.query(query);
+
+      const ordersMap = new Map<string, DashboardOrderSummary>();
+      for (const row of result.rows) {
+        const orderId = row.id as string;
+        if (!ordersMap.has(orderId)) {
+          ordersMap.set(orderId, {
+            id: orderId,
+            tableId: (row.table_id as string | null) ?? null,
+            tableNumber: (row.table_number as string | null) ?? null,
+            status: row.status as string,
+            createdAt: new Date(row.created_at as string),
+            items: [],
+            total: 0,
+          });
+        }
+        if (row.item_name !== null) {
+          const order = ordersMap.get(orderId)!;
+          const qty = row.quantity as number;
+          const price = Number(row.price);
+          order.items.push({ name: row.item_name as string, quantity: qty, price });
+          order.total += qty * price;
+        }
+      }
+      return ok(Array.from(ordersMap.values()));
+    } catch (error) {
+      return fail("RETRIEVE_ERROR", "Error fetching dashboard orders", error);
     }
   }
 
