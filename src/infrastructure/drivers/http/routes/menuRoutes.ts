@@ -7,6 +7,7 @@ import {
   MenuParamsSchema,
 } from "@infrastructure/drivers/http/schemas/menu";
 import { Router } from "express";
+import { CreateMenuSchema } from "../schemas/menu";
 
 export function MenuRoutes(MenuService: MenuService): Router {
   const router = Router();

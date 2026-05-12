@@ -3,6 +3,7 @@ import type { MenuRepository, UpdateMenuData } from "@domain/ports/drivens/MenuR
 import type { Result } from "@domain/value-objects/Result";
 import { fail, ok } from "@domain/value-objects/Result";
 import type pg from "pg";
+import { CreateMenuInput } from "../../../../domain/ports/drivens/MenuRepository";
 
 export class PgMenuRepository implements MenuRepository {
   constructor(private pool: pg.Pool) {}
@@ -79,7 +80,7 @@ export class PgMenuRepository implements MenuRepository {
     } catch (error: unknown) {
       await client.query("ROLLBACK");
       // Gestió de l'error de duplicats segons la constraint de la imatge
-      if (error.code === "23505") {
+      if ((error as any).code === "23505") {
         return fail("DUPLICATE_RESOURCE", "Aquesta recepta ja existeix al menú.");
       }
       return fail("CREATE_ERROR", "Error creant el menú", error);
