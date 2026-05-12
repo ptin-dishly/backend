@@ -29,6 +29,8 @@ export const DomainErrorCodes = {
   DB_ERROR: "DB_ERROR",
   DB_MAPPING_ERROR: "DB_MAPPING_ERROR",
   DB_INTEGRITY_ERROR: "DB_INTEGRITY_ERROR",
+
+  RATE_LIMIT: "RATE_LIMIT",
 } as const;
 
 export type DomainErrorCode = (typeof DomainErrorCodes)[keyof typeof DomainErrorCodes];
