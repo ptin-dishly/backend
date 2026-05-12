@@ -125,4 +125,35 @@ export class PgUserRepository implements UserRepository {
       return fail("UPDATE_ERROR", "Failed to update user", error);
     }
   }
+
+  async save(user: User): Promise<Result<void>> {
+    const query = `
+      INSERT INTO users (
+        id, establishment_id, email, password_hash, name, role, is_active, last_login_at, created_at, updated_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+    `;
+
+    const values = [
+      user.id,
+      user.establishmentId,
+      user.email,
+      user.passwordHash,
+      user.name,
+      user.role,
+      user.isActive,
+      user.lastLoginAt,
+      user.createdAt,
+      user.updatedAt,
+    ];
+
+    try {
+      await this.pool.query(query, values);
+      return ok(undefined);
+    } catch (error: unknown) {
+      if (error && typeof error === "object" && "code" in error && error.code === "23505") {
+        return fail("DUPLICATE_RESOURCE", "This email is already in use");
+      }
+      return fail("CREATE_ERROR", "Failed to save user", error);
+    }
+  }
 }
