@@ -1,4 +1,5 @@
 import type { Container } from "@infrastructure/bootstrap/container";
+import { rateLimiter } from "@infrastructure/drivers/http/middleware/rateLimiter";
 import { apiReference } from "@scalar/express-api-reference";
 import compression from "compression";
 import cors from "cors";
@@ -132,6 +133,7 @@ export function createApp(container: Container): express.Express {
   // ======================
 
   const v1 = express.Router();
+  app.use(rateLimiter);
   v1.use(allergenRoutes(container.allergenService));
   v1.use(sessionRoutes(container.authService, container.tokenService));
   v1.use(MenuRoutes(container.menuService));

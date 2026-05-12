@@ -15,4 +15,5 @@ export interface UserRepository {
   updateLastLogin(id: string): Promise<Result<void>>;
   update(id: string, data: UpdateUserData): Promise<Result<User>>;
   delete(id: string): Promise<Result<void>>;
+  save(user: User): Promise<Result<void>>;
 }
