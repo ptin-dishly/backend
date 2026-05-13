@@ -18,6 +18,19 @@ export class PgOrderRepository implements OrderRepository {
     }
   }
 
+  async findByEstablishmentId(establishmentId: string): Promise<Result<Order[]>> {
+    try {
+      const result = await this.pool.query("SELECT * FROM orders WHERE establishment_id = $1", [
+        establishmentId,
+      ]);
+
+      const orders = result.rows.map((row) => this.toEntity(row));
+      return ok(orders);
+    } catch (error) {
+      return fail("RETRIEVE_ERROR", "Failed to retrieve orders by establishment", error);
+    }
+  }
+
   async deleteById(id: string): Promise<Result<void>> {
     try {
       const result = await this.pool.query("DELETE FROM orders WHERE id = $1", [id]);

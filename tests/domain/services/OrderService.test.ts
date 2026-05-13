@@ -36,6 +36,7 @@ describe("OrderService", () => {
   beforeEach(() => {
     orderRepository = {
       findById: vi.fn(),
+      findByEstablishmentId: vi.fn(),
       deleteById: vi.fn(),
     } as unknown as OrderRepository;
 
@@ -92,6 +93,57 @@ describe("OrderService", () => {
     });
   });
 
+  // --- TESTS: findByEstablishmentId ---
+
+  describe("findByEstablishmentId", () => {
+    const validEstId = "550e8400-e29b-41d4-a716-446655441111";
+
+    it("should return a list of orders when they exist", async () => {
+      const orders = [fakeOrder({ id: "order-1" }), fakeOrder({ id: "order-2" })];
+      vi.mocked(orderRepository.findByEstablishmentId).mockResolvedValue(ok(orders));
+
+      const result = await orderService.findByEstablishmentId(validEstId);
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value).toHaveLength(2);
+        expect(result.value).toEqual(orders);
+      }
+    });
+
+    it("should return an empty list when the establishment has no orders", async () => {
+      vi.mocked(orderRepository.findByEstablishmentId).mockResolvedValue(ok([]));
+
+      const result = await orderService.findByEstablishmentId(validEstId);
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value).toEqual([]);
+      }
+    });
+
+    it("should return INVALID_ID when establishmentId is empty", async () => {
+      const result = await orderService.findByEstablishmentId("");
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("INVALID_ID");
+      }
+    });
+
+    it("should propagate failure when repository fails", async () => {
+      vi.mocked(orderRepository.findByEstablishmentId).mockResolvedValue(
+        fail("DB_ERROR", "Connection error")
+      );
+
+      const result = await orderService.findByEstablishmentId(validEstId);
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("DB_ERROR");
+      }
+    });
+  });
   // --- TESTS: deleteById ---
 
   describe("deleteById", () => {

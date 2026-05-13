@@ -8,7 +8,7 @@ import {
 import { AllergenSchema, CreateAllergenSchema } from "../schemas/allergen";
 import { CreateIngredientSchema, IngredientSchema } from "../schemas/ingredient";
 import { MenuParamsSchema, MenuSchema, UpdateMenuSchema } from "../schemas/menu";
-import { OrderParamsSchema, OrderSchema } from "../schemas/order";
+import { OrderEstablishmentParamsSchema, OrderParamsSchema, OrderSchema } from "../schemas/order";
 import {
   CreateRecipeSchema,
   RecipeByAllergenParamsSchema,
@@ -969,6 +969,66 @@ registry.registerPath({
               message: "Order not found",
             },
             meta: { timestamp: "2026-05-13T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/orders/establishment/{establishmentId}",
+  tags: ["Orders"],
+  summary: "Get all orders from an establishment",
+  description:
+    "Retorna una llista de totes les comandes associades a un ID d'establiment específic.",
+  request: {
+    params: OrderEstablishmentParamsSchema,
+  },
+  responses: {
+    200: {
+      description: "Llista de comandes recuperada correctament",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(z.array(OrderSchema)),
+          example: {
+            success: true,
+            data: [
+              {
+                id: "550e8400-e29b-41d4-a716-446655440000",
+                establishmentId: "22222222-0002-0002-0002-000000000001",
+                status: "pending",
+                notes: "Sense sal",
+                createdAt: "2026-05-14T10:00:00.000Z",
+                updatedAt: "2026-05-14T10:00:00.000Z",
+              },
+              {
+                id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+                establishmentId: "22222222-0002-0002-0002-000000000001",
+                status: "confirmed",
+                notes: null,
+                createdAt: "2026-05-14T11:30:00.000Z",
+                updatedAt: "2026-05-14T11:45:00.000Z",
+              },
+            ],
+            meta: { timestamp: "2026-05-14T12:00:00.000Z" },
+          },
+        },
+      },
+    },
+    400: {
+      description: "Format d'ID d'establiment invàlid",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "INVALID_REQUEST",
+              message: "Invalid establishment ID format",
+            },
+            meta: { timestamp: "2026-05-14T12:00:00.000Z" },
           },
         },
       },
