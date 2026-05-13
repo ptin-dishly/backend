@@ -37,4 +37,5 @@ export interface MenuRepository {
   findByAllergen(allergenId: string): Promise<Result<Menu[]>>;
   update(id: string, data: UpdateMenuData): Promise<Result<Menu>>;
   create(data: CreateMenuInput): Promise<Result<Menu>>;
+  delete(id: string): Promise<Result<void>>;
 }

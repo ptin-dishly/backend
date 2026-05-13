@@ -1,5 +1,9 @@
 import { Menu } from "@domain/entities/Menu";
-import type { MenuRepository, UpdateMenuData } from "@domain/ports/drivens/MenuRepository";
+import type {
+  CreateMenuInput,
+  MenuRepository,
+  UpdateMenuData,
+} from "@domain/ports/drivens/MenuRepository";
 import type { Result } from "@domain/value-objects/Result";
 import { fail, ok } from "@domain/value-objects/Result";
 import type pg from "pg";
@@ -86,6 +90,28 @@ export class PgMenuRepository implements MenuRepository {
         }
       }
       return fail("CREATE_ERROR", "Error creant el menú", error);
+    } finally {
+      client.release();
+    }
+  }
+
+  async delete(id: string): Promise<Result<void>> {
+    const client = await this.pool.connect();
+    try {
+      await client.query("BEGIN");
+      await client.query("DELETE FROM menu_card_items WHERE menu_card_id = $1", [id]);
+      const result = await client.query("DELETE FROM menu_cards WHERE id = $1", [id]);
+
+      if (result.rowCount === 0) {
+        await client.query("ROLLBACK");
+        return fail("NOT_FOUND", "No s'ha trobat el menú per esborrar");
+      }
+
+      await client.query("COMMIT");
+      return ok(undefined);
+    } catch (error) {
+      await client.query("ROLLBACK");
+      return fail("DELETE_ERROR", "Error esborrant el menú", error);
     } finally {
       client.release();
     }

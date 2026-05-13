@@ -30,7 +30,7 @@ export interface RecipeIngredientDetail {
 export interface RecipeRepository {
   findById(id: string): Promise<Result<Recipe | null>>;
   delete(id: string): Promise<Result<boolean>>;
-  findAll(): Promise<Result<Recipe[]>>;
+  findAllByEstablishmentId(establishmentId: string): Promise<Result<Recipe[]>>;
   findIngredientsByRecipeId(recipeId: string): Promise<Result<RecipeIngredientDetail[]>>;
   findByAllergenId(allergenId: string): Promise<Result<Recipe[]>>;
   create(data: CreateRecipeData): Promise<Result<Recipe>>;

@@ -9,6 +9,12 @@ import { AllergenSchema, CreateAllergenSchema } from "../schemas/allergen";
 import { CreateIngredientSchema, IngredientSchema } from "../schemas/ingredient";
 import { MenuParamsSchema, MenuSchema, UpdateMenuSchema } from "../schemas/menu";
 import {
+  CreateOrderSchema,
+  OrderEstablishmentParamsSchema,
+  OrderParamsSchema,
+  OrderSchema,
+} from "../schemas/order";
+import {
   CreateRecipeSchema,
   RecipeByAllergenParamsSchema,
   RecipeIngredientSchema,
@@ -42,6 +48,7 @@ registry.register("RecipeByAllergenParams", RecipeByAllergenParamsSchema);
 registry.register("Ingredient", IngredientSchema);
 registry.register("User", UserSchema);
 registry.register("CreateUserBody", CreateUserSchema);
+registry.register("Order", OrderSchema);
 
 // Esquema específico para el detalle de Menu Card Items con Recipe
 const MenuCardItemRecipeDetailSchema = z.object({
@@ -99,6 +106,17 @@ const allergenExamples = {
     description: null,
     euNumber: 3,
     createdAt: "2026-04-03T10:00:02.000Z",
+  },
+};
+
+const orderExamples = {
+  pending: {
+    id: "550e8400-e29b-41d4-a716-446655440000",
+    establishmentId: "550e8400-e29b-41d4-a716-446655441111",
+    status: "pending",
+    notes: "Sin sal en las patatas",
+    createdAt: "2026-05-13T10:00:00.000Z",
+    updatedAt: "2026-05-13T10:00:00.000Z",
   },
 };
 
@@ -382,6 +400,42 @@ registry.registerPath({
               message: "Unexpected error creating recipe in database.",
             },
             meta: { timestamp: "2026-05-02T14:40:48.728Z" },
+          },
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/recipes/establishment/:establishmentId",
+  tags: ["Recipes"],
+  summary: "Get all recipes from a given establishment",
+  request: {
+    params: z.object({ establishmentId: z.string().uuid() }),
+  },
+  responses: {
+    200: {
+      description: "List of recipes retrieved successfully",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(z.array(RecipeSchema)),
+        },
+      },
+    },
+    400: {
+      description: "Invalid establishment ID format",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "INVALID_REQUEST",
+              message: "Invalid path parameters. Expected UUID format.",
+            },
+            meta: { timestamp: "2026-04-28T10:00:00.000Z" },
           },
         },
       },
@@ -866,6 +920,236 @@ registry.registerPath({
               message: "User with that email already registred",
             },
             meta: { timestamp: "2026-05-10T16:25:06.291Z" },
+          },
+        },
+      },
+    },
+  },
+});
+
+// ======================
+// REGISTER PATHS: ORDERS
+// ======================
+registry.registerPath({
+  method: "post",
+  path: "/orders",
+  tags: ["Orders"],
+  summary: "Create a new order",
+  description: "Creates a new order with the provided details. Returns the created order.",
+  operationId: "createOrder",
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: CreateOrderSchema,
+          example: {
+            establishmentId: "22222222-0002-0002-0002-000000000001",
+            roomId: "44444444-0004-0004-0004-000000000002",
+            tableId: "55555555-0005-0005-0005-000000000004",
+            waiterId: "33333333-0003-0003-0003-000000000002",
+            createdBy: "33333333-0003-0003-0003-000000000001",
+            status: "pending",
+            notes: "Mesa de la terraza, pedido de prueba",
+          },
+        },
+      },
+    },
+  },
+  responses: {
+    201: {
+      description: "Order created successfully",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(OrderSchema),
+          example: {
+            success: true,
+            message: "Order created successfully",
+            data: orderExamples.pending,
+            meta: { timestamp: "2026-05-13T20:00:00.000Z" },
+          },
+        },
+      },
+    },
+    400: {
+      description: "Validation error (e.g., invalid UUIDs or missing required fields)",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: errorExamples.validation,
+        },
+      },
+    },
+    500: {
+      description: "Internal server error or database constraint violation",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "CREATE_ERROR",
+              message: "Failed to create order",
+            },
+            meta: { timestamp: "2026-05-13T20:00:00.000Z" },
+          },
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/orders/{id}",
+  tags: ["Orders"],
+  summary: "Get an order by ID",
+  request: {
+    params: OrderParamsSchema,
+  },
+  responses: {
+    200: {
+      description: "Order found successfully",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(OrderSchema),
+          example: {
+            success: true,
+            data: orderExamples.pending,
+            meta: { timestamp: "2026-05-13T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    400: {
+      description: "Invalid ID format",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: errorExamples.validation,
+        },
+      },
+    },
+    404: {
+      description: "Order not found",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "NOT_FOUND",
+              message: "Order not found",
+            },
+            meta: { timestamp: "2026-05-13T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/orders/establishment/{establishmentId}",
+  tags: ["Orders"],
+  summary: "Get all orders from an establishment",
+  description:
+    "Retorna una llista de totes les comandes associades a un ID d'establiment específic.",
+  request: {
+    params: OrderEstablishmentParamsSchema,
+  },
+  responses: {
+    200: {
+      description: "Llista de comandes recuperada correctament",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(z.array(OrderSchema)),
+          example: {
+            success: true,
+            data: [
+              {
+                id: "550e8400-e29b-41d4-a716-446655440000",
+                establishmentId: "22222222-0002-0002-0002-000000000001",
+                status: "pending",
+                notes: "Sense sal",
+                createdAt: "2026-05-14T10:00:00.000Z",
+                updatedAt: "2026-05-14T10:00:00.000Z",
+              },
+              {
+                id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+                establishmentId: "22222222-0002-0002-0002-000000000001",
+                status: "confirmed",
+                notes: null,
+                createdAt: "2026-05-14T11:30:00.000Z",
+                updatedAt: "2026-05-14T11:45:00.000Z",
+              },
+            ],
+            meta: { timestamp: "2026-05-14T12:00:00.000Z" },
+          },
+        },
+      },
+    },
+    400: {
+      description: "Format d'ID d'establiment invàlid",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "INVALID_REQUEST",
+              message: "Invalid establishment ID format",
+            },
+            meta: { timestamp: "2026-05-14T12:00:00.000Z" },
+          },
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "delete",
+  path: "/orders/{id}",
+  tags: ["Orders"],
+  summary: "Delete an order",
+  description: "Deletes an existing order by its UUID. Returns 204 if successful.",
+  operationId: "deleteOrder",
+  request: {
+    params: z.object({ id: z.string().uuid() }),
+  },
+  responses: {
+    204: {
+      description: "Order deleted successfully",
+    },
+    400: {
+      description: "Invalid UUID format",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "INVALID_ID",
+              message: "Order ID must be a valid UUID",
+            },
+            meta: { timestamp: "2026-05-13T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    404: {
+      description: "Order not found",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "NOT_FOUND",
+              message: "Order not found",
+            },
+            meta: { timestamp: "2026-05-13T10:00:00.000Z" },
           },
         },
       },
