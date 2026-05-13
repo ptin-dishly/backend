@@ -8,6 +8,7 @@ import {
 import { AllergenSchema, CreateAllergenSchema } from "../schemas/allergen";
 import { CreateIngredientSchema, IngredientSchema } from "../schemas/ingredient";
 import { MenuParamsSchema, MenuSchema, UpdateMenuSchema } from "../schemas/menu";
+import { OrderParamsSchema, OrderSchema } from "../schemas/order";
 import {
   CreateRecipeSchema,
   RecipeByAllergenParamsSchema,
@@ -42,6 +43,7 @@ registry.register("RecipeByAllergenParams", RecipeByAllergenParamsSchema);
 registry.register("Ingredient", IngredientSchema);
 registry.register("User", UserSchema);
 registry.register("CreateUserBody", CreateUserSchema);
+registry.register("Order", OrderSchema);
 
 // Esquema específico para el detalle de Menu Card Items con Recipe
 const MenuCardItemRecipeDetailSchema = z.object({
@@ -99,6 +101,17 @@ const allergenExamples = {
     description: null,
     euNumber: 3,
     createdAt: "2026-04-03T10:00:02.000Z",
+  },
+};
+
+const orderExamples = {
+  pending: {
+    id: "550e8400-e29b-41d4-a716-446655440000",
+    establishmentId: "550e8400-e29b-41d4-a716-446655441111",
+    status: "pending",
+    notes: "Sin sal en las patatas",
+    createdAt: "2026-05-13T10:00:00.000Z",
+    updatedAt: "2026-05-13T10:00:00.000Z",
   },
 };
 
@@ -866,6 +879,60 @@ registry.registerPath({
               message: "User with that email already registred",
             },
             meta: { timestamp: "2026-05-10T16:25:06.291Z" },
+          },
+        },
+      },
+    },
+  },
+});
+
+// ======================
+// REGISTER PATHS: MENUS
+// ======================
+
+registry.registerPath({
+  method: "get",
+  path: "/orders/{id}",
+  tags: ["Orders"],
+  summary: "Get an order by ID",
+  request: {
+    params: OrderParamsSchema,
+  },
+  responses: {
+    200: {
+      description: "Order found successfully",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(OrderSchema),
+          example: {
+            success: true,
+            data: orderExamples.pending,
+            meta: { timestamp: "2026-05-13T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    400: {
+      description: "Invalid ID format",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: errorExamples.validation,
+        },
+      },
+    },
+    404: {
+      description: "Order not found",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "NOT_FOUND",
+              message: "Order not found",
+            },
+            meta: { timestamp: "2026-05-13T10:00:00.000Z" },
           },
         },
       },
