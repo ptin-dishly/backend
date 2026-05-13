@@ -29,6 +29,46 @@ export class PgOrderRepository implements OrderRepository {
     }
   }
 
+  async save(order: Order): Promise<Result<void>> {
+    const query = `
+      INSERT INTO orders (
+        id, 
+        establishment_id, 
+        room_id, 
+        event_id, 
+        table_id, 
+        waiter_id, 
+        created_by, 
+        status, 
+        notes, 
+        created_at, 
+        updated_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+    `;
+
+    const values = [
+      order.id,
+      order.establishmentId,
+      order.roomId,
+      order.eventId,
+      order.tableId,
+      order.waiterId,
+      order.createdBy,
+      order.status,
+      order.notes,
+      order.createdAt,
+      order.updatedAt,
+    ];
+
+    try {
+      await this.pool.query(query, values);
+      return ok(undefined);
+    } catch (error) {
+      console.error("DEBUG DB ERROR:", error);
+      return fail("CREATE_ERROR", "Failed to create order", error);
+    }
+  }
+
   private toEntity(row: Record<string, unknown>): Order {
     return new Order(
       row.id as string,

@@ -1,7 +1,7 @@
 import type { OrderService } from "@domain/services/OrderService";
 import { createOrderController } from "@infrastructure/drivers/http/controllers/orderController";
 import { validate } from "@infrastructure/drivers/http/middleware/validate";
-import { OrderParamsSchema } from "@infrastructure/drivers/http/schemas/order";
+import { CreateOrderSchema, OrderParamsSchema } from "@infrastructure/drivers/http/schemas/order";
 import { Router } from "express";
 
 export function OrderRoutes(orderService: OrderService): Router {
@@ -10,6 +10,6 @@ export function OrderRoutes(orderService: OrderService): Router {
 
   router.get("/orders/:id", validate({ params: OrderParamsSchema }), controller.findById);
   router.delete("/orders/:id", validate({ params: OrderParamsSchema }), controller.deleteById);
-
+  router.post("/orders", validate({ body: CreateOrderSchema }), controller.create);
   return router;
 }

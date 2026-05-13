@@ -4,4 +4,5 @@ import type { Result } from "@domain/value-objects/Result";
 export interface OrderRepository {
   findById(id: string): Promise<Result<Order | null>>;
   deleteById(id: string): Promise<Result<void>>;
+  save(order: Order): Promise<Result<void>>;
 }
