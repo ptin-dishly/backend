@@ -19,4 +19,7 @@ export const RecipeStepSchema = z.object({
   duration: z.number().int().min(0).nullable().optional(),
 });
 
+export const UpdateRecipeStepSchema = CreateRecipeStepSchema.partial().strict();
+
 export type CreateRecipeStepBody = z.infer<typeof CreateRecipeStepSchema>;
+export type UpdateRecipeStepBody = z.infer<typeof UpdateRecipeStepSchema>;

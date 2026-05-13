@@ -15,6 +15,30 @@ export class RecipeStepController {
     return sendSuccess(res, 201, result.value, "Recipe step created");
   }
 
+  async findById(req: Request<{ id: string }>, res: Response) {
+    const result = await this.recipeStepService.findById(req.params.id);
+
+    if (!result.ok) {
+      return sendErrorByCode(res, result.error.code, result.error.message);
+    }
+
+    if (result.value === null) {
+      return sendErrorByCode(res, "NOT_FOUND", "Recipe step not found");
+    }
+
+    return sendSuccess(res, 200, result.value);
+  }
+
+  async update(req: Request<{ id: string }>, res: Response) {
+    const result = await this.recipeStepService.update(req.params.id, req.body);
+
+    if (!result.ok) {
+      return sendErrorByCode(res, result.error.code, result.error.message);
+    }
+
+    return sendSuccess(res, 200, result.value, "Recipe step updated");
+  }
+
   async remove(req: Request<{ id: string }>, res: Response) {
     const result = await this.recipeStepService.delete(req.params.id);
 
