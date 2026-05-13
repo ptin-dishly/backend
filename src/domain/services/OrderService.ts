@@ -13,4 +13,11 @@ export class OrderService {
 
     return await this.orderRepository.findById(id);
   }
+
+  async findByEstablishmentId(establishmentId: string): Promise<Result<Order[]>> {
+    if (!establishmentId) {
+      return fail("INVALID_ID", "Establishment ID is required");
+    }
+    return await this.orderRepository.findByEstablishmentId(establishmentId);
+  }
 }

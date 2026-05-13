@@ -3,4 +3,5 @@ import type { Result } from "@domain/value-objects/Result";
 
 export interface OrderRepository {
   findById(id: string): Promise<Result<Order | null>>;
+  findByEstablishmentId(establishmentId: string): Promise<Result<Order[]>>;
 }

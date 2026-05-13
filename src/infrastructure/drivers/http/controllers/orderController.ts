@@ -17,5 +17,15 @@ export function createOrderController(orderService: OrderService) {
 
       return sendSuccess(res, 200, result.value);
     },
+
+    async findByEstablishmentId(req: Request<{ establishmentId: string }>, res: Response) {
+      const result = await orderService.findByEstablishmentId(req.params.establishmentId);
+
+      if (!result.ok) {
+        return sendErrorByCode(res, result.error.code, result.error.message);
+      }
+
+      return sendSuccess(res, 200, result.value);
+    },
   };
 }
