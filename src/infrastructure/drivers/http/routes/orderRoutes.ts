@@ -17,6 +17,7 @@ export function OrderRoutes(orderService: OrderService): Router {
     validate({ params: OrderEstablishmentParamsSchema }),
     controller.findByEstablishmentId,
   );
+  router.delete("/orders/:id", validate({ params: OrderParamsSchema }), controller.deleteById);
 
   return router;
 }

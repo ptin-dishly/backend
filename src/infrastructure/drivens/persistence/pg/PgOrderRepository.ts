@@ -31,6 +31,17 @@ export class PgOrderRepository implements OrderRepository {
     }
   }
 
+  async deleteById(id: string): Promise<Result<void>> {
+    try {
+      const result = await this.pool.query("DELETE FROM orders WHERE id = $1", [id]);
+
+      if (result.rowCount === 0) return fail("NOT_FOUND", "Order not found");
+      return ok(undefined);
+    } catch (error) {
+      return fail("DELETE_ERROR", "Failed to delete order", error);
+    }
+  }
+
   private toEntity(row: Record<string, unknown>): Order {
     return new Order(
       row.id as string,

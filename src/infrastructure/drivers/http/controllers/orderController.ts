@@ -27,5 +27,15 @@ export function createOrderController(orderService: OrderService) {
 
       return sendSuccess(res, 200, result.value);
     },
+
+    async deleteById(req: Request<{ id: string }>, res: Response) {
+      const result = await orderService.deleteById(req.params.id);
+
+      if (!result.ok) {
+        return sendErrorByCode(res, result.error.code, result.error.message);
+      }
+
+      return res.status(204).send();
+    },
   };
 }

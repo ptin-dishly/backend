@@ -7,7 +7,7 @@ export class OrderService {
   constructor(private orderRepository: OrderRepository) {}
 
   async findById(id: string): Promise<Result<Order | null>> {
-    if (!id) {
+    if (!id || id.trim() === "") {
       return fail("INVALID_ID", "Order ID is required");
     }
 
@@ -19,5 +19,13 @@ export class OrderService {
       return fail("INVALID_ID", "Establishment ID is required");
     }
     return await this.orderRepository.findByEstablishmentId(establishmentId);
+  }
+
+  async deleteById(id: string): Promise<Result<void>> {
+    if (!id || id.trim() === "") {
+      return fail("INVALID_ID", "Order ID is required");
+    }
+
+    return await this.orderRepository.deleteById(id);
   }
 }
