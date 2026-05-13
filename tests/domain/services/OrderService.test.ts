@@ -36,6 +36,7 @@ describe("OrderService", () => {
   beforeEach(() => {
     orderRepository = {
       findById: vi.fn(),
+      deleteById: vi.fn(),
     } as unknown as OrderRepository;
 
     orderService = new OrderService(orderRepository);
@@ -90,4 +91,54 @@ describe("OrderService", () => {
       }
     });
   });
+
+  // --- TESTS: deleteById ---
+
+  describe("deleteById", () => {
+    it("should delete an order successfully", async () => {
+      vi.mocked(orderRepository.deleteById).mockResolvedValue(ok(undefined));
+
+      const result = await orderService.deleteById("550e8400-e29b-41d4-a716-446655440000");
+
+      expect(orderRepository.deleteById).toHaveBeenCalledWith("550e8400-e29b-41d4-a716-446655440000");
+      expect(result.ok).toBe(true);
+    });
+
+    it("should fail when id is empty", async () => {
+      const result = await orderService.deleteById("");
+
+      expect(orderRepository.deleteById).not.toHaveBeenCalled();
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+      expect(result.error.code).toBe("INVALID_ID");
+      }
+    });
+
+    it("should handle order not found", async () => {
+      vi.mocked(orderRepository.deleteById).mockResolvedValue(
+      fail("NOT_FOUND", "Order not found")
+      );
+
+      const result = await orderService.deleteById("550e8400-e29b-41d4-a716-446655440000");
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+      expect(result.error.code).toBe("NOT_FOUND");
+      }
+    });
+
+    it("should propagate repository errors", async () => {
+      vi.mocked(orderRepository.deleteById).mockResolvedValue(
+      fail("DB_ERROR", "Connection failed")
+      );
+
+      const result = await orderService.deleteById("550e8400-e29b-41d4-a716-446655440000");
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+      expect(result.error.code).toBe("DB_ERROR");
+      }
+    });
+  });
+
 });
