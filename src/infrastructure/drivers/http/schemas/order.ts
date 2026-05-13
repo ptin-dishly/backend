@@ -18,6 +18,8 @@ export const OrderSchema = z
 
 export type OrderResponse = z.infer<typeof OrderSchema>;
 
+const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+
 export const CreateOrderSchema = z
   .object({
     establishmentId: z.string().uuid(),
@@ -34,5 +36,9 @@ export const CreateOrderSchema = z
 export type CreateOrderBody = z.infer<typeof CreateOrderSchema>;
 
 export const OrderParamsSchema = z.object({
-  id: z.string().uuid("Invalid order ID format"),
+  id: z.string().regex(uuidRegex, "Invalid order ID format"),
+});
+
+export const OrderEstablishmentParamsSchema = z.object({
+  establishmentId: z.string().regex(uuidRegex, "Invalid establishment ID format"),
 });
