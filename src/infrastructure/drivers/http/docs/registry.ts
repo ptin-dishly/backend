@@ -923,7 +923,7 @@ registry.registerPath({
 });
 
 // ======================
-// REGISTER PATHS: MENUS
+// REGISTER PATHS: ORDERS
 // ======================
 
 registry.registerPath({
@@ -954,6 +954,55 @@ registry.registerPath({
         "application/json": {
           schema: ErrorResponseSchema,
           example: errorExamples.validation,
+        },
+      },
+    },
+    404: {
+      description: "Order not found",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "NOT_FOUND",
+              message: "Order not found",
+            },
+            meta: { timestamp: "2026-05-13T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "delete",
+  path: "/orders/{id}",
+  tags: ["Orders"],
+  summary: "Delete an order",
+  description: "Deletes an existing order by its UUID. Returns 204 if successful.",
+  operationId: "deleteOrder",
+  request: {
+    params: z.object({ id: z.string().uuid() }),
+  },
+  responses: {
+    204: {
+      description: "Order deleted successfully",
+    },
+    400: {
+      description: "Invalid UUID format",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "INVALID_ID",
+              message: "Order ID must be a valid UUID",
+            },
+            meta: { timestamp: "2026-05-13T10:00:00.000Z" },
+          },
         },
       },
     },
