@@ -8,7 +8,12 @@ import {
 import { AllergenSchema, CreateAllergenSchema } from "../schemas/allergen";
 import { CreateIngredientSchema, IngredientSchema } from "../schemas/ingredient";
 import { MenuParamsSchema, MenuSchema, UpdateMenuSchema } from "../schemas/menu";
-import { CreateOrderSchema, OrderEstablishmentParamsSchema, OrderParamsSchema, OrderSchema } from "../schemas/order";
+import {
+  CreateOrderSchema,
+  OrderEstablishmentParamsSchema,
+  OrderParamsSchema,
+  OrderSchema,
+} from "../schemas/order";
 import {
   CreateRecipeSchema,
   RecipeByAllergenParamsSchema,
