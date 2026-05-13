@@ -1,5 +1,6 @@
 import type { Container } from "@infrastructure/bootstrap/container";
 import { rateLimiter } from "@infrastructure/drivers/http/middleware/rateLimiter";
+import { recipeStepRoutes } from "@infrastructure/drivers/http/routes/recipeStepRoutes";
 import { apiReference } from "@scalar/express-api-reference";
 import compression from "compression";
 import cors from "cors";
@@ -143,6 +144,7 @@ export function createApp(container: Container): express.Express {
   v1.use(userRoutes(container.userService, container.tokenService));
   v1.use(MenuCardItemRoutes(container.menuCardItemService));
   v1.use(OrderRoutes(container.orderService));
+  v1.use(recipeStepRoutes(container.recipeStepService));
 
   app.use("/api/v1", v1);
 

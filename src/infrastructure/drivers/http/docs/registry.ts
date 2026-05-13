@@ -20,6 +20,7 @@ import {
   RecipeIngredientSchema,
   RecipeSchema,
 } from "../schemas/recipe";
+import { CreateRecipeStepSchema, RecipeStepSchema } from "../schemas/recipeStep";
 import { LoginSchema, RefreshSchema, TokenPairSchema } from "../schemas/session";
 import { CreateUserSchema, UserSchema } from "../schemas/user";
 import { z } from "../schemas/zod";
@@ -49,6 +50,8 @@ registry.register("Ingredient", IngredientSchema);
 registry.register("User", UserSchema);
 registry.register("CreateUserBody", CreateUserSchema);
 registry.register("Order", OrderSchema);
+registry.register("RecipeStep", RecipeStepSchema);
+registry.register("CreateRecipeStepBody", CreateRecipeStepSchema);
 
 // Esquema específico para el detalle de Menu Card Items con Recipe
 const MenuCardItemRecipeDetailSchema = z.object({
@@ -1174,6 +1177,152 @@ registry.registerPath({
     503: {
       description: "Database is unreachable",
       content: { "application/json": { schema: HealthReadyErrorSchema } },
+    },
+  },
+});
+
+// ======================
+// REGISTER PATHS: RECIPE STEPS
+// ======================
+
+registry.registerPath({
+  method: "post",
+  path: "/recipe-steps",
+  tags: ["Recipe Steps"],
+  summary: "Create a new recipe step",
+  description: "Adds a new step to an existing recipe. Step numbers must be unique per recipe.",
+  operationId: "createRecipeStep",
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: CreateRecipeStepSchema,
+          example: {
+            recipeId: "550e8400-e29b-41d4-a716-446655440002",
+            stepNumber: 1,
+            instruction: "Sofregir la ceba fins que estigui daurada",
+            duration: 10,
+          },
+        },
+      },
+    },
+  },
+  responses: {
+    201: {
+      description: "Recipe step created successfully",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(RecipeStepSchema),
+          example: {
+            success: true,
+            data: {
+              id: "550e8400-e29b-41d4-a716-446655440003",
+              recipeId: "550e8400-e29b-41d4-a716-446655440002",
+              stepNumber: 1,
+              instruction: "Sofregir la ceba fins que estigui daurada",
+              duration: 10,
+            },
+            meta: { timestamp: "2026-05-10T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    400: {
+      description: "Invalid request data",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "INVALID_ID",
+              message: "Recipe ID must be a valid UUID",
+            },
+            meta: { timestamp: "2026-05-10T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    409: {
+      description: "Step number already exists for this recipe",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "DUPLICATE_RESOURCE",
+              message: "A step with this number already exists for this recipe",
+            },
+            meta: { timestamp: "2026-05-10T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    500: {
+      description: "Internal server error",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "CREATE_ERROR",
+              message: "Failed to create recipe step",
+            },
+            meta: { timestamp: "2026-05-10T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "delete",
+  path: "/recipe-steps/{id}",
+  tags: ["Recipe Steps"],
+  summary: "Delete a recipe step",
+  description: "Deletes an existing recipe step by its UUID.",
+  operationId: "deleteRecipeStep",
+  request: {
+    params: z.object({ id: z.string().uuid() }),
+  },
+  responses: {
+    204: {
+      description: "Recipe step deleted successfully",
+    },
+    400: {
+      description: "Invalid UUID format",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "INVALID_ID",
+              message: "Recipe step ID must be a valid UUID",
+            },
+            meta: { timestamp: "2026-05-10T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    404: {
+      description: "Recipe step not found",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "NOT_FOUND",
+              message: "Recipe step not found",
+            },
+            meta: { timestamp: "2026-05-10T10:00:00.000Z" },
+          },
+        },
+      },
     },
   },
 });
