@@ -9,6 +9,7 @@ export function OrderRoutes(orderService: OrderService): Router {
   const controller = createOrderController(orderService);
 
   router.get("/orders/:id", validate({ params: OrderParamsSchema }), controller.findById);
+  router.delete("/orders/:id", validate({ params: OrderParamsSchema }), controller.deleteById);
 
   return router;
 }

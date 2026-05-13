@@ -55,9 +55,12 @@ export class PgRecipeRepository implements RecipeRepository {
     }
   }
 
-  async findAll(): Promise<Result<Recipe[]>> {
+  async findAllByEstablishmentId(establishmentId: string): Promise<Result<Recipe[]>> {
     try {
-      const result = await this.pool.query("SELECT * FROM recipes ORDER BY name ASC");
+      const result = await this.pool.query(
+        "SELECT * FROM recipes WHERE establishment_id = $1 ORDER BY name ASC",
+        [establishmentId],
+      );
       return ok(result.rows.map((row) => this.toEntity(row)));
     } catch (error: unknown) {
       return fail("RETRIEVE_ERROR", "Failed to retrieve recipes", error);
