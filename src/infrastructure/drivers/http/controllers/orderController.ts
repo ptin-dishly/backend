@@ -37,5 +37,15 @@ export function createOrderController(orderService: OrderService) {
 
       return res.status(204).send();
     },
+
+    async create(req: Request, res: Response) {
+      const result = await orderService.create(req.body);
+
+      if (!result.ok) {
+        return sendErrorByCode(res, result.error.code, result.error.message);
+      }
+
+      return sendSuccess(res, 201, result.value, "Order created successfully");
+    },
   };
 }

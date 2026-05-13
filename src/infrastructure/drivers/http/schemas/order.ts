@@ -20,6 +20,21 @@ export type OrderResponse = z.infer<typeof OrderSchema>;
 
 const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 
+export const CreateOrderSchema = z
+  .object({
+    establishmentId: z.string().uuid(),
+    roomId: z.string().uuid().nullable().optional(),
+    eventId: z.string().uuid().nullable().optional(),
+    tableId: z.string().uuid().nullable().optional(),
+    waiterId: z.string().uuid().nullable().optional(),
+    createdBy: z.string().uuid().nullable().optional(),
+    status: z.enum(["pending", "confirmed", "preparing", "served", "cancelled"]).default("pending"),
+    notes: z.string().nullable().optional(),
+  })
+  .openapi("CreateOrderBody");
+
+export type CreateOrderBody = z.infer<typeof CreateOrderSchema>;
+
 export const OrderParamsSchema = z.object({
   id: z.string().regex(uuidRegex, "Invalid order ID format"),
 });

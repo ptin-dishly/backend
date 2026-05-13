@@ -8,7 +8,12 @@ import {
 import { AllergenSchema, CreateAllergenSchema } from "../schemas/allergen";
 import { CreateIngredientSchema, IngredientSchema } from "../schemas/ingredient";
 import { MenuParamsSchema, MenuSchema, UpdateMenuSchema } from "../schemas/menu";
-import { OrderEstablishmentParamsSchema, OrderParamsSchema, OrderSchema } from "../schemas/order";
+import {
+  CreateOrderSchema,
+  OrderEstablishmentParamsSchema,
+  OrderParamsSchema,
+  OrderSchema,
+} from "../schemas/order";
 import {
   CreateRecipeSchema,
   RecipeByAllergenParamsSchema,
@@ -925,6 +930,73 @@ registry.registerPath({
 // ======================
 // REGISTER PATHS: ORDERS
 // ======================
+registry.registerPath({
+  method: "post",
+  path: "/orders",
+  tags: ["Orders"],
+  summary: "Create a new order",
+  description: "Creates a new order with the provided details. Returns the created order.",
+  operationId: "createOrder",
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: CreateOrderSchema,
+          example: {
+            establishmentId: "22222222-0002-0002-0002-000000000001",
+            roomId: "44444444-0004-0004-0004-000000000002",
+            tableId: "55555555-0005-0005-0005-000000000004",
+            waiterId: "33333333-0003-0003-0003-000000000002",
+            createdBy: "33333333-0003-0003-0003-000000000001",
+            status: "pending",
+            notes: "Mesa de la terraza, pedido de prueba",
+          },
+        },
+      },
+    },
+  },
+  responses: {
+    201: {
+      description: "Order created successfully",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(OrderSchema),
+          example: {
+            success: true,
+            message: "Order created successfully",
+            data: orderExamples.pending,
+            meta: { timestamp: "2026-05-13T20:00:00.000Z" },
+          },
+        },
+      },
+    },
+    400: {
+      description: "Validation error (e.g., invalid UUIDs or missing required fields)",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: errorExamples.validation,
+        },
+      },
+    },
+    500: {
+      description: "Internal server error or database constraint violation",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "CREATE_ERROR",
+              message: "Failed to create order",
+            },
+            meta: { timestamp: "2026-05-13T20:00:00.000Z" },
+          },
+        },
+      },
+    },
+  },
+});
 
 registry.registerPath({
   method: "get",

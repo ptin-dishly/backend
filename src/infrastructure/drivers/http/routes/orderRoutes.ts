@@ -2,6 +2,7 @@ import type { OrderService } from "@domain/services/OrderService";
 import { createOrderController } from "@infrastructure/drivers/http/controllers/orderController";
 import { validate } from "@infrastructure/drivers/http/middleware/validate";
 import {
+  CreateOrderSchema,
   OrderEstablishmentParamsSchema,
   OrderParamsSchema,
 } from "@infrastructure/drivers/http/schemas/order";
@@ -18,6 +19,6 @@ export function OrderRoutes(orderService: OrderService): Router {
     controller.findByEstablishmentId,
   );
   router.delete("/orders/:id", validate({ params: OrderParamsSchema }), controller.deleteById);
-
+  router.post("/orders", validate({ body: CreateOrderSchema }), controller.create);
   return router;
 }
