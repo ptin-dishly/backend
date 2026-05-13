@@ -404,6 +404,42 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
+  path: "/recipes/establishment/:establishmentId",
+  tags: ["Recipes"],
+  summary: "Get all recipes from a given establishment",
+  request: {
+    params: z.object({ establishmentId: z.string().uuid() }),
+  },
+  responses: {
+    200: {
+      description: "List of recipes retrieved successfully",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(z.array(RecipeSchema)),
+        },
+      },
+    },
+    400: {
+      description: "Invalid establishment ID format",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "INVALID_REQUEST",
+              message: "Invalid path parameters. Expected UUID format.",
+            },
+            meta: { timestamp: "2026-04-28T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
   path: "/recipes/{recipeId}/ingredients",
   tags: ["Recipes"],
   summary: "Get recipe ingredients",

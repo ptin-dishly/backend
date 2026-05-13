@@ -50,7 +50,7 @@ describe("RecipeService", () => {
     beforeEach(() => {
         recipeRepository = {
             create: vi.fn(),
-            findAll: vi.fn(),
+            findAllByEstablishmentId: vi.fn(),
             findById: vi.fn(),
             delete: vi.fn(),
             update: vi.fn(),
@@ -152,13 +152,13 @@ describe("RecipeService", () => {
     });
 
     // --- TESTS FIND ALL ---
-    describe("findAll", () => {
+    describe("findAllByEstablishmentId", () => {
         it("should return all recipes", async () => {
             const recipes = [fakeRecipe(), fakeRecipe({ name: "Salmón" })];
 
-            vi.mocked(recipeRepository.findAll).mockResolvedValue(ok(recipes));
+            vi.mocked(recipeRepository.findAllByEstablishmentId).mockResolvedValue(ok(recipes));
 
-            const result = await recipeService.findAll();
+            const result = await recipeService.findAllByEstablishmentId("establishment-id");
 
             expect(result.ok).toBe(true);
             if (result.ok) {
@@ -167,20 +167,20 @@ describe("RecipeService", () => {
         });
 
         it("should return empty array", async () => {
-            vi.mocked(recipeRepository.findAll).mockResolvedValue(ok([]));
+            vi.mocked(recipeRepository.findAllByEstablishmentId).mockResolvedValue(ok([]));
 
-            const result = await recipeService.findAll();
+            const result = await recipeService.findAllByEstablishmentId("establishment-id");
 
             expect(result.ok).toBe(true);
             if (result.ok) expect(result.value).toHaveLength(0);
         });
 
         it("should propagate repository error", async () => {
-            vi.mocked(recipeRepository.findAll).mockResolvedValue(
+            vi.mocked(recipeRepository.findAllByEstablishmentId).mockResolvedValue(
                 fail("DB_ERROR", "Connection failed")
             );
 
-            const result = await recipeService.findAll();
+            const result = await recipeService.findAllByEstablishmentId("establishment-id");
 
             expect(result.ok).toBe(false);
         });
