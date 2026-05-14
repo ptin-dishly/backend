@@ -12,3 +12,5 @@ export function MenuRoutes(MenuService: MenuService): Router {
   router.get("/menus", controller.findAll);
   return router;
 }
+ 
+ 
