@@ -42,5 +42,3 @@ export class PgMenuRepository implements MenuRepository {
     );
   }
 }
- 
- 
