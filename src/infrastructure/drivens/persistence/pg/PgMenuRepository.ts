@@ -25,6 +25,7 @@ export class PgMenuRepository implements MenuRepository {
       const menus = result.rows.map((row) => this.toEntity(row));
 
       return ok(menus);
+
     } catch (error) {
       return fail("RETRIEVE_ERROR", "Failed to retrieve menus", error);
     }
