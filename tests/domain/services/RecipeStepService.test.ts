@@ -14,6 +14,8 @@ describe("RecipeStepService", () => {
   beforeEach(() => {
     mockRepo = {
       create: vi.fn(),
+      findById: vi.fn(),
+      update: vi.fn(),
       delete: vi.fn(),
     } as unknown as RecipeStepRepository;
 
@@ -112,6 +114,60 @@ describe("RecipeStepService", () => {
 
       expect(result.ok).toBe(false);
       if (!result.ok) expect(result.error.code).toBe("DUPLICATE_RESOURCE");
+    });
+  });
+
+  describe("findById", () => {
+    it("should return a recipe step when found", async () => {
+      vi.mocked(mockRepo.findById).mockResolvedValue(ok(fakeStep));
+
+      const result = await recipeStepService.findById(validUuid);
+
+      expect(mockRepo.findById).toHaveBeenCalledWith(validUuid);
+      expect(result.ok).toBe(true);
+      if (result.ok) expect(result.value).toEqual(fakeStep);
+    });
+
+    it("should fail when id is not a valid UUID", async () => {
+      const result = await recipeStepService.findById("not-a-uuid");
+
+      expect(mockRepo.findById).not.toHaveBeenCalled();
+      expect(result.ok).toBe(false);
+      if (!result.ok) expect(result.error.code).toBe("INVALID_ID");
+    });
+  });
+
+  describe("update", () => {
+    it("should update a recipe step successfully", async () => {
+      vi.mocked(mockRepo.update).mockResolvedValue(ok(fakeStep));
+
+      const result = await recipeStepService.update(validUuid, {
+        instruction: "Boil water again",
+      });
+
+      expect(mockRepo.update).toHaveBeenCalledWith(validUuid, {
+        instruction: "Boil water again",
+      });
+      expect(result.ok).toBe(true);
+      if (result.ok) expect(result.value).toEqual(fakeStep);
+    });
+
+    it("should fail when no data is provided", async () => {
+      const result = await recipeStepService.update(validUuid, {});
+
+      expect(mockRepo.update).not.toHaveBeenCalled();
+      expect(result.ok).toBe(false);
+      if (!result.ok) expect(result.error.code).toBe("VALIDATION_ERROR");
+    });
+
+    it("should fail when id is not a valid UUID", async () => {
+      const result = await recipeStepService.update("not-a-uuid", {
+        instruction: "Test",
+      });
+
+      expect(mockRepo.update).not.toHaveBeenCalled();
+      expect(result.ok).toBe(false);
+      if (!result.ok) expect(result.error.code).toBe("INVALID_ID");
     });
   });
 

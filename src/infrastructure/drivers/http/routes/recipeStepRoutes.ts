@@ -4,6 +4,7 @@ import { validate } from "@infrastructure/drivers/http/middleware/validate";
 import {
   CreateRecipeStepSchema,
   RecipeStepParamsSchema,
+  UpdateRecipeStepSchema,
 } from "@infrastructure/drivers/http/schemas/recipeStep";
 import { Router } from "express";
 
@@ -13,6 +14,18 @@ export function recipeStepRoutes(recipeStepService: RecipeStepService): Router {
 
   router.post("/recipe-steps", validate({ body: CreateRecipeStepSchema }), (req, res) =>
     controller.create(req, res),
+  );
+
+  router.get(
+    "/recipe-steps/:id",
+    validate({ params: RecipeStepParamsSchema }),
+    controller.findById.bind(controller),
+  );
+
+  router.put(
+    "/recipe-steps/:id",
+    validate({ params: RecipeStepParamsSchema, body: UpdateRecipeStepSchema }),
+    controller.update.bind(controller),
   );
 
   router.delete(
