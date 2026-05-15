@@ -1,5 +1,6 @@
 import type { OrderService } from "@domain/services/OrderService";
 import { sendErrorByCode, sendSuccess } from "@infrastructure/drivers/http/responses";
+import type { UpdateOrderRequest } from "@infrastructure/drivers/http/schemas/order";
 import type { Request, Response } from "express";
 
 export function createOrderController(orderService: OrderService) {
@@ -18,13 +19,19 @@ export function createOrderController(orderService: OrderService) {
       return sendSuccess(res, 200, result.value);
     },
 
-    async findByEstablishmentId(req: Request<{ establishmentId: string }>, res: Response) {
-      const result = await orderService.findByEstablishmentId(req.params.establishmentId);
-
+    async update(req: Request<{ id: string }, unknown, UpdateOrderRequest>, res: Response) {
+      const result = await orderService.update(req.params.id, req.body);
       if (!result.ok) {
         return sendErrorByCode(res, result.error.code, result.error.message);
       }
+      return sendSuccess(res, 200, result.value);
+    },
 
+    async findByEstablishmentId(req: Request<{ establishmentId: string }>, res: Response) {
+      const result = await orderService.findByEstablishmentId(req.params.establishmentId);
+      if (!result.ok) {
+        return sendErrorByCode(res, result.error.code, result.error.message);
+      }
       return sendSuccess(res, 200, result.value);
     },
 

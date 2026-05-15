@@ -42,6 +42,24 @@ export class PgOrderRepository implements OrderRepository {
     }
   }
 
+  async update(id: string, data: Partial<Order>): Promise<Result<Order>> {
+    try {
+      const result = await this.pool.query(
+        `UPDATE orders 
+        SET status = COALESCE($1, status), 
+            notes = COALESCE($2, notes), 
+            updated_at = NOW() 
+        WHERE id = $3 
+        RETURNING *`,
+        [data.status, data.notes, id],
+      );
+
+      return ok(this.toEntity(result.rows[0]));
+    } catch (error) {
+      return fail("UPDATE_ERROR", "Failed to update order", error);
+    }
+  }
+
   async save(order: Order): Promise<Result<void>> {
     const query = `
       INSERT INTO orders (

@@ -5,5 +5,6 @@ export interface OrderRepository {
   findById(id: string): Promise<Result<Order | null>>;
   findByEstablishmentId(establishmentId: string): Promise<Result<Order[]>>;
   deleteById(id: string): Promise<Result<void>>;
+  update(id: string, data: Partial<Order>): Promise<Result<Order>>;
   save(order: Order): Promise<Result<void>>;
 }

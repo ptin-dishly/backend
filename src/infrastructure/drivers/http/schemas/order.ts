@@ -42,3 +42,10 @@ export const OrderParamsSchema = z.object({
 export const OrderEstablishmentParamsSchema = z.object({
   establishmentId: z.string().regex(uuidRegex, "Invalid establishment ID format"),
 });
+
+export const UpdateOrderSchema = z.object({
+  status: z.enum(["pending", "confirmed", "preparing", "served", "cancelled"]).optional(),
+  notes: z.string().nullable().optional(),
+});
+
+export type UpdateOrderRequest = z.infer<typeof UpdateOrderSchema>;

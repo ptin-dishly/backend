@@ -5,7 +5,9 @@ import {
   CreateOrderSchema,
   OrderEstablishmentParamsSchema,
   OrderParamsSchema,
+  UpdateOrderSchema,
 } from "@infrastructure/drivers/http/schemas/order";
+
 import { Router } from "express";
 
 export function OrderRoutes(orderService: OrderService): Router {
@@ -19,6 +21,12 @@ export function OrderRoutes(orderService: OrderService): Router {
     controller.findByEstablishmentId,
   );
   router.delete("/orders/:id", validate({ params: OrderParamsSchema }), controller.deleteById);
+  router.put(
+    "/orders/:id",
+    validate({ params: OrderParamsSchema, body: UpdateOrderSchema }),
+    controller.update,
+  );
+
   router.post("/orders", validate({ body: CreateOrderSchema }), controller.create);
   return router;
 }
