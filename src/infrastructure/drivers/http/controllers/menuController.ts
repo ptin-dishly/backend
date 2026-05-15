@@ -59,6 +59,15 @@ export function createMenuController(menuService: MenuService) {
       return sendSuccess(res, 201, result.value);
     },
 
+    async delete(req: Request, res: Response) {
+      const { id } = MenuParamsSchema.parse(req.params);
+      const result = await menuService.delete(id);
+      if (!result.ok) {
+        return sendErrorByCode(res, result.error.code, result.error.message);
+      }
+      return res.status(204).send();
+    },
+
     async update(req: Request, res: Response) {
       const { id } = MenuParamsSchema.parse(req.params);
       const validatedData = UpdateMenuSchema.parse(req.body);

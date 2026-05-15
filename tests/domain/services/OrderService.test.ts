@@ -36,7 +36,10 @@ describe("OrderService", () => {
   beforeEach(() => {
     orderRepository = {
       findById: vi.fn(),
+      findByEstablishmentId: vi.fn(),
       deleteById: vi.fn(),
+      save: vi.fn(),
+      update: vi.fn(),
     } as unknown as OrderRepository;
 
     orderService = new OrderService(orderRepository);
@@ -92,6 +95,57 @@ describe("OrderService", () => {
     });
   });
 
+  // --- TESTS: findByEstablishmentId ---
+
+  describe("findByEstablishmentId", () => {
+    const validEstId = "550e8400-e29b-41d4-a716-446655441111";
+
+    it("should return a list of orders when they exist", async () => {
+      const orders = [fakeOrder({ id: "order-1" }), fakeOrder({ id: "order-2" })];
+      vi.mocked(orderRepository.findByEstablishmentId).mockResolvedValue(ok(orders));
+
+      const result = await orderService.findByEstablishmentId(validEstId);
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value).toHaveLength(2);
+        expect(result.value).toEqual(orders);
+      }
+    });
+
+    it("should return an empty list when the establishment has no orders", async () => {
+      vi.mocked(orderRepository.findByEstablishmentId).mockResolvedValue(ok([]));
+
+      const result = await orderService.findByEstablishmentId(validEstId);
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value).toEqual([]);
+      }
+    });
+
+    it("should return INVALID_ID when establishmentId is empty", async () => {
+      const result = await orderService.findByEstablishmentId("");
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("INVALID_ID");
+      }
+    });
+
+    it("should propagate failure when repository fails", async () => {
+      vi.mocked(orderRepository.findByEstablishmentId).mockResolvedValue(
+        fail("DB_ERROR", "Connection error")
+      );
+
+      const result = await orderService.findByEstablishmentId(validEstId);
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("DB_ERROR");
+      }
+    });
+  });
   // --- TESTS: deleteById ---
 
   describe("deleteById", () => {
@@ -141,7 +195,8 @@ describe("OrderService", () => {
     });
   });
 
-   // --- TESTS: update ---
+
+  // --- TESTS: update ---
 
   describe("update", () => {
     it("should update an order successfully", async () => {
@@ -155,6 +210,46 @@ describe("OrderService", () => {
 
       expect(result.ok).toBe(true);
       expect(orderRepository.update).toHaveBeenCalled();
+    });
+  });
+
+
+
+  // --- TESTS: create ---
+
+  describe("create", () => {
+    it("should create an order successfully", async () => {
+      const inputData = validOrderData({ notes: "Test note" });
+      const expectedOrder = fakeOrder(inputData);
+
+      vi.mocked(orderRepository.save).mockResolvedValue(ok(undefined));
+
+      const result = await orderService.create(inputData);
+
+      expect(orderRepository.save).toHaveBeenCalledTimes(1);
+      
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value.establishmentId).toBe(inputData.establishmentId);
+        expect(result.value.status).toBe(inputData.status);
+      }
+    });
+
+    it("should propagate a failure when the repository fails to save", async () => {
+      const inputData = validOrderData();
+
+      vi.mocked(orderRepository.save).mockResolvedValue(
+        fail("CREATE_ERROR", "Failed to create order")
+      );
+
+      const result = await orderService.create(inputData);
+
+      expect(orderRepository.save).toHaveBeenCalledTimes(1);
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("CREATE_ERROR");
+        expect(result.error.message).toBe("Failed to create order");
+      }
     });
   });
 

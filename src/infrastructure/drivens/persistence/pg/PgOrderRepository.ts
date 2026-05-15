@@ -18,6 +18,19 @@ export class PgOrderRepository implements OrderRepository {
     }
   }
 
+  async findByEstablishmentId(establishmentId: string): Promise<Result<Order[]>> {
+    try {
+      const result = await this.pool.query("SELECT * FROM orders WHERE establishment_id = $1", [
+        establishmentId,
+      ]);
+
+      const orders = result.rows.map((row) => this.toEntity(row));
+      return ok(orders);
+    } catch (error) {
+      return fail("RETRIEVE_ERROR", "Failed to retrieve orders by establishment", error);
+    }
+  }
+
   async deleteById(id: string): Promise<Result<void>> {
     try {
       const result = await this.pool.query("DELETE FROM orders WHERE id = $1", [id]);
@@ -44,6 +57,46 @@ export class PgOrderRepository implements OrderRepository {
       return ok(this.toEntity(result.rows[0]));
     } catch (error) {
       return fail("UPDATE_ERROR", "Failed to update order", error);
+    }
+  }
+
+  async save(order: Order): Promise<Result<void>> {
+    const query = `
+      INSERT INTO orders (
+        id, 
+        establishment_id, 
+        room_id, 
+        event_id, 
+        table_id, 
+        waiter_id, 
+        created_by, 
+        status, 
+        notes, 
+        created_at, 
+        updated_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+    `;
+
+    const values = [
+      order.id,
+      order.establishmentId,
+      order.roomId,
+      order.eventId,
+      order.tableId,
+      order.waiterId,
+      order.createdBy,
+      order.status,
+      order.notes,
+      order.createdAt,
+      order.updatedAt,
+    ];
+
+    try {
+      await this.pool.query(query, values);
+      return ok(undefined);
+    } catch (error) {
+      console.error("DEBUG DB ERROR:", error);
+      return fail("CREATE_ERROR", "Failed to create order", error);
     }
   }
 

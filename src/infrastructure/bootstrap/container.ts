@@ -5,6 +5,7 @@ import { IngredientService } from "@domain/services/IngredientService";
 import { MenuService } from "@domain/services/MenuService";
 import { OrderService } from "@domain/services/OrderService";
 import { RecipeService } from "@domain/services/RecipeService";
+import { RecipeStepService } from "@domain/services/RecipeStepService";
 import { UserService } from "@domain/services/UserService";
 import { BcryptPasswordHasher } from "@infrastructure/drivens/auth/BcryptPasswordHasher";
 import { authConfig } from "@infrastructure/drivens/auth/config";
@@ -14,6 +15,7 @@ import { PgAllergenRepository } from "@infrastructure/drivens/persistence/pg/PgA
 import { PgMenuRepository } from "@infrastructure/drivens/persistence/pg/PgMenuRepository";
 import { PgOrderRepository } from "@infrastructure/drivens/persistence/pg/PgOrderRepository";
 import { PgRecipeRepository } from "@infrastructure/drivens/persistence/pg/PgRecipeRepository";
+import { PgRecipeStepRepository } from "@infrastructure/drivens/persistence/pg/PgRecipeStepRepository";
 import { PgRefreshTokenRepository } from "@infrastructure/drivens/persistence/pg/PgRefreshTokenRepository";
 import { PgUserRepository } from "@infrastructure/drivens/persistence/pg/PgUserRepository";
 import type pg from "pg";
@@ -32,6 +34,7 @@ export interface Container {
   tokenService: TokenService;
   menuCardItemService: MenuCardItemService;
   orderService: OrderService;
+  recipeStepService: RecipeStepService;
 }
 
 export function createContainer(): Container {
@@ -45,6 +48,8 @@ export function createContainer(): Container {
   const ingredientService = new IngredientService(ingredientRepository);
   const userRepository = new PgUserRepository(pool);
   const userService = new UserService(userRepository);
+  const recipeStepRepository = new PgRecipeStepRepository(pool);
+  const recipeStepService = new RecipeStepService(recipeStepRepository);
   const refreshTokenRepository = new PgRefreshTokenRepository(
     pool,
     authConfig.refreshExpirySeconds,
@@ -75,5 +80,6 @@ export function createContainer(): Container {
     tokenService,
     menuCardItemService,
     orderService,
+    recipeStepService,
   };
 }

@@ -8,13 +8,19 @@ import {
 import { AllergenSchema, CreateAllergenSchema } from "../schemas/allergen";
 import { CreateIngredientSchema, IngredientSchema } from "../schemas/ingredient";
 import { MenuParamsSchema, MenuSchema, UpdateMenuSchema } from "../schemas/menu";
-import { OrderParamsSchema, OrderSchema } from "../schemas/order";
+import {
+  CreateOrderSchema,
+  OrderEstablishmentParamsSchema,
+  OrderParamsSchema,
+  OrderSchema,
+} from "../schemas/order";
 import {
   CreateRecipeSchema,
   RecipeByAllergenParamsSchema,
   RecipeIngredientSchema,
   RecipeSchema,
 } from "../schemas/recipe";
+import { CreateRecipeStepSchema, RecipeStepSchema } from "../schemas/recipeStep";
 import { LoginSchema, RefreshSchema, TokenPairSchema } from "../schemas/session";
 import { CreateUserSchema, UserSchema } from "../schemas/user";
 import { z } from "../schemas/zod";
@@ -44,6 +50,8 @@ registry.register("Ingredient", IngredientSchema);
 registry.register("User", UserSchema);
 registry.register("CreateUserBody", CreateUserSchema);
 registry.register("Order", OrderSchema);
+registry.register("RecipeStep", RecipeStepSchema);
+registry.register("CreateRecipeStepBody", CreateRecipeStepSchema);
 
 // Esquema específico para el detalle de Menu Card Items con Recipe
 const MenuCardItemRecipeDetailSchema = z.object({
@@ -925,6 +933,73 @@ registry.registerPath({
 // ======================
 // REGISTER PATHS: ORDERS
 // ======================
+registry.registerPath({
+  method: "post",
+  path: "/orders",
+  tags: ["Orders"],
+  summary: "Create a new order",
+  description: "Creates a new order with the provided details. Returns the created order.",
+  operationId: "createOrder",
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: CreateOrderSchema,
+          example: {
+            establishmentId: "22222222-0002-0002-0002-000000000001",
+            roomId: "44444444-0004-0004-0004-000000000002",
+            tableId: "55555555-0005-0005-0005-000000000004",
+            waiterId: "33333333-0003-0003-0003-000000000002",
+            createdBy: "33333333-0003-0003-0003-000000000001",
+            status: "pending",
+            notes: "Mesa de la terraza, pedido de prueba",
+          },
+        },
+      },
+    },
+  },
+  responses: {
+    201: {
+      description: "Order created successfully",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(OrderSchema),
+          example: {
+            success: true,
+            message: "Order created successfully",
+            data: orderExamples.pending,
+            meta: { timestamp: "2026-05-13T20:00:00.000Z" },
+          },
+        },
+      },
+    },
+    400: {
+      description: "Validation error (e.g., invalid UUIDs or missing required fields)",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: errorExamples.validation,
+        },
+      },
+    },
+    500: {
+      description: "Internal server error or database constraint violation",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "CREATE_ERROR",
+              message: "Failed to create order",
+            },
+            meta: { timestamp: "2026-05-13T20:00:00.000Z" },
+          },
+        },
+      },
+    },
+  },
+});
 
 registry.registerPath({
   method: "get",
@@ -969,6 +1044,66 @@ registry.registerPath({
               message: "Order not found",
             },
             meta: { timestamp: "2026-05-13T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/orders/establishment/{establishmentId}",
+  tags: ["Orders"],
+  summary: "Get all orders from an establishment",
+  description:
+    "Retorna una llista de totes les comandes associades a un ID d'establiment específic.",
+  request: {
+    params: OrderEstablishmentParamsSchema,
+  },
+  responses: {
+    200: {
+      description: "Llista de comandes recuperada correctament",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(z.array(OrderSchema)),
+          example: {
+            success: true,
+            data: [
+              {
+                id: "550e8400-e29b-41d4-a716-446655440000",
+                establishmentId: "22222222-0002-0002-0002-000000000001",
+                status: "pending",
+                notes: "Sense sal",
+                createdAt: "2026-05-14T10:00:00.000Z",
+                updatedAt: "2026-05-14T10:00:00.000Z",
+              },
+              {
+                id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+                establishmentId: "22222222-0002-0002-0002-000000000001",
+                status: "confirmed",
+                notes: null,
+                createdAt: "2026-05-14T11:30:00.000Z",
+                updatedAt: "2026-05-14T11:45:00.000Z",
+              },
+            ],
+            meta: { timestamp: "2026-05-14T12:00:00.000Z" },
+          },
+        },
+      },
+    },
+    400: {
+      description: "Format d'ID d'establiment invàlid",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "INVALID_REQUEST",
+              message: "Invalid establishment ID format",
+            },
+            meta: { timestamp: "2026-05-14T12:00:00.000Z" },
           },
         },
       },
@@ -1042,6 +1177,152 @@ registry.registerPath({
     503: {
       description: "Database is unreachable",
       content: { "application/json": { schema: HealthReadyErrorSchema } },
+    },
+  },
+});
+
+// ======================
+// REGISTER PATHS: RECIPE STEPS
+// ======================
+
+registry.registerPath({
+  method: "post",
+  path: "/recipe-steps",
+  tags: ["Recipe Steps"],
+  summary: "Create a new recipe step",
+  description: "Adds a new step to an existing recipe. Step numbers must be unique per recipe.",
+  operationId: "createRecipeStep",
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: CreateRecipeStepSchema,
+          example: {
+            recipeId: "550e8400-e29b-41d4-a716-446655440002",
+            stepNumber: 1,
+            instruction: "Sofregir la ceba fins que estigui daurada",
+            duration: 10,
+          },
+        },
+      },
+    },
+  },
+  responses: {
+    201: {
+      description: "Recipe step created successfully",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(RecipeStepSchema),
+          example: {
+            success: true,
+            data: {
+              id: "550e8400-e29b-41d4-a716-446655440003",
+              recipeId: "550e8400-e29b-41d4-a716-446655440002",
+              stepNumber: 1,
+              instruction: "Sofregir la ceba fins que estigui daurada",
+              duration: 10,
+            },
+            meta: { timestamp: "2026-05-10T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    400: {
+      description: "Invalid request data",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "INVALID_ID",
+              message: "Recipe ID must be a valid UUID",
+            },
+            meta: { timestamp: "2026-05-10T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    409: {
+      description: "Step number already exists for this recipe",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "DUPLICATE_RESOURCE",
+              message: "A step with this number already exists for this recipe",
+            },
+            meta: { timestamp: "2026-05-10T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    500: {
+      description: "Internal server error",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "CREATE_ERROR",
+              message: "Failed to create recipe step",
+            },
+            meta: { timestamp: "2026-05-10T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "delete",
+  path: "/recipe-steps/{id}",
+  tags: ["Recipe Steps"],
+  summary: "Delete a recipe step",
+  description: "Deletes an existing recipe step by its UUID.",
+  operationId: "deleteRecipeStep",
+  request: {
+    params: z.object({ id: z.string().uuid() }),
+  },
+  responses: {
+    204: {
+      description: "Recipe step deleted successfully",
+    },
+    400: {
+      description: "Invalid UUID format",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "INVALID_ID",
+              message: "Recipe step ID must be a valid UUID",
+            },
+            meta: { timestamp: "2026-05-10T10:00:00.000Z" },
+          },
+        },
+      },
+    },
+    404: {
+      description: "Recipe step not found",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "NOT_FOUND",
+              message: "Recipe step not found",
+            },
+            meta: { timestamp: "2026-05-10T10:00:00.000Z" },
+          },
+        },
+      },
     },
   },
 });
