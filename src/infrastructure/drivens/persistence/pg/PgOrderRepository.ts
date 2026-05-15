@@ -51,7 +51,7 @@ export class PgOrderRepository implements OrderRepository {
             updated_at = NOW() 
         WHERE id = $3 
         RETURNING *`,
-        [data.status, data.notes, id]
+        [data.status, data.notes, id],
       );
 
       return ok(this.toEntity(result.rows[0]));

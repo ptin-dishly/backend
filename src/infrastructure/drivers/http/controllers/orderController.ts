@@ -1,7 +1,7 @@
 import type { OrderService } from "@domain/services/OrderService";
 import { sendErrorByCode, sendSuccess } from "@infrastructure/drivers/http/responses";
-import type { Request, Response } from "express";
 import type { UpdateOrderRequest } from "@infrastructure/drivers/http/schemas/order";
+import type { Request, Response } from "express";
 
 export function createOrderController(orderService: OrderService) {
   return {
@@ -19,8 +19,7 @@ export function createOrderController(orderService: OrderService) {
       return sendSuccess(res, 200, result.value);
     },
 
-
-    async update(req: Request<{ id: string }, any, UpdateOrderRequest>, res: Response) {
+    async update(req: Request<{ id: string }, unknown, UpdateOrderRequest>, res: Response) {
       const result = await orderService.update(req.params.id, req.body);
       if (!result.ok) {
         return sendErrorByCode(res, result.error.code, result.error.message);

@@ -31,10 +31,9 @@ export class OrderService {
     return await this.orderRepository.deleteById(id);
   }
 
-
   async update(id: string, data: Partial<Order>): Promise<Result<Order>> {
     if (!id) return fail("INVALID_ID", "Order ID is required");
-    
+
     const existingOrder = await this.orderRepository.findById(id);
     if (!existingOrder.ok || !existingOrder.value) {
       return fail("NOT_FOUND", "Order not found");
@@ -42,7 +41,6 @@ export class OrderService {
 
     return await this.orderRepository.update(id, data);
   }
-
 
   async create(data: CreateOrderBody): Promise<Result<Order>> {
     const now = new Date();
