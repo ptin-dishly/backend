@@ -21,3 +21,10 @@ export type OrderResponse = z.infer<typeof OrderSchema>;
 export const OrderParamsSchema = z.object({
   id: z.string().uuid("Invalid order ID format"),
 });
+
+export const UpdateOrderSchema = z.object({
+  status: z.enum(["pending", "confirmed", "preparing", "served", "cancelled"]).optional(),
+  notes: z.string().nullable().optional(),
+});
+
+export type UpdateOrderRequest = z.infer<typeof UpdateOrderSchema>;

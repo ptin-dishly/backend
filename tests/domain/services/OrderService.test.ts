@@ -141,4 +141,22 @@ describe("OrderService", () => {
     });
   });
 
+   // --- TESTS: update ---
+
+  describe("update", () => {
+    it("should update an order successfully", async () => {
+      const existingOrder = fakeOrder();
+      const updatedData = { status: "confirmed" as OrderStatus };
+      
+      vi.mocked(orderRepository.findById).mockResolvedValue(ok(existingOrder));
+      vi.mocked(orderRepository.update).mockResolvedValue(ok({ ...existingOrder, ...updatedData }));
+
+      const result = await orderService.update(existingOrder.id, updatedData);
+
+      expect(result.ok).toBe(true);
+      expect(orderRepository.update).toHaveBeenCalled();
+    });
+  });
+
+
 });
