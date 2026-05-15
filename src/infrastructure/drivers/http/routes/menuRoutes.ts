@@ -7,6 +7,7 @@ import {
   MenuParamsSchema,
 } from "@infrastructure/drivers/http/schemas/menu";
 import { Router } from "express";
+import { CreateMenuSchema } from "../schemas/menu";
 
 export function MenuRoutes(MenuService: MenuService): Router {
   const router = Router();
@@ -24,10 +25,7 @@ export function MenuRoutes(MenuService: MenuService): Router {
     controller.findByAllergenId,
   );
   router.put("/menus/:id", controller.update);
-  router.post(
-    "/menus", 
-    validate({ body: CreateMenuSchema }), // Passem el validador amb el nou schema
-    controller.create
-  );
+  router.delete("/menus/:id", validate({ params: MenuParamsSchema }), controller.delete);
+  router.post("/menus", validate({ body: CreateMenuSchema }), controller.create);
   return router;
 }

@@ -18,6 +18,16 @@ export function createOrderController(orderService: OrderService) {
       return sendSuccess(res, 200, result.value);
     },
 
+    async findByEstablishmentId(req: Request<{ establishmentId: string }>, res: Response) {
+      const result = await orderService.findByEstablishmentId(req.params.establishmentId);
+
+      if (!result.ok) {
+        return sendErrorByCode(res, result.error.code, result.error.message);
+      }
+
+      return sendSuccess(res, 200, result.value);
+    },
+
     async deleteById(req: Request<{ id: string }>, res: Response) {
       const result = await orderService.deleteById(req.params.id);
 
@@ -26,6 +36,16 @@ export function createOrderController(orderService: OrderService) {
       }
 
       return res.status(204).send();
+    },
+
+    async create(req: Request, res: Response) {
+      const result = await orderService.create(req.body);
+
+      if (!result.ok) {
+        return sendErrorByCode(res, result.error.code, result.error.message);
+      }
+
+      return sendSuccess(res, 201, result.value, "Order created successfully");
     },
   };
 }
