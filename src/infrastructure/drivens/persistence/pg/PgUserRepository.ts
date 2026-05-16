@@ -33,6 +33,27 @@ export class PgUserRepository implements UserRepository {
     }
   }
 
+  async findAll(): Promise<Result<User[]>> {
+    try {
+      const result = await this.pool.query("SELECT * FROM users ORDER BY role ASC, name ASC");
+      return ok(result.rows.map((row) => this.toEntity(row)));
+    } catch (error: unknown) {
+      return fail("RETRIEVE_ERROR", "Failed to retrieve all users", error);
+    }
+  }
+
+  async findByEstablishmentId(establishmentId: string): Promise<Result<User[]>> {
+    try {
+      const result = await this.pool.query(
+        "SELECT * FROM users WHERE establishment_id = $1 ORDER BY role ASC, name ASC",
+        [establishmentId],
+      );
+      return ok(result.rows.map((row) => this.toEntity(row)));
+    } catch (error: unknown) {
+      return fail("RETRIEVE_ERROR", "Failed to retrieve establishment users", error);
+    }
+  }
+
   async findById(id: string): Promise<Result<User | null>> {
     try {
       const result = await this.pool.query("SELECT * FROM users WHERE id = $1", [id]);

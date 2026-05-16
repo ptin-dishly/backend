@@ -22,7 +22,7 @@ import {
 } from "../schemas/recipe";
 import { CreateRecipeStepSchema, RecipeStepSchema } from "../schemas/recipeStep";
 import { LoginSchema, RefreshSchema, TokenPairSchema } from "../schemas/session";
-import { CreateUserSchema, UserSchema } from "../schemas/user";
+import { CreateUserSchema, EstablishmentParamsSchema, UserSchema } from "../schemas/user";
 import { z } from "../schemas/zod";
 
 const registry = new OpenAPIRegistry();
@@ -924,6 +924,72 @@ registry.registerPath({
             },
             meta: { timestamp: "2026-05-10T16:25:06.291Z" },
           },
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/users",
+  tags: ["Users"],
+  summary: "List all users",
+  description: "Returns the complete list of all users registered in the system.",
+  operationId: "listUsers",
+  responses: {
+    200: {
+      description: "List of users retrieved successfully",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(z.array(UserSchema)),
+        },
+      },
+    },
+    500: {
+      description: "Internal server error",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/establishments/{establishmentId}/users",
+  tags: ["Users"],
+  summary: "Get users by establishment",
+  description:
+    "Returns a list of all users associated with a specific establishment. Returns an empty array if no users exist for that establishment.",
+  operationId: "getUsersByEstablishment",
+  request: {
+    params: EstablishmentParamsSchema,
+  },
+  responses: {
+    200: {
+      description: "List of users retrieved successfully",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(z.array(UserSchema)),
+        },
+      },
+    },
+    400: {
+      description: "Invalid establishment ID format",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+        },
+      },
+    },
+    500: {
+      description: "Internal server error",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
         },
       },
     },

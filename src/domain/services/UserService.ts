@@ -22,6 +22,17 @@ export class UserService {
     return await this.userRepository.findById(userId);
   }
 
+  async findAll(): Promise<Result<User[]>> {
+    return await this.userRepository.findAll();
+  }
+
+  async findByEstablishmentId(establishmentId: string): Promise<Result<User[]>> {
+    if (!establishmentId) {
+      return fail("INVALID_ID", "Establishment ID is required");
+    }
+    return await this.userRepository.findByEstablishmentId(establishmentId);
+  }
+
   async update(id: string, data: UpdateUserData): Promise<Result<User>> {
     if (!id) {
       return fail("INVALID_ID", "User ID is required");
