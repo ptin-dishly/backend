@@ -12,7 +12,7 @@ import { Router } from "express";
 export function RecipeRoutes(RecipeService: RecipeService): Router {
   const router = Router();
   const controller = createRecipeController(RecipeService);
-  router.get("/with-allergens", controller.findAllWithAllergens);
+  router.get("/recipes/with-allergens", controller.findAllWithAllergens);
   router.get("/recipes/establishment/:establishmentId", controller.findAllByEstablishmentId);
   router.get("/recipes/:id", validate({ params: RecipeParamsSchema }), controller.findById);
   router.delete("/recipes/:id", validate({ params: RecipeParamsSchema }), controller.delete);
