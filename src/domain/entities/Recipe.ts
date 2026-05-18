@@ -1,3 +1,5 @@
+import type { Allergen } from "./Allergen";
+
 export class Recipe {
   constructor(
     readonly id: string,
@@ -14,3 +16,7 @@ export class Recipe {
     readonly updatedAt: Date,
   ) {}
 }
+
+export type RecipeWithAllergens = Recipe & {
+  allergens: Allergen[];
+};
