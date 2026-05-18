@@ -30,6 +30,28 @@ export function createUserController(userService: UserService) {
       return sendSuccess(res, 200, null, "User deleted");
     },
 
+    async getAll(_req: Request, res: Response) {
+      const result = await userService.findAll();
+
+      if (!result.ok) {
+        return sendErrorByCode(res, result.error.code, result.error.message);
+      }
+
+      const users = result.value.map(({ passwordHash: _, ...user }) => user);
+      return sendSuccess(res, 200, users);
+    },
+
+    async getByEstablishment(req: Request<{ establishmentId: string }>, res: Response) {
+      const result = await userService.findByEstablishmentId(req.params.establishmentId);
+
+      if (!result.ok) {
+        return sendErrorByCode(res, result.error.code, result.error.message);
+      }
+
+      const users = result.value.map(({ passwordHash: _, ...user }) => user);
+      return sendSuccess(res, 200, users);
+    },
+
     async update(req: Request, res: Response) {
       const id = req.params.id as string;
       const data = req.body;

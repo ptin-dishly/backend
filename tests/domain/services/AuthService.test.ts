@@ -24,12 +24,14 @@ function createMockUserRepo(overrides?: Partial<UserRepository>): UserRepository
   return {
     findByEmail: vi.fn().mockResolvedValue(ok(fakeUser)),
     findById: vi.fn().mockResolvedValue(ok(fakeUser)),
+    findAll: vi.fn().mockResolvedValue(ok([fakeUser])),
+    findByEstablishmentId: vi.fn().mockResolvedValue(ok([fakeUser])),
     updateLastLogin: vi.fn().mockResolvedValue(ok(undefined)),
     delete: vi.fn().mockResolvedValue(ok(undefined)),
     update: vi.fn().mockResolvedValue(ok(fakeUser)) as any,
     save: vi.fn().mockResolvedValue(ok(undefined)),
     ...overrides,
-  };
+  } as UserRepository;
 }
 
 function createMockRefreshTokenRepo(

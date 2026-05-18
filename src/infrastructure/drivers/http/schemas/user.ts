@@ -40,3 +40,7 @@ export const CreateUserSchema = UserSchema.omit({
 });
 
 export type CreateUserBody = z.infer<typeof CreateUserSchema>;
+
+export const EstablishmentParamsSchema = z.object({
+  establishmentId: z.string().uuid(),
+});

@@ -25,6 +25,8 @@ describe("UserService", () => {
     userRepository = {
       findByEmail: vi.fn(),
       findById: vi.fn(),
+      findAll: vi.fn().mockResolvedValue(ok([fakeUser])),
+      findByEstablishmentId: vi.fn().mockResolvedValue(ok([fakeUser])),
       updateLastLogin: vi.fn(),
       delete: vi.fn(),
       update: vi.fn(),
@@ -84,6 +86,81 @@ describe("UserService", () => {
     }
   });
 });
+
+// ======================
+  // findAll
+  // ======================
+
+  describe("findAll", () => {
+    it("should return a list of all users", async () => {
+      vi.mocked(userRepository.findAll).mockResolvedValue(ok([fakeUser]));
+
+      const result = await userService.findAll();
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value).toEqual([fakeUser]);
+        expect(result.value.length).toBe(1);
+      }
+      expect(userRepository.findAll).toHaveBeenCalledTimes(1);
+    });
+
+    it("should propagate repository errors", async () => {
+      vi.mocked(userRepository.findAll).mockResolvedValue(
+        fail("RETRIEVE_ERROR", "Failed to retrieve all users")
+      );
+
+      const result = await userService.findAll();
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("RETRIEVE_ERROR");
+      }
+    });
+  });
+
+  // ======================
+  // findByEstablishmentId
+  // ======================
+
+  describe("findByEstablishmentId", () => {
+    const establishmentId = "550e8400-e29b-41d4-a716-446655441111";
+
+    it("should return a list of users for the given establishment ID", async () => {
+      vi.mocked(userRepository.findByEstablishmentId).mockResolvedValue(ok([fakeUser]));
+
+      const result = await userService.findByEstablishmentId(establishmentId);
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value).toEqual([fakeUser]);
+      }
+      expect(userRepository.findByEstablishmentId).toHaveBeenCalledWith(establishmentId);
+    });
+
+    it("should fail when establishment ID is empty", async () => {
+      const result = await userService.findByEstablishmentId("");
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("INVALID_ID");
+      }
+      expect(userRepository.findByEstablishmentId).not.toHaveBeenCalled();
+    });
+
+    it("should propagate repository errors", async () => {
+      vi.mocked(userRepository.findByEstablishmentId).mockResolvedValue(
+        fail("RETRIEVE_ERROR", "Failed to retrieve establishment users")
+      );
+
+      const result = await userService.findByEstablishmentId(establishmentId);
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("RETRIEVE_ERROR");
+      }
+    });
+  });
 
  // ======================
   // delete
