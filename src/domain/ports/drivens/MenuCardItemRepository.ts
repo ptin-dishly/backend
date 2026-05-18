@@ -28,4 +28,5 @@ export interface MenuCardItemWithRecipe {
 
 export interface MenuCardItemRepository {
   findAllWithRecipes(): Promise<Result<MenuCardItemWithRecipe[]>>;
+  findAllByEstablishmentWithRecipes(establishmentId: string): Promise<Result<MenuCardItemWithRecipe[]>>;
 }

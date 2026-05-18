@@ -13,5 +13,15 @@ export function createMenuCardItemController(menuCardItemService: MenuCardItemSe
 
       return sendSuccess(res, 200, result.value);
     },
+
+    async findAllByEstablishmentWithRecipes(req: Request<{ establishmentId: string }>, res: Response) {
+      const result = await menuCardItemService.getAllByEstablishmentWithRecipes(req.params.establishmentId);
+
+      if (!result.ok) {
+        return sendErrorByCode(res, result.error.code, result.error.message);
+      }
+
+      return sendSuccess(res, 200, result.value);
+    },
   };
 }
