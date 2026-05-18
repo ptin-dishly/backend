@@ -86,5 +86,14 @@ export function createRecipeController(recipeService: RecipeService) {
       }
       return sendSuccess(res, 200, result.value);
     },
+
+    async findAllWithAllergens(_req: Request, res: Response) {
+      try {
+        const recipes = await recipeService.getAllWithAllergens();
+        return sendSuccess(res, 200, recipes);
+      } catch (_error) {
+        return res.status(500).json({ error: "Internal Server Error" });
+      }
+    },
   };
 }

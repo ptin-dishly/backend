@@ -1,4 +1,4 @@
-import { Recipe } from "@domain/entities/Recipe";
+import { Recipe, type RecipeWithAllergens } from "@domain/entities/Recipe";
 import type {
   CreateRecipeData,
   RecipeIngredientDetail,
@@ -143,6 +143,51 @@ export class PgRecipeRepository implements RecipeRepository {
       return ok(recipes);
     } catch (error) {
       return fail("RETRIEVE_ERROR", "Failed to retrieve recipes by allergen", error);
+    }
+  }
+
+  async findAllWithAllergens(): Promise<RecipeWithAllergens[]> {
+    try {
+      const query = `
+      SELECT 
+        r.id, 
+        r.establishment_id AS "establishmentId", 
+        r.name, 
+        r.description, 
+        r.category, 
+        r.portion_size_kg AS "portionSizeKg", 
+        r.servings, 
+        r.preparation_time AS "preparationTime", 
+        r.version, 
+        r.created_by AS "createdBy", 
+        r.created_at AS "createdAt", 
+        r.updated_at AS "updatedAt",
+        COALESCE(
+          json_agg(
+            json_build_object(
+              'id', a.id,
+              'code', a.code,
+              'nameEs', a.name_es,
+              'nameCa', a.name_ca,
+              'nameEn', a.name_en,
+              'iconUrl', a.icon_url,
+              'description', a.description,
+              'euNumber', a.eu_number,
+              'createdAt', a.created_at
+            )
+          ) FILTER (WHERE a.id IS NOT NULL), 
+          '[]'
+        ) AS allergens
+      FROM recipes r
+      LEFT JOIN recipe_allergens ra ON r.id = ra.recipe_id AND ra.contains = true
+      LEFT JOIN allergens a ON ra.allergen_id = a.id
+      GROUP BY r.id;
+    `;
+      const result = await this.pool.query(query); // O db.query dependiendo de tu setup
+      return result.rows;
+    } catch (error) {
+      console.error("Error fetching recipes with allergens:", error);
+      throw error;
     }
   }
 
