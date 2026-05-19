@@ -41,14 +41,31 @@ export function createMenuController(menuService: MenuService) {
       return sendSuccess(res, 200, result.value);
     },
 
-    async findAll(_req: Request, res: Response) {
-      const result = await menuService.findAll();
+    async findByEstablishmentId(req: Request<{ establishmentId: string }>, res: Response) {
+      const result = await menuService.findByEstablishmentId(req.params.establishmentId);
 
       if (!result.ok) {
         return sendErrorByCode(res, result.error.code, result.error.message);
       }
 
       return sendSuccess(res, 200, result.value);
+    },
+
+    async create(req: Request, res: Response) {
+      const result = await menuService.create(req.body);
+      if (!result.ok) {
+        return sendErrorByCode(res, result.error.code, result.error.message);
+      }
+      return sendSuccess(res, 201, result.value);
+    },
+
+    async delete(req: Request, res: Response) {
+      const { id } = MenuParamsSchema.parse(req.params);
+      const result = await menuService.delete(id);
+      if (!result.ok) {
+        return sendErrorByCode(res, result.error.code, result.error.message);
+      }
+      return res.status(204).send();
     },
 
     async update(req: Request, res: Response) {

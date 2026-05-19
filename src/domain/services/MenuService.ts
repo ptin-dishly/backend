@@ -2,6 +2,7 @@ import type { Menu } from "@domain/entities/Menu";
 import type { MenuRepository, UpdateMenuData } from "@domain/ports/drivens/MenuRepository";
 import type { Result } from "@domain/value-objects/Result";
 import { fail } from "@domain/value-objects/Result";
+import type { CreateMenuInput } from "../ports/drivens/MenuRepository";
 
 export class MenuService {
   constructor(private menuRepository: MenuRepository) {}
@@ -22,8 +23,22 @@ export class MenuService {
     return await this.menuRepository.findById(id);
   }
 
-  async findAll(): Promise<Result<Menu[]>> {
-    return this.menuRepository.findAll();
+  async findByEstablishmentId(establishmentId: string): Promise<Result<Menu[]>> {
+    return this.menuRepository.findByEstablishmentId(establishmentId);
+  }
+
+  async create(data: CreateMenuInput): Promise<Result<Menu>> {
+    if (!data.items || data.items.length === 0) {
+      return fail("INVALID_REQUEST", "Un menú ha de tenir almenys un ítem.");
+    }
+    return await this.menuRepository.create(data);
+  }
+
+  async delete(id: string): Promise<Result<void>> {
+    if (!id || id.trim() === "") {
+      return fail("INVALID_ID", "L'ID del menú és obligatori i no pot estar buit");
+    }
+    return await this.menuRepository.delete(id);
   }
 
   async update(id: string, data: UpdateMenuData): Promise<Result<Menu>> {

@@ -25,9 +25,12 @@ describe("UserService", () => {
     userRepository = {
       findByEmail: vi.fn(),
       findById: vi.fn(),
+      findAll: vi.fn().mockResolvedValue(ok([fakeUser])),
+      findByEstablishmentId: vi.fn().mockResolvedValue(ok([fakeUser])),
       updateLastLogin: vi.fn(),
       delete: vi.fn(),
       update: vi.fn(),
+      save: vi.fn(),
     };
     userService = new UserService(userRepository);
   });
@@ -83,6 +86,81 @@ describe("UserService", () => {
     }
   });
 });
+
+// ======================
+  // findAll
+  // ======================
+
+  describe("findAll", () => {
+    it("should return a list of all users", async () => {
+      vi.mocked(userRepository.findAll).mockResolvedValue(ok([fakeUser]));
+
+      const result = await userService.findAll();
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value).toEqual([fakeUser]);
+        expect(result.value.length).toBe(1);
+      }
+      expect(userRepository.findAll).toHaveBeenCalledTimes(1);
+    });
+
+    it("should propagate repository errors", async () => {
+      vi.mocked(userRepository.findAll).mockResolvedValue(
+        fail("RETRIEVE_ERROR", "Failed to retrieve all users")
+      );
+
+      const result = await userService.findAll();
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("RETRIEVE_ERROR");
+      }
+    });
+  });
+
+  // ======================
+  // findByEstablishmentId
+  // ======================
+
+  describe("findByEstablishmentId", () => {
+    const establishmentId = "550e8400-e29b-41d4-a716-446655441111";
+
+    it("should return a list of users for the given establishment ID", async () => {
+      vi.mocked(userRepository.findByEstablishmentId).mockResolvedValue(ok([fakeUser]));
+
+      const result = await userService.findByEstablishmentId(establishmentId);
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value).toEqual([fakeUser]);
+      }
+      expect(userRepository.findByEstablishmentId).toHaveBeenCalledWith(establishmentId);
+    });
+
+    it("should fail when establishment ID is empty", async () => {
+      const result = await userService.findByEstablishmentId("");
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("INVALID_ID");
+      }
+      expect(userRepository.findByEstablishmentId).not.toHaveBeenCalled();
+    });
+
+    it("should propagate repository errors", async () => {
+      vi.mocked(userRepository.findByEstablishmentId).mockResolvedValue(
+        fail("RETRIEVE_ERROR", "Failed to retrieve establishment users")
+      );
+
+      const result = await userService.findByEstablishmentId(establishmentId);
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("RETRIEVE_ERROR");
+      }
+    });
+  });
 
  // ======================
   // delete
@@ -171,5 +249,78 @@ describe("UserService", () => {
       }
     });
   });  
+
+  // ======================
+  // create
+  // ======================
+
+  describe("create", () => {
+    const validCreateData = {
+      establishmentId: "d8b5a84d-2c81-4b13-a442-98446b78fb2a",
+      email: "new@calblay.cat",
+      password: "Password123!",
+      name: "Nou Usuari",
+      role: "waiter" as const,
+    };
+
+    it("should successfully create a new user", async () => {
+      vi.mocked(userRepository.findByEmail).mockResolvedValue(ok(null));
+      vi.mocked(userRepository.save).mockResolvedValue(ok(undefined));
+
+      const result = await userService.create(validCreateData);
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value.email).toBe(validCreateData.email);
+        expect(result.value.name).toBe(validCreateData.name);
+        expect(result.value.role).toBe(validCreateData.role);
+        expect(result.value.isActive).toBe(true);
+        expect(result.value.passwordHash).not.toBe(validCreateData.password);
+      }
+      
+      expect(userRepository.findByEmail).toHaveBeenCalledWith(validCreateData.email);
+      expect(userRepository.save).toHaveBeenCalled();
+    });
+
+    it("should fail when email is already registered", async () => {
+      vi.mocked(userRepository.findByEmail).mockResolvedValue(ok(fakeUser));
+
+      const result = await userService.create(validCreateData);
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("DUPLICATE_RESOURCE");
+      }
+      expect(userRepository.save).not.toHaveBeenCalled();
+    });
+
+    it("should propagate error if findByEmail fails", async () => {
+      vi.mocked(userRepository.findByEmail).mockResolvedValue(
+        fail("DB_ERROR", "Connection failed")
+      );
+
+      const result = await userService.create(validCreateData);
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("DB_ERROR");
+      }
+      expect(userRepository.save).not.toHaveBeenCalled();
+    });
+
+    it("should propagate error if save fails", async () => {
+      vi.mocked(userRepository.findByEmail).mockResolvedValue(ok(null));
+      vi.mocked(userRepository.save).mockResolvedValue(
+        fail("CREATE_ERROR", "Failed to insert into DB")
+      );
+
+      const result = await userService.create(validCreateData);
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.code).toBe("CREATE_ERROR");
+      }
+    });
+  });
 
 });

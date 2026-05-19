@@ -1,5 +1,9 @@
 import { Order, OrderItem, type OrderStatus } from "@domain/entities/Order";
-import type { CreateOrderInput, DashboardOrderSummary, OrderRepository } from "@domain/ports/drivens/OrderRepository";
+import type {
+  CreateOrderInput,
+  DashboardOrderSummary,
+  OrderRepository,
+} from "@domain/ports/drivens/OrderRepository";
 import type { Result } from "@domain/value-objects/Result";
 import { fail, ok } from "@domain/value-objects/Result";
 import type pg from "pg";
@@ -21,54 +25,60 @@ function mapRowToOrderItem(row: Record<string, unknown>): OrderItem {
   );
 }
 
+function rowToOrder(row: Record<string, unknown>, items: OrderItem[]): Order {
+  return new Order(
+    row.id as string,
+    row.establishment_id as string,
+    (row.room_id as string | null) ?? null,
+    (row.event_id as string | null) ?? null,
+    (row.table_id as string | null) ?? null,
+    (row.waiter_id as string | null) ?? null,
+    (row.created_by as string | null) ?? null,
+    row.status as OrderStatus,
+    (row.notes as string | null) ?? null,
+    items,
+    new Date(row.created_at as string),
+    new Date(row.updated_at as string),
+  );
+}
+
+const ORDER_WITH_ITEMS_COLUMNS = `
+  o.id, o.establishment_id, o.room_id, o.event_id, o.table_id, o.waiter_id,
+  o.created_by, o.status, o.notes, o.created_at, o.updated_at,
+  oi.id          AS item_id,
+  oi.recipe_id,
+  oi.menu_card_item_id,
+  oi.quantity,
+  oi.name        AS item_name,
+  oi.special_notes,
+  oi.has_allergen_risk,
+  oi.allergy_person,
+  oi.status      AS item_status,
+  oi.created_at  AS item_created_at,
+  oi.updated_at  AS item_updated_at
+`;
+
 export class PgOrderRepository implements OrderRepository {
   constructor(private readonly pool: pg.Pool) {}
 
+  // ── Live / dashboard ───────────────────────────────────────────────────────
   async findActiveByTableId(tableId: string): Promise<Result<Order | null>> {
     try {
-      const query = `
-        SELECT
-          o.id, o.establishment_id, o.table_id, o.waiter_id,
-          o.status, o.notes, o.created_at, o.updated_at,
-          oi.id          AS item_id,
-          oi.recipe_id,
-          oi.menu_card_item_id,
-          oi.quantity,
-          oi.name        AS item_name,
-          oi.special_notes,
-          oi.has_allergen_risk,
-          oi.allergy_person,
-          oi.status      AS item_status,
-          oi.created_at  AS item_created_at,
-          oi.updated_at  AS item_updated_at
-        FROM orders o
-        LEFT JOIN order_items oi ON oi.order_id = o.id
-        WHERE o.table_id = $1
-          AND o.status NOT IN ('served', 'cancelled')
-        ORDER BY o.created_at DESC, oi.created_at ASC;
-      `;
-      const result = await this.pool.query(query, [tableId]);
+      const result = await this.pool.query(
+        `SELECT ${ORDER_WITH_ITEMS_COLUMNS}
+         FROM orders o
+         LEFT JOIN order_items oi ON oi.order_id = o.id
+         WHERE o.table_id = $1
+           AND o.status NOT IN ('served', 'cancelled')
+         ORDER BY o.created_at DESC, oi.created_at ASC;`,
+        [tableId],
+      );
 
       if (result.rows.length === 0) return ok(null);
 
       const first = result.rows[0];
-      const items = result.rows
-        .filter((r) => r.item_id !== null)
-        .map(mapRowToOrderItem);
-
-      const order = new Order(
-        first.id as string,
-        first.establishment_id as string,
-        first.table_id as string | null,
-        first.waiter_id as string | null,
-        first.status as OrderStatus,
-        first.notes as string | null,
-        items,
-        new Date(first.created_at as string),
-        new Date(first.updated_at as string),
-      );
-
-      return ok(order);
+      const items = result.rows.filter((r) => r.item_id !== null).map(mapRowToOrderItem);
+      return ok(rowToOrder(first, items));
     } catch (error) {
       return fail("RETRIEVE_ERROR", "Error fetching active order for table", error);
     }
@@ -88,24 +98,18 @@ export class PgOrderRepository implements OrderRepository {
 
   async findAllActiveForDashboard(): Promise<Result<DashboardOrderSummary[]>> {
     try {
-      const query = `
-        SELECT
-          o.id,
-          o.table_id,
-          t.table_number,
-          o.status,
-          o.created_at,
-          oi.name           AS item_name,
-          oi.quantity,
-          COALESCE(mci.price, 0) AS price
-        FROM orders o
-        LEFT JOIN tables t ON t.id = o.table_id
-        LEFT JOIN order_items oi ON oi.order_id = o.id
-        LEFT JOIN menu_card_items mci ON mci.id = oi.menu_card_item_id
-        WHERE o.status NOT IN ('served', 'cancelled')
-        ORDER BY o.created_at ASC, oi.name ASC
-      `;
-      const result = await this.pool.query(query);
+      const result = await this.pool.query(
+        `SELECT
+           o.id, o.table_id, t.table_number, o.status, o.created_at,
+           oi.name AS item_name, oi.quantity,
+           COALESCE(mci.price, 0) AS price
+         FROM orders o
+         LEFT JOIN tables t ON t.id = o.table_id
+         LEFT JOIN order_items oi ON oi.order_id = o.id
+         LEFT JOIN menu_card_items mci ON mci.id = oi.menu_card_item_id
+         WHERE o.status NOT IN ('served', 'cancelled')
+         ORDER BY o.created_at ASC, oi.name ASC`,
+      );
 
       const ordersMap = new Map<string, DashboardOrderSummary>();
       for (const row of result.rows) {
@@ -141,10 +145,18 @@ export class PgOrderRepository implements OrderRepository {
       await client.query("BEGIN");
 
       const orderResult = await client.query(
-        `INSERT INTO orders (establishment_id, table_id, waiter_id, status, notes)
-         VALUES ($1, $2, $3, 'pending', $4)
-         RETURNING id, establishment_id, table_id, waiter_id, status, notes, created_at, updated_at`,
-        [input.establishmentId, input.tableId, input.waiterId, input.notes],
+        `INSERT INTO orders (establishment_id, room_id, event_id, table_id, waiter_id, created_by, status, notes)
+         VALUES ($1, $2, $3, $4, $5, $6, 'pending', $7)
+         RETURNING id, establishment_id, room_id, event_id, table_id, waiter_id, created_by, status, notes, created_at, updated_at`,
+        [
+          input.establishmentId,
+          input.roomId ?? null,
+          input.eventId ?? null,
+          input.tableId,
+          input.waiterId,
+          input.createdBy ?? null,
+          input.notes,
+        ],
       );
       const orderRow = orderResult.rows[0];
       const orderId = orderRow.id as string;
@@ -188,20 +200,7 @@ export class PgOrderRepository implements OrderRepository {
       }
 
       await client.query("COMMIT");
-
-      const order = new Order(
-        orderId,
-        orderRow.establishment_id as string,
-        orderRow.table_id as string | null,
-        orderRow.waiter_id as string | null,
-        orderRow.status as OrderStatus,
-        orderRow.notes as string | null,
-        items,
-        new Date(orderRow.created_at as string),
-        new Date(orderRow.updated_at as string),
-      );
-
-      return ok(order);
+      return ok(rowToOrder(orderRow, items));
     } catch (error) {
       await client.query("ROLLBACK");
       return fail("CREATE_ERROR", "Error creating order", error);
@@ -232,6 +231,82 @@ export class PgOrderRepository implements OrderRepository {
       return ok(undefined);
     } catch (error) {
       return fail("UPDATE_ERROR", "Error closing order", error);
+    }
+  }
+
+  // ── CRUD (loads order + items) ─────────────────────────────────────────────
+  async findById(id: string): Promise<Result<Order | null>> {
+    try {
+      const result = await this.pool.query(
+        `SELECT ${ORDER_WITH_ITEMS_COLUMNS}
+         FROM orders o
+         LEFT JOIN order_items oi ON oi.order_id = o.id
+         WHERE o.id = $1
+         ORDER BY oi.created_at ASC;`,
+        [id],
+      );
+
+      if (result.rows.length === 0) return ok(null);
+      const first = result.rows[0];
+      const items = result.rows.filter((r) => r.item_id !== null).map(mapRowToOrderItem);
+      return ok(rowToOrder(first, items));
+    } catch (error) {
+      return fail("RETRIEVE_ERROR", "Failed to retrieve order", error);
+    }
+  }
+
+  async findByEstablishmentId(establishmentId: string): Promise<Result<Order[]>> {
+    try {
+      const result = await this.pool.query(
+        `SELECT ${ORDER_WITH_ITEMS_COLUMNS}
+         FROM orders o
+         LEFT JOIN order_items oi ON oi.order_id = o.id
+         WHERE o.establishment_id = $1
+         ORDER BY o.created_at DESC, oi.created_at ASC;`,
+        [establishmentId],
+      );
+
+      const grouped = new Map<string, { orderRow: Record<string, unknown>; items: OrderItem[] }>();
+      for (const row of result.rows) {
+        const id = row.id as string;
+        if (!grouped.has(id)) grouped.set(id, { orderRow: row, items: [] });
+        if (row.item_id !== null) grouped.get(id)!.items.push(mapRowToOrderItem(row));
+      }
+      return ok(Array.from(grouped.values()).map(({ orderRow, items }) => rowToOrder(orderRow, items)));
+    } catch (error) {
+      return fail("RETRIEVE_ERROR", "Failed to retrieve orders by establishment", error);
+    }
+  }
+
+  async deleteById(id: string): Promise<Result<void>> {
+    try {
+      const result = await this.pool.query("DELETE FROM orders WHERE id = $1", [id]);
+      if (result.rowCount === 0) return fail("NOT_FOUND", "Order not found");
+      return ok(undefined);
+    } catch (error) {
+      return fail("DELETE_ERROR", "Failed to delete order", error);
+    }
+  }
+
+  async update(id: string, data: Partial<Order>): Promise<Result<Order>> {
+    try {
+      const updateResult = await this.pool.query(
+        `UPDATE orders
+         SET status = COALESCE($1, status),
+             notes = COALESCE($2, notes),
+             updated_at = NOW()
+         WHERE id = $3
+         RETURNING id`,
+        [data.status, data.notes, id],
+      );
+      if (updateResult.rowCount === 0) return fail("NOT_FOUND", "Order not found");
+
+      const reload = await this.findById(id);
+      if (!reload.ok) return fail(reload.error.code, reload.error.message);
+      if (!reload.value) return fail("NOT_FOUND", "Order not found");
+      return ok(reload.value);
+    } catch (error) {
+      return fail("UPDATE_ERROR", "Failed to update order", error);
     }
   }
 }

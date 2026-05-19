@@ -1,4 +1,4 @@
-import type { Recipe } from "../entities/Recipe";
+import type { Recipe, RecipeWithAllergens } from "../entities/Recipe";
 import type {
   CreateRecipeData,
   RecipeIngredientDetail,
@@ -64,8 +64,15 @@ export class RecipeService {
     return await this.recipeRepository.findByAllergenId(allergenId);
   }
 
-  async findAll(): Promise<Result<Recipe[]>> {
-    return await this.recipeRepository.findAll();
+  async findAllByEstablishmentId(establishmentId: string): Promise<Result<Recipe[]>> {
+    if (!establishmentId || establishmentId.trim() === "") {
+      return fail("INVALID_ID", "Establishment ID cannot be empty");
+    }
+    return await this.recipeRepository.findAllByEstablishmentId(establishmentId);
+  }
+
+  async getAllWithAllergens(): Promise<RecipeWithAllergens[]> {
+    return await this.recipeRepository.findAllWithAllergens();
   }
 
   async update(id: string, data: UpdateRecipeData): Promise<Result<Recipe>> {

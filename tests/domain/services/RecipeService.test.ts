@@ -50,12 +50,13 @@ describe("RecipeService", () => {
     beforeEach(() => {
         recipeRepository = {
             create: vi.fn(),
-            findAll: vi.fn(),
+            findAllByEstablishmentId: vi.fn(),
             findById: vi.fn(),
             delete: vi.fn(),
             update: vi.fn(),
             findIngredientsByRecipeId: vi.fn(),
             findByAllergenId: vi.fn(),
+            findAllWithAllergens: vi.fn(),
         } as unknown as RecipeRepository;
 
         recipeService = new RecipeService(recipeRepository);
@@ -152,13 +153,13 @@ describe("RecipeService", () => {
     });
 
     // --- TESTS FIND ALL ---
-    describe("findAll", () => {
+    describe("findAllByEstablishmentId", () => {
         it("should return all recipes", async () => {
             const recipes = [fakeRecipe(), fakeRecipe({ name: "Salmón" })];
 
-            vi.mocked(recipeRepository.findAll).mockResolvedValue(ok(recipes));
+            vi.mocked(recipeRepository.findAllByEstablishmentId).mockResolvedValue(ok(recipes));
 
-            const result = await recipeService.findAll();
+            const result = await recipeService.findAllByEstablishmentId("establishment-id");
 
             expect(result.ok).toBe(true);
             if (result.ok) {
@@ -167,20 +168,20 @@ describe("RecipeService", () => {
         });
 
         it("should return empty array", async () => {
-            vi.mocked(recipeRepository.findAll).mockResolvedValue(ok([]));
+            vi.mocked(recipeRepository.findAllByEstablishmentId).mockResolvedValue(ok([]));
 
-            const result = await recipeService.findAll();
+            const result = await recipeService.findAllByEstablishmentId("establishment-id");
 
             expect(result.ok).toBe(true);
             if (result.ok) expect(result.value).toHaveLength(0);
         });
 
         it("should propagate repository error", async () => {
-            vi.mocked(recipeRepository.findAll).mockResolvedValue(
+            vi.mocked(recipeRepository.findAllByEstablishmentId).mockResolvedValue(
                 fail("DB_ERROR", "Connection failed")
             );
 
-            const result = await recipeService.findAll();
+            const result = await recipeService.findAllByEstablishmentId("establishment-id");
 
             expect(result.ok).toBe(false);
         });
@@ -357,6 +358,37 @@ describe("RecipeService", () => {
             expect(recipeRepository.findByAllergenId).not.toHaveBeenCalled();
         });
     });
+
+    // --- TEST FIND ALL WITH ALLERGENS ---
+    describe("getAllWithAllergens", () => {
+        it("should return a list of recipes with their allergens successfully", async () => {
+            const mockRecipeWithAllergens = {
+                ...fakeRecipe(),
+                allergens: [
+                    { id: "allergen-1", nameEs: "Gluten", code: "GLU" }
+                ]
+            };
+
+            vi.mocked(recipeRepository.findAllWithAllergens).mockResolvedValue([mockRecipeWithAllergens] as any);
+
+            const result = await recipeService.getAllWithAllergens();
+
+            expect(recipeRepository.findAllWithAllergens).toHaveBeenCalledTimes(1);
+            expect(result).toHaveLength(1);
+            expect(result[0].allergens).toBeDefined();
+            expect(result[0].allergens[0].nameEs).toBe("Gluten");
+        });
+
+        it("should propagate a failure when the repository fails", async () => {
+            vi.mocked(recipeRepository.findAllWithAllergens).mockRejectedValue(
+                new Error("Error fetching recipes with allergens")
+            );
+
+            await expect(recipeService.getAllWithAllergens()).rejects.toThrow("Error fetching recipes with allergens");
+            
+            expect(recipeRepository.findAllWithAllergens).toHaveBeenCalledTimes(1);
+        });
+    }); 
 
     // --- TESTS DELETE ---
     describe("delete", () => {

@@ -42,6 +42,10 @@ export const MenuIdParamsSchema = z.object({
     .regex(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/),
 });
 
+export const RecipeIdParamsSchema = z.object({
+  recipeId: z.string().min(36).max(36), // Just check length instead of strict UUID validation
+});
+
 export const EuNumberParamsSchema = z.object({
   euNumber: z.coerce.number().int().min(1).max(14),
 });

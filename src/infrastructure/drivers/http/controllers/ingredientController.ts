@@ -66,4 +66,12 @@ export class IngredientController {
 
     return sendSuccess(res, 201, result.value);
   }
+
+  async remove(req: Request<{ id: string }>, res: Response) {
+    const result = await this.ingredientService.delete(req.params.id);
+    if (!result.ok) {
+      return sendErrorByCode(res, result.error.code, result.error.message);
+    }
+    return sendSuccess(res, 200, null, "Ingredient deleted");
+  }
 }

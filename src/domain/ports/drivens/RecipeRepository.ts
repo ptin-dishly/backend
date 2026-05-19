@@ -1,4 +1,4 @@
-import type { Recipe } from "@domain/entities/Recipe";
+import type { Recipe, RecipeWithAllergens } from "@domain/entities/Recipe";
 import type { Result } from "@domain/value-objects/Result";
 
 export interface CreateRecipeData {
@@ -30,9 +30,10 @@ export interface RecipeIngredientDetail {
 export interface RecipeRepository {
   findById(id: string): Promise<Result<Recipe | null>>;
   delete(id: string): Promise<Result<boolean>>;
-  findAll(): Promise<Result<Recipe[]>>;
+  findAllByEstablishmentId(establishmentId: string): Promise<Result<Recipe[]>>;
   findIngredientsByRecipeId(recipeId: string): Promise<Result<RecipeIngredientDetail[]>>;
   findByAllergenId(allergenId: string): Promise<Result<Recipe[]>>;
+  findAllWithAllergens(): Promise<RecipeWithAllergens[]>;
   create(data: CreateRecipeData): Promise<Result<Recipe>>;
   update(id: string, data: UpdateRecipeData): Promise<Result<Recipe>>;
 }

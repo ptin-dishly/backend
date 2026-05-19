@@ -15,6 +15,7 @@ describe("IngredientService", () => {
             findAll: vi.fn(),
             update: vi.fn(),
             create: vi.fn(),
+            delete: vi.fn(),
         } as unknown as IngredientRepository;
 
         ingredientService = new IngredientService(mockIngredientRepository);
@@ -170,4 +171,61 @@ describe("IngredientService", () => {
             }
         });
     });
+
+    describe("delete", () => {
+        it("should delete an ingredient successfully", async () => {
+            vi.mocked(mockIngredientRepository.delete).mockResolvedValue(ok(undefined));
+
+            const result = await ingredientService.delete("550e8400-e29b-41d4-a716-446655440000");
+
+            expect(mockIngredientRepository.delete).toHaveBeenCalledWith("550e8400-e29b-41d4-a716-446655440000");
+            expect(result.ok).toBe(true);
+        });
+
+        it("should fail when id is empty", async () => {
+            const result = await ingredientService.delete("");
+
+            expect(mockIngredientRepository.delete).not.toHaveBeenCalled();
+            expect(result.ok).toBe(false);
+            if (!result.ok) {
+            expect(result.error.code).toBe("INVALID_ID");
+            }
+        });
+
+        it("should fail when id is not a valid UUID", async () => {
+            const result = await ingredientService.delete("not-a-uuid");
+
+            expect(mockIngredientRepository.delete).not.toHaveBeenCalled();
+            expect(result.ok).toBe(false);
+            if (!result.ok) {
+            expect(result.error.code).toBe("INVALID_ID");
+            }
+        });
+
+        it("should handle ingredient not found", async () => {
+            vi.mocked(mockIngredientRepository.delete).mockResolvedValue(
+            fail("NOT_FOUND", "Ingredient not found")
+            );
+
+            const result = await ingredientService.delete("550e8400-e29b-41d4-a716-446655440000");
+
+            expect(result.ok).toBe(false);
+            if (!result.ok) {
+            expect(result.error.code).toBe("NOT_FOUND");
+            }
+        });
+
+        it("should propagate repository errors", async () => {
+            vi.mocked(mockIngredientRepository.delete).mockResolvedValue(
+            fail("DB_ERROR", "Connection failed")
+            );
+
+            const result = await ingredientService.delete("550e8400-e29b-41d4-a716-446655440000");
+
+            expect(result.ok).toBe(false);
+            if (!result.ok) {
+            expect(result.error.code).toBe("DB_ERROR");
+            }
+        });
+    });    
 });

@@ -11,6 +11,19 @@ export interface CreateMenuData {
   updatedAt: Date;
 }
 
+export interface CreateMenuInput {
+  establishmentId: string;
+  name: string;
+  isPublic: boolean;
+  qrCodeUrl: string | null;
+  items: Array<{
+    recipeId: string;
+    price: number;
+    displayOrder: number;
+    isAvailable: boolean;
+  }>;
+}
+
 export interface UpdateMenuData {
   establishmentId?: string;
   name?: string;
@@ -20,7 +33,9 @@ export interface UpdateMenuData {
 
 export interface MenuRepository {
   findById(id: string): Promise<Result<Menu | null>>;
-  findAll(): Promise<Result<Menu[]>>;
+  findByEstablishmentId(establishmentId: string): Promise<Result<Menu[]>>;
   findByAllergen(allergenId: string): Promise<Result<Menu[]>>;
   update(id: string, data: UpdateMenuData): Promise<Result<Menu>>;
+  create(data: CreateMenuInput): Promise<Result<Menu>>;
+  delete(id: string): Promise<Result<void>>;
 }

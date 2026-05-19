@@ -22,8 +22,8 @@ export function createRecipeController(recipeService: RecipeService) {
       return sendSuccess(res, 201, result.value);
     },
 
-    async findAll(_req: Request, res: Response) {
-      const result = await recipeService.findAll();
+    async findAllByEstablishmentId(req: Request<{ establishmentId: string }>, res: Response) {
+      const result = await recipeService.findAllByEstablishmentId(req.params.establishmentId);
 
       if (!result.ok) {
         return sendErrorByCode(res, result.error.code, result.error.message);
@@ -85,6 +85,15 @@ export function createRecipeController(recipeService: RecipeService) {
         return sendErrorByCode(res, result.error.code, result.error.message);
       }
       return sendSuccess(res, 200, result.value);
+    },
+
+    async findAllWithAllergens(_req: Request, res: Response) {
+      try {
+        const recipes = await recipeService.getAllWithAllergens();
+        return sendSuccess(res, 200, recipes);
+      } catch (_error) {
+        return res.status(500).json({ error: "Internal Server Error" });
+      }
     },
   };
 }
