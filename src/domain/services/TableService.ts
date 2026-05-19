@@ -1,4 +1,8 @@
-import type { CreateTableInput, RoomTable, TableRepository } from "@domain/ports/drivens/TableRepository";
+import type {
+  CreateTableInput,
+  RoomTable,
+  TableRepository,
+} from "@domain/ports/drivens/TableRepository";
 import type { Result } from "@domain/value-objects/Result";
 
 export class TableService {

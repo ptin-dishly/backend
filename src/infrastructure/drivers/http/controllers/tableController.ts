@@ -1,5 +1,11 @@
 import type { TableService } from "@domain/services/TableService";
-import { sendBadRequest, sendErrorByCode, sendNotFound, sendSuccess, sendSuccessNoData } from "@infrastructure/drivers/http/responses";
+import {
+  sendBadRequest,
+  sendErrorByCode,
+  sendNotFound,
+  sendSuccess,
+  sendSuccessNoData,
+} from "@infrastructure/drivers/http/responses";
 import type { Request, Response } from "express";
 
 export function createTableController(tableService: TableService) {
@@ -16,14 +22,15 @@ export function createTableController(tableService: TableService) {
         tableNumber: string;
         capacity?: number | null;
       };
-      if (!roomId || !tableNumber) return sendBadRequest(res, "roomId and tableNumber are required");
+      if (!roomId || !tableNumber)
+        return sendBadRequest(res, "roomId and tableNumber are required");
       const result = await tableService.create({ roomId, tableNumber, capacity });
       if (!result.ok) return sendErrorByCode(res, result.error.code, result.error.message);
       return sendSuccess(res, 201, result.value);
     },
 
     async deleteTable(req: Request, res: Response) {
-      const id = req.params["id"] as string;
+      const id = req.params.id as string;
       const result = await tableService.delete(id);
       if (!result.ok) return sendErrorByCode(res, result.error.code, result.error.message);
       if (!result.value) return sendNotFound(res, "Table not found");

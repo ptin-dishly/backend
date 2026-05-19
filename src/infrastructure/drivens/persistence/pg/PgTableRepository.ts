@@ -1,4 +1,8 @@
-import type { CreateTableInput, RoomTable, TableRepository } from "@domain/ports/drivens/TableRepository";
+import type {
+  CreateTableInput,
+  RoomTable,
+  TableRepository,
+} from "@domain/ports/drivens/TableRepository";
 import type { Result } from "@domain/value-objects/Result";
 import { fail, ok } from "@domain/value-objects/Result";
 import type pg from "pg";
@@ -36,10 +40,9 @@ export class PgTableRepository implements TableRepository {
         [input.roomId, input.tableNumber, input.capacity ?? null],
       );
       const row = ins.rows[0];
-      const estRes = await this.pool.query(
-        "SELECT establishment_id FROM rooms WHERE id = $1",
-        [input.roomId],
-      );
+      const estRes = await this.pool.query("SELECT establishment_id FROM rooms WHERE id = $1", [
+        input.roomId,
+      ]);
       return ok({
         id: row.id as string,
         roomId: row.room_id as string,
@@ -54,10 +57,7 @@ export class PgTableRepository implements TableRepository {
 
   async delete(id: string): Promise<Result<boolean>> {
     try {
-      const result = await this.pool.query(
-        "DELETE FROM tables WHERE id = $1",
-        [id],
-      );
+      const result = await this.pool.query("DELETE FROM tables WHERE id = $1", [id]);
       return ok((result.rowCount ?? 0) > 0);
     } catch (error) {
       return fail("DELETE_ERROR", "Error deleting table — it may have associated orders", error);

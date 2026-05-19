@@ -209,7 +209,11 @@ export class PgOrderRepository implements OrderRepository {
     }
   }
 
-  async updateItemStatus(orderId: string, itemId: string, status: OrderStatus): Promise<Result<void>> {
+  async updateItemStatus(
+    orderId: string,
+    itemId: string,
+    status: OrderStatus,
+  ): Promise<Result<void>> {
     try {
       await this.pool.query(
         `UPDATE order_items SET status = $1, updated_at = NOW()
@@ -272,7 +276,9 @@ export class PgOrderRepository implements OrderRepository {
         if (!grouped.has(id)) grouped.set(id, { orderRow: row, items: [] });
         if (row.item_id !== null) grouped.get(id)!.items.push(mapRowToOrderItem(row));
       }
-      return ok(Array.from(grouped.values()).map(({ orderRow, items }) => rowToOrder(orderRow, items)));
+      return ok(
+        Array.from(grouped.values()).map(({ orderRow, items }) => rowToOrder(orderRow, items)),
+      );
     } catch (error) {
       return fail("RETRIEVE_ERROR", "Failed to retrieve orders by establishment", error);
     }

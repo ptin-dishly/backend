@@ -24,7 +24,7 @@ export function createOrderController(orderService: OrderService) {
     },
 
     async getActiveByTableId(req: Request, res: Response) {
-      const tableId = req.params["tableId"] as string;
+      const tableId = req.params.tableId as string;
       const result = await orderService.getActiveByTableId(tableId);
       if (!result.ok) return sendErrorByCode(res, result.error.code, result.error.message);
       if (!result.value) return sendSuccess(res, 200, null);
@@ -32,33 +32,25 @@ export function createOrderController(orderService: OrderService) {
     },
 
     async createOrder(req: Request, res: Response) {
-      const {
-        establishmentId,
-        roomId,
-        eventId,
-        tableId,
-        waiterId,
-        createdBy,
-        notes,
-        items,
-      } = req.body as {
-        establishmentId: string;
-        roomId?: string | null;
-        eventId?: string | null;
-        tableId: string | null;
-        waiterId: string | null;
-        createdBy?: string | null;
-        notes: string | null;
-        items: {
-          recipeId: string;
-          menuCardItemId: string | null;
-          quantity: number;
-          name: string;
-          specialNotes: string | null;
-          hasAllergenRisk: boolean;
-          allergyPerson: string | null;
-        }[];
-      };
+      const { establishmentId, roomId, eventId, tableId, waiterId, createdBy, notes, items } =
+        req.body as {
+          establishmentId: string;
+          roomId?: string | null;
+          eventId?: string | null;
+          tableId: string | null;
+          waiterId: string | null;
+          createdBy?: string | null;
+          notes: string | null;
+          items: {
+            recipeId: string;
+            menuCardItemId: string | null;
+            quantity: number;
+            name: string;
+            specialNotes: string | null;
+            hasAllergenRisk: boolean;
+            allergyPerson: string | null;
+          }[];
+        };
 
       if (!establishmentId || !items || items.length === 0) {
         return sendBadRequest(res, "establishmentId and items are required");
@@ -88,15 +80,15 @@ export function createOrderController(orderService: OrderService) {
     },
 
     async markItemServed(req: Request, res: Response) {
-      const orderId = req.params["orderId"] as string;
-      const itemId = req.params["itemId"] as string;
+      const orderId = req.params.orderId as string;
+      const itemId = req.params.itemId as string;
       const result = await orderService.markItemServed(orderId, itemId);
       if (!result.ok) return sendErrorByCode(res, result.error.code, result.error.message);
       return sendSuccessNoData(res, 200, "Item marked as served");
     },
 
     async closeOrder(req: Request, res: Response) {
-      const orderId = req.params["orderId"] as string;
+      const orderId = req.params.orderId as string;
       const result = await orderService.closeOrder(orderId);
       if (!result.ok) return sendErrorByCode(res, result.error.code, result.error.message);
       return sendSuccessNoData(res, 200, "Order closed");
