@@ -1,5 +1,11 @@
 import type { Result } from "@domain/value-objects/Result";
 
+export interface MenuItemAllergen {
+  code: string;
+  nameEs: string;
+  nameCa: string;
+}
+
 export interface MenuCardItemWithRecipe {
   id: string;
   menuCardId: string;
@@ -17,6 +23,7 @@ export interface MenuCardItemWithRecipe {
   preparationTime: number;
   version: number;
   createdBy: string;
+  allergens: MenuItemAllergen[];
 }
 
 export interface MenuCardItemRepository {

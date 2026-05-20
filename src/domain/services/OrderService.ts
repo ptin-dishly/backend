@@ -1,70 +1,69 @@
-import { randomUUID } from "node:crypto";
-import { Order } from "@domain/entities/Order";
-import type { OrderRepository } from "@domain/ports/drivens/OrderRepository";
+import type { Order } from "@domain/entities/Order";
+import type {
+  CreateOrderInput,
+  DashboardOrderSummary,
+  OrderRepository,
+} from "@domain/ports/drivens/OrderRepository";
 import type { Result } from "@domain/value-objects/Result";
-import { fail, ok } from "@domain/value-objects/Result";
-import type { CreateOrderBody } from "@infrastructure/drivers/http/schemas/order";
+import { fail } from "@domain/value-objects/Result";
 
 export class OrderService {
-  constructor(private orderRepository: OrderRepository) {}
+  constructor(private readonly orderRepository: OrderRepository) {}
 
+  // ── Live / dashboard ───────────────────────────────────────────────────────
+  getActiveByTableId(tableId: string): Promise<Result<Order | null>> {
+    return this.orderRepository.findActiveByTableId(tableId);
+  }
+
+  getActiveTableIds(): Promise<Result<string[]>> {
+    return this.orderRepository.findActiveTableIds();
+  }
+
+  getAllActiveForDashboard(): Promise<Result<DashboardOrderSummary[]>> {
+    return this.orderRepository.findAllActiveForDashboard();
+  }
+
+  createOrder(input: CreateOrderInput): Promise<Result<Order>> {
+    return this.orderRepository.create(input);
+  }
+
+  markItemServed(orderId: string, itemId: string): Promise<Result<void>> {
+    return this.orderRepository.updateItemStatus(orderId, itemId, "served");
+  }
+
+  closeOrder(orderId: string): Promise<Result<void>> {
+    return this.orderRepository.closeOrder(orderId);
+  }
+
+  // ── CRUD ───────────────────────────────────────────────────────────────────
   async findById(id: string): Promise<Result<Order | null>> {
     if (!id || id.trim() === "") {
       return fail("INVALID_ID", "Order ID is required");
     }
-
-    return await this.orderRepository.findById(id);
+    return this.orderRepository.findById(id);
   }
 
   async findByEstablishmentId(establishmentId: string): Promise<Result<Order[]>> {
-    if (!establishmentId) {
+    if (!establishmentId || establishmentId.trim() === "") {
       return fail("INVALID_ID", "Establishment ID is required");
     }
-    return await this.orderRepository.findByEstablishmentId(establishmentId);
+    return this.orderRepository.findByEstablishmentId(establishmentId);
   }
 
   async deleteById(id: string): Promise<Result<void>> {
     if (!id || id.trim() === "") {
       return fail("INVALID_ID", "Order ID is required");
     }
-
-    return await this.orderRepository.deleteById(id);
+    return this.orderRepository.deleteById(id);
   }
 
-  async update(id: string, data: Partial<Order>): Promise<Result<Order>> {
-    if (!id) return fail("INVALID_ID", "Order ID is required");
-
-    const existingOrder = await this.orderRepository.findById(id);
-    if (!existingOrder.ok || !existingOrder.value) {
-      return fail("NOT_FOUND", "Order not found");
+  async update(id: string, data: Partial<Pick<Order, "status" | "notes">>): Promise<Result<Order>> {
+    if (!id || id.trim() === "") {
+      return fail("INVALID_ID", "Order ID is required");
     }
-
-    return await this.orderRepository.update(id, data);
-  }
-
-  async create(data: CreateOrderBody): Promise<Result<Order>> {
-    const now = new Date();
-
-    const newOrder = new Order(
-      randomUUID(),
-      data.establishmentId,
-      data.roomId ?? null,
-      data.eventId ?? null,
-      data.tableId ?? null,
-      data.waiterId ?? null,
-      data.createdBy ?? null,
-      data.status,
-      data.notes ?? null,
-      now,
-      now,
-    );
-
-    const saveResult = await this.orderRepository.save(newOrder);
-
-    if (!saveResult.ok) {
-      return fail(saveResult.error.code, saveResult.error.message);
-    }
-
-    return ok(newOrder);
+    const existing = await this.orderRepository.findById(id);
+    if (!existing.ok) return fail(existing.error.code, existing.error.message);
+    if (!existing.value) return fail("NOT_FOUND", "Order not found");
+    return this.orderRepository.update(id, data as Partial<Order>);
   }
 }

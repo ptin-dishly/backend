@@ -23,6 +23,7 @@ describe("MenuCardItemService", () => {
     preparationTime: 15,
     version: 1,
     createdBy: "33333333-0003-0003-0003-000000000001",
+    allergens: [],
     ...overrides,
   });
 
