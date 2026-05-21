@@ -29,6 +29,12 @@ export interface UpdateMenuData {
   name?: string;
   isPublic?: boolean;
   qrCodeUrl?: string | null;
+  items?: Array<{
+    recipeId: string;
+    price: number;
+    displayOrder: number;
+    isAvailable: boolean;
+  }>;
 }
 
 export interface MenuRepository {

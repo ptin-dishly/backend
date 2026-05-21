@@ -114,61 +114,78 @@ export class PgMenuRepository implements MenuRepository {
   }
 
   async update(id: string, data: UpdateMenuData): Promise<Result<Menu>> {
-    const setClauses: string[] = [];
-    const values: unknown[] = [id];
-    let placeholderIndex = 2;
-
-    if (data.name !== undefined) {
-      setClauses.push(`name = $${placeholderIndex++}`);
-      values.push(data.name);
-    }
-
-    if (data.establishmentId !== undefined) {
-      setClauses.push(`establishment_id = $${placeholderIndex++}`);
-      values.push(data.establishmentId);
-    }
-
-    if (data.isPublic !== undefined) {
-      setClauses.push(`is_public = $${placeholderIndex++}`);
-      values.push(data.isPublic);
-    }
-
-    if (data.qrCodeUrl !== undefined) {
-      setClauses.push(`qr_code_url = $${placeholderIndex++}`);
-      values.push(data.qrCodeUrl);
-    }
-
-    if (setClauses.length === 0) {
-      return fail("INVALID_REQUEST", "No valid fields provided to update");
-    }
-
-    setClauses.push("updated_at = NOW()");
-
+    const client = await this.pool.connect();
     try {
-      const query = `
-        UPDATE menu_cards 
-        SET ${setClauses.join(", ")} 
-        WHERE id = $1 
-        RETURNING *
-      `;
+      await client.query("BEGIN");
 
-      const result = await this.pool.query(query, values);
+      const setClauses: string[] = [];
+      const values: unknown[] = [id];
+      let placeholderIndex = 2;
 
-      if (result.rowCount === 0) {
-        return fail("NOT_FOUND", "Menu not found");
+      if (data.name !== undefined) {
+        setClauses.push(`name = $${placeholderIndex++}`);
+        values.push(data.name);
+      }
+      if (data.establishmentId !== undefined) {
+        setClauses.push(`establishment_id = $${placeholderIndex++}`);
+        values.push(data.establishmentId);
+      }
+      if (data.isPublic !== undefined) {
+        setClauses.push(`is_public = $${placeholderIndex++}`);
+        values.push(data.isPublic);
+      }
+      if (data.qrCodeUrl !== undefined) {
+        setClauses.push(`qr_code_url = $${placeholderIndex++}`);
+        values.push(data.qrCodeUrl);
       }
 
-      return ok(this.toEntity(result.rows[0]));
-    } catch (error: unknown) {
-      if (typeof error === "object" && error !== null && "code" in error) {
-        const pgError = error as { code: string };
+      let menu: Menu;
 
-        if (pgError.code === "23505") {
-          return fail("DUPLICATE_RESOURCE", "A menu with this name already exists", error);
+      if (setClauses.length > 0) {
+        setClauses.push("updated_at = NOW()");
+        const query = `UPDATE menu_cards SET ${setClauses.join(", ")} WHERE id = $1 RETURNING *`;
+        const result = await client.query(query, values);
+
+        if (result.rowCount === 0) {
+          await client.query("ROLLBACK");
+          return fail("NOT_FOUND", "Menu not found");
+        }
+
+        menu = this.toEntity(result.rows[0]);
+      } else {
+        const result = await client.query("SELECT * FROM menu_cards WHERE id = $1", [id]);
+        if (result.rows.length === 0) {
+          await client.query("ROLLBACK");
+          return fail("NOT_FOUND", "Menu not found");
+        }
+        menu = this.toEntity(result.rows[0]);
+      }
+
+      if (data.items !== undefined) {
+        await client.query("DELETE FROM menu_card_items WHERE menu_card_id = $1", [id]);
+
+        for (const item of data.items) {
+          await client.query(
+            `INSERT INTO menu_card_items (menu_card_id, recipe_id, price, display_order, is_available, created_at, updated_at)
+            VALUES ($1, $2, $3, $4, $5, NOW(), NOW())`,
+            [id, item.recipeId, item.price, item.displayOrder, item.isAvailable],
+          );
         }
       }
 
+      await client.query("COMMIT");
+      return ok(menu);
+    } catch (error: unknown) {
+      await client.query("ROLLBACK");
+      if (typeof error === "object" && error !== null && "code" in error) {
+        const pgError = error as { code: string };
+        if (pgError.code === "23505") {
+          return fail("DUPLICATE_RESOURCE", "A menu with this name already exists");
+        }
+      }
       return fail("UPDATE_ERROR", "Failed to update menu", error);
+    } finally {
+      client.release();
     }
   }
 
