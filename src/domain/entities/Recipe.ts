@@ -14,6 +14,7 @@ export class Recipe {
     readonly createdBy: string,
     readonly createdAt: Date,
     readonly updatedAt: Date,
+    readonly imageUrl: string | null,
   ) {}
 }
 

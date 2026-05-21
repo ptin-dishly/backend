@@ -23,8 +23,9 @@ export class PgRecipeRepository implements RecipeRepository {
         servings, 
         preparation_time, 
         created_by,
-        version
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 1)
+        version,
+        image_url
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 1, $9)
       RETURNING *;
     `;
 
@@ -37,6 +38,7 @@ export class PgRecipeRepository implements RecipeRepository {
       data.servings,
       data.preparationTime,
       data.createdBy,
+      data.imageUrl,
     ];
 
     try {
@@ -110,7 +112,7 @@ export class PgRecipeRepository implements RecipeRepository {
           id: row.id as string,
           recipeId: row.recipe_id as string,
           ingredientId: row.ingredient_id as string,
-          subRecipeId: row.sub_reciper_id as string | null,
+          subRecipeId: row.sub_recipe_id as string | null,
           name: row.name as string,
           quantity: Number(row.quantity),
           unit: row.unit as string,
@@ -162,6 +164,7 @@ export class PgRecipeRepository implements RecipeRepository {
         r.created_by AS "createdBy", 
         r.created_at AS "createdAt", 
         r.updated_at AS "updatedAt",
+        r.image_url AS "imageUrl",
         COALESCE(
           json_agg(
             json_build_object(
@@ -250,6 +253,7 @@ export class PgRecipeRepository implements RecipeRepository {
       row.created_by as string,
       row.created_at as Date,
       row.updated_at as Date,
+      row.image_url as string | null,
     );
   }
 }

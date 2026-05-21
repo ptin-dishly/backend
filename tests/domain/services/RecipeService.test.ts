@@ -25,6 +25,7 @@ describe("RecipeService", () => {
             preparationTime: 45,
             version: 1,
             createdBy: "550e8400-e29b-41d4-a716-446655442222",
+            imageUrl: "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fimag.bonviveur.com%2Farroz-a-banda.jpg&f=1&nofb=1&ipt=2e7662422e9b5b98ea445ff3d89ffa56c1a18dbfd4f7c52e9ce4b555964a4989",
             ...overrides,
         };
     };
@@ -43,7 +44,8 @@ describe("RecipeService", () => {
             data.version,
             data.createdBy,
             new Date(),
-            new Date()
+            new Date(),
+            data.imageUrl
         );
     };
 
