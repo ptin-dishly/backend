@@ -29,6 +29,16 @@ export class RecipeStepController {
     return sendSuccess(res, 200, result.value);
   }
 
+  async findByRecipeId(req: Request<{ id: string }>, res: Response) {
+    const result = await this.recipeStepService.findByRecipeId(req.params.id);
+
+    if (!result.ok) {
+      return sendErrorByCode(res, result.error.code, result.error.message);
+    }
+
+    return sendSuccess(res, 200, result.value);
+  }
+
   async update(req: Request<{ id: string }>, res: Response) {
     const result = await this.recipeStepService.update(req.params.id, req.body);
 
