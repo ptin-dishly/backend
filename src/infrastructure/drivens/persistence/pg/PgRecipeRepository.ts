@@ -13,33 +13,6 @@ export class PgRecipeRepository implements RecipeRepository {
   constructor(private readonly pool: pg.Pool) {}
 
   async create(data: CreateRecipeData): Promise<Result<Recipe>> {
-    const query = `
-      INSERT INTO recipes (
-        establishment_id, 
-        name, 
-        description, 
-        category, 
-        portion_size_kg, 
-        servings, 
-        preparation_time, 
-        created_by,
-        version,
-        image_url
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 1, $9)
-      RETURNING *;
-    `;
-
-    const values = [
-      data.establishmentId,
-      data.name,
-      data.description,
-      data.category,
-      data.portionSizeKg,
-      data.servings,
-      data.preparationTime,
-      data.createdBy,
-      data.imageUrl,
-    ];
     const client = await this.pool.connect();
 
     try {
