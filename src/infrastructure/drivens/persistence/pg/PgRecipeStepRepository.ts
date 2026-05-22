@@ -33,6 +33,31 @@ export class PgRecipeStepRepository implements RecipeStepRepository {
     }
   }
 
+  async findByRecipeId(recipeId: string): Promise<Result<RecipeStep[]>> {
+    try {
+      const result = await this.pool.query(
+        `SELECT id, recipe_id, step_number, instruction, duration
+         FROM recipe_steps
+         WHERE recipe_id = $1
+         ORDER BY step_number ASC`,
+        [recipeId],
+      );
+
+      if (result.rowCount === 0) {
+        return ok([]);
+      }
+
+      const steps = result.rows.map(
+        (row) =>
+          new RecipeStep(row.id, row.recipe_id, row.step_number, row.instruction, row.duration),
+      );
+
+      return ok(steps);
+    } catch (_err: unknown) {
+      return fail("RETRIEVE_ERROR", "Failed to load recipe steps");
+    }
+  }
+
   async create(data: CreateRecipeStepData): Promise<Result<RecipeStep>> {
     try {
       const result = await this.pool.query(

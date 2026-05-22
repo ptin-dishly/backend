@@ -22,6 +22,12 @@ export function recipeStepRoutes(recipeStepService: RecipeStepService): Router {
     controller.findById.bind(controller),
   );
 
+  router.get(
+    "/recipe-steps/:recipeId/steps",
+    validate({ params: RecipeStepParamsSchema }),
+    controller.findByRecipeId.bind(controller),
+  );
+
   router.put(
     "/recipe-steps/:id",
     validate({ params: RecipeStepParamsSchema, body: UpdateRecipeStepSchema }),
