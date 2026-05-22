@@ -13,36 +13,52 @@ export class PgRecipeRepository implements RecipeRepository {
   constructor(private readonly pool: pg.Pool) {}
 
   async create(data: CreateRecipeData): Promise<Result<Recipe>> {
-    const query = `
-      INSERT INTO recipes (
-        establishment_id, 
-        name, 
-        description, 
-        category, 
-        portion_size_kg, 
-        servings, 
-        preparation_time, 
-        created_by,
-        version
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 1)
-      RETURNING *;
-    `;
-
-    const values = [
-      data.establishmentId,
-      data.name,
-      data.description,
-      data.category,
-      data.portionSizeKg,
-      data.servings,
-      data.preparationTime,
-      data.createdBy,
-    ];
+    const client = await this.pool.connect();
 
     try {
-      const result = await this.pool.query(query, values);
-      return ok(this.toEntity(result.rows[0]));
+      await client.query("BEGIN");
+
+      const recipeQuery = `
+        INSERT INTO recipes (
+          establishment_id, name, description, category, 
+          portion_size_kg, servings, preparation_time, created_by, version
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 1)
+        RETURNING *;
+      `;
+      const recipeValues = [
+        data.establishmentId,
+        data.name,
+        data.description,
+        data.category,
+        data.portionSizeKg,
+        data.servings,
+        data.preparationTime,
+        data.createdBy,
+      ];
+      const recipeResult = await client.query(recipeQuery, recipeValues);
+      const recipeRow = recipeResult.rows[0];
+
+      if (data.ingredients && data.ingredients.length > 0) {
+        const ingredientQuery = `
+          INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit, is_optional) 
+          VALUES ($1, $2, $3, $4, $5)
+        `;
+        for (const ing of data.ingredients) {
+          await client.query(ingredientQuery, [
+            recipeRow.id,
+            ing.ingredientId,
+            ing.quantity,
+            ing.unit,
+            ing.isOptional,
+          ]);
+        }
+      }
+
+      await client.query("COMMIT");
+      return ok(this.toEntity(recipeRow));
     } catch (error: unknown) {
+      await client.query("ROLLBACK");
+
       if (error !== null && typeof error === "object" && "code" in error) {
         if ((error as { code: string }).code === "23505") {
           return fail(
@@ -51,7 +67,9 @@ export class PgRecipeRepository implements RecipeRepository {
           );
         }
       }
-      return fail("DB_ERROR", "Unexpected error creating recipe", error);
+      return fail("DB_ERROR", "Unexpected error creating recipe and its ingredients", error);
+    } finally {
+      client.release();
     }
   }
 
@@ -192,47 +210,81 @@ export class PgRecipeRepository implements RecipeRepository {
   }
 
   async update(id: string, data: UpdateRecipeData): Promise<Result<Recipe>> {
-    try {
-      const fields: string[] = [];
-      const values: unknown[] = [];
-      let paramIndex = 1;
+    const client = await this.pool.connect();
 
-      // Generem la query dinàmicament en funció dels camps que ens arribin
-      for (const [key, value] of Object.entries(data)) {
-        if (value !== undefined) {
-          // Convertim camelCase a snake_case per a PostgreSQL
-          const snakeCaseKey = key.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
-          fields.push(`${snakeCaseKey} = $${paramIndex}`);
-          values.push(value);
-          paramIndex++;
+    try {
+      await client.query("BEGIN");
+
+      let updatedRecipeRow = null;
+
+      const recipeFields = Object.keys(data).filter((k) => k !== "ingredients");
+
+      if (recipeFields.length > 0) {
+        const fields: string[] = [];
+        const values: unknown[] = [];
+        let paramIndex = 1;
+
+        for (const [key, value] of Object.entries(data)) {
+          if (key !== "ingredients" && value !== undefined) {
+            const snakeCaseKey = key.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
+            fields.push(`${snakeCaseKey} = $${paramIndex}`);
+            values.push(value);
+            paramIndex++;
+          }
+        }
+
+        fields.push(`updated_at = NOW()`);
+        values.push(id);
+
+        const query = `UPDATE recipes SET ${fields.join(", ")} WHERE id = $${paramIndex} RETURNING *`;
+        const result = await client.query(query, values);
+
+        if (result.rowCount === 0) {
+          await client.query("ROLLBACK");
+          return fail("NOT_FOUND", `Recipe with id ${id} not found`);
+        }
+        updatedRecipeRow = result.rows[0];
+      } else {
+        const result = await client.query("SELECT * FROM recipes WHERE id = $1", [id]);
+        if (result.rowCount === 0) {
+          await client.query("ROLLBACK");
+          return fail("NOT_FOUND", `Recipe with id ${id} not found`);
+        }
+        updatedRecipeRow = result.rows[0];
+      }
+
+      if (data.ingredients) {
+        await client.query("DELETE FROM recipe_ingredients WHERE recipe_id = $1", [id]);
+
+        if (data.ingredients.length > 0) {
+          const ingredientQuery = `
+            INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity, unit, is_optional) 
+            VALUES ($1, $2, $3, $4, $5)
+          `;
+          for (const ing of data.ingredients) {
+            await client.query(ingredientQuery, [
+              id,
+              ing.ingredientId,
+              ing.quantity,
+              ing.unit,
+              ing.isOptional,
+            ]);
+          }
         }
       }
 
-      // Afegim l'actualització de la data de modificació
-      fields.push(`updated_at = NOW()`);
-
-      // Afegim l'ID com a últim paràmetre per al WHERE
-      values.push(id);
-
-      const query = `UPDATE recipes SET ${fields.join(", ")} WHERE id = $${paramIndex} RETURNING *`;
-      const result = await this.pool.query(query, values);
-
-      // Si el rowCount és 0, el plat no existia
-      if (result.rowCount === 0) {
-        return fail("NOT_FOUND", `Recipe with id ${id} not found`);
-      }
-
-      return ok(this.toEntity(result.rows[0]));
+      await client.query("COMMIT");
+      return ok(this.toEntity(updatedRecipeRow));
     } catch (error: unknown) {
-      // Fem un cast segur per poder comprovar el codi d'error
-      const err = error as Record<string, unknown>;
+      await client.query("ROLLBACK");
 
-      // Control de violació d'unicitat (ex: ja existeix aquest nom)
+      const err = error as Record<string, unknown>;
       if (err?.code === "23505") {
         return fail("DUPLICATE_RESOURCE", "A recipe with this name already exists", error);
       }
-
-      return fail("UPDATE_ERROR", "Failed to update recipe", error);
+      return fail("UPDATE_ERROR", "Failed to update recipe and ingredients", error);
+    } finally {
+      client.release();
     }
   }
 

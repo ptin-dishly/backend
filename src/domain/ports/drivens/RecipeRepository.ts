@@ -1,6 +1,13 @@
 import type { Recipe, RecipeWithAllergens } from "@domain/entities/Recipe";
 import type { Result } from "@domain/value-objects/Result";
 
+export interface CreateRecipeIngredientData {
+  ingredientId: string;
+  quantity: number;
+  unit: string;
+  isOptional: boolean;
+}
+
 export interface CreateRecipeData {
   id: string;
   establishmentId: string;
@@ -14,6 +21,7 @@ export interface CreateRecipeData {
   createdBy: string;
   createdAt: Date;
   updateAt: Date;
+  ingredients: CreateRecipeIngredientData[];
 }
 
 export interface RecipeIngredientDetail {
@@ -47,4 +55,5 @@ export interface UpdateRecipeData {
   servings?: number;
   preparationTime?: number;
   version?: number;
+  ingredients?: CreateRecipeIngredientData[];
 }
