@@ -23,7 +23,7 @@ export function recipeStepRoutes(recipeStepService: RecipeStepService): Router {
   );
 
   router.get(
-    "/recipe-steps/:recipeId/steps",
+    "/recipe-steps/:id/steps",
     validate({ params: RecipeStepParamsSchema }),
     controller.findByRecipeId.bind(controller),
   );

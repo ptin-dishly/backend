@@ -33,14 +33,14 @@ export class PgRecipeStepRepository implements RecipeStepRepository {
     }
   }
 
-  async findByRecipeId(recipeId: string): Promise<Result<RecipeStep[]>> {
+  async findByRecipeId(id: string): Promise<Result<RecipeStep[]>> {
     try {
       const result = await this.pool.query(
         `SELECT id, recipe_id, step_number, instruction, duration
          FROM recipe_steps
          WHERE recipe_id = $1
          ORDER BY step_number ASC`,
-        [recipeId],
+        [id],
       );
 
       if (result.rowCount === 0) {

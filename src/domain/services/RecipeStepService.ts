@@ -40,12 +40,12 @@ export class RecipeStepService {
     return await this.recipeStepRepository.findById(id);
   }
 
-  async findByRecipeId(recipeId: string): Promise<Result<RecipeStep[]>> {
-    if (!recipeId || !uuidRegex.test(recipeId)) {
+  async findByRecipeId(id: string): Promise<Result<RecipeStep[]>> {
+    if (!id || !uuidRegex.test(id)) {
       return fail("INVALID_ID", "Recipe ID must be a valid UUID");
     }
 
-    return await this.recipeStepRepository.findByRecipeId(recipeId);
+    return await this.recipeStepRepository.findByRecipeId(id);
   }
 
   async update(id: string, data: UpdateRecipeStepData): Promise<Result<RecipeStep>> {
