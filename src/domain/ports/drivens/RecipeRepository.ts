@@ -20,7 +20,8 @@ export interface CreateRecipeData {
   version: number;
   createdBy: string;
   createdAt: Date;
-  updateAt: Date;
+  updatedAt: Date;
+  imageUrl: string | null;
   ingredients: CreateRecipeIngredientData[];
 }
 
@@ -55,5 +56,6 @@ export interface UpdateRecipeData {
   servings?: number;
   preparationTime?: number;
   version?: number;
+  imageUrl?: string | null;
   ingredients?: CreateRecipeIngredientData[];
 }

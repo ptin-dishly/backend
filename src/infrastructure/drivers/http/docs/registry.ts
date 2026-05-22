@@ -327,6 +327,8 @@ registry.registerPath({
             servings: 2,
             preparationTime: 40,
             createdBy: "33333333-0003-0003-0003-000000000001",
+            imageUrl:
+              "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fimag.bonviveur.com%2Farroz-a-banda.jpg&f=1&nofb=1&ipt=2e7662422e9b5b98ea445ff3d89ffa56c1a18dbfd4f7c52e9ce4b555964a4989",
           },
         },
       },
@@ -353,6 +355,8 @@ registry.registerPath({
               createdBy: "33333333-0003-0003-0003-000000000001",
               createdAt: "2026-05-02T14:40:48.728Z",
               updatedAt: "2026-05-02T14:40:48.728Z",
+              imageUrl:
+                "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fimag.bonviveur.com%2Farroz-a-banda.jpg&f=1&nofb=1&ipt=2e7662422e9b5b98ea445ff3d89ffa56c1a18dbfd4f7c52e9ce4b555964a4989",
             },
             meta: { timestamp: "2026-05-02T14:40:48.728Z" },
           },

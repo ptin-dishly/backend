@@ -36,6 +36,7 @@ export const CreateRecipeSchema = z
     servings: z.number().int().min(1),
     preparationTime: z.number().int().min(0),
     createdBy: z.string().regex(uuidRegex, "Invalid UUID"),
+    imageUrl: z.string().url().nullish(),
     ingredients: z.array(CreateRecipeIngredientSchema),
   })
   .openapi("CreateRecipeBody");
@@ -54,6 +55,7 @@ export const RecipeSchema = z
     createdBy: z.string().uuid(),
     createdAt: z.string().datetime(),
     updatedAt: z.string().datetime(),
+    imageUrl: z.string().url().nullish(),
   })
   .openapi("Recipe");
 
