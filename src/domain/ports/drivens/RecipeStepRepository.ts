@@ -18,6 +18,7 @@ export interface UpdateRecipeStepData {
 export interface RecipeStepRepository {
   create(data: CreateRecipeStepData): Promise<Result<RecipeStep>>;
   findById(id: string): Promise<Result<RecipeStep | null>>;
+  findByRecipeId(id: string): Promise<Result<RecipeStep[]>>;
   update(id: string, data: UpdateRecipeStepData): Promise<Result<RecipeStep>>;
   delete(id: string): Promise<Result<void>>;
 }

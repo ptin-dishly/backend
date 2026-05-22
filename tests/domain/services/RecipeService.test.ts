@@ -4,7 +4,8 @@ import type {
     RecipeRepository, 
     CreateRecipeData, 
     RecipeIngredientDetail, 
-    UpdateRecipeData 
+    UpdateRecipeData,
+    CreateRecipeIngredientData 
 } from "@domain/ports/drivens/RecipeRepository";
 import { Recipe } from "@domain/entities/Recipe";
 import { ok, fail } from "@domain/value-objects/Result";
@@ -12,6 +13,10 @@ import { ok, fail } from "@domain/value-objects/Result";
 describe("RecipeService", () => {
     let recipeService: RecipeService;
     let recipeRepository: RecipeRepository;
+
+    const defaultIngredients: CreateRecipeIngredientData[] = [
+        { ingredientId: "ing-1", quantity: 500, unit: "g", isOptional: false }
+    ];
 
     const validRecipeData = (overrides: Partial<CreateRecipeData> = {}) => {
         return {
@@ -26,6 +31,7 @@ describe("RecipeService", () => {
             version: 1,
             createdBy: "550e8400-e29b-41d4-a716-446655442222",
             imageUrl: "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fimag.bonviveur.com%2Farroz-a-banda.jpg&f=1&nofb=1&ipt=2e7662422e9b5b98ea445ff3d89ffa56c1a18dbfd4f7c52e9ce4b555964a4989",
+            ingredients: defaultIngredients,
             ...overrides,
         };
     };
@@ -66,7 +72,7 @@ describe("RecipeService", () => {
 
     // --- TESTS CREATE ---
     describe("create", () => {
-        it("should create a recipe successfully", async () => {
+        it("should create a recipe successfully (with ingredients)", async () => {
             const data = validRecipeData();
             const recipe = fakeRecipe();
             vi.mocked(recipeRepository.create).mockResolvedValue(ok(recipe));
@@ -443,10 +449,16 @@ describe("RecipeService", () => {
 
     // --- TESTS UPDATE ---
     describe("update", () => {
-        const validUpdateData: UpdateRecipeData = { name: "Nova Paella" };
         const validId = "550e8400-e29b-41d4-a716-446655440000";
+        
+        const validUpdateData: UpdateRecipeData = { 
+            name: "Nova Paella",
+            ingredients: [
+                { ingredientId: "ing-2", quantity: 1, unit: "kg", isOptional: false }
+            ]
+        };
 
-        it("should successfully update a recipe", async () => {
+        it("should successfully update a recipe (with ingredients)", async () => {
             const updatedRecipe = fakeRecipe({ name: "Nova Paella" });
             vi.mocked(recipeRepository.update).mockResolvedValue(ok(updatedRecipe));
 
@@ -467,6 +479,16 @@ describe("RecipeService", () => {
                 expect(result.error.code).toBe("INVALID_ID");
             }
             expect(recipeRepository.update).not.toHaveBeenCalled();
+        });
+
+        it("should return an error if update data is empty", async () => {
+            const result = await recipeService.update(validId, {});
+
+            expect(result.ok).toBe(false);
+            if (!result.ok) {
+                expect(result.error.code).toBe("VALIDATION_ERROR");
+                expect(result.error.message).toBe("No data provided to update");
+            }
         });
 
         it("should propagate repository error (e.g. NOT_FOUND or DUPLICATE_RESOURCE)", async () => {

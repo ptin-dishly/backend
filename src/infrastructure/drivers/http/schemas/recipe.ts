@@ -11,6 +11,13 @@ export const RecipeCategoryEnum = z.enum([
   "bebida",
 ]);
 
+export const CreateRecipeIngredientSchema = z.object({
+  ingredientId: z.string().regex(uuidRegex, "Invalid UUID"),
+  quantity: z.number().positive(),
+  unit: z.enum(["kg", "g", "l", "ml", "ud", "cucharada", "pizca"]),
+  isOptional: z.boolean().default(false),
+});
+
 export const RecipeParamsSchema = z.object({
   id: z.string().min(36).max(36), // Just check length instead of strict UUID validation
 });
@@ -30,6 +37,7 @@ export const CreateRecipeSchema = z
     preparationTime: z.number().int().min(0),
     createdBy: z.string().regex(uuidRegex, "Invalid UUID"),
     imageUrl: z.string().url().nullish(),
+    ingredients: z.array(CreateRecipeIngredientSchema),
   })
   .openapi("CreateRecipeBody");
 

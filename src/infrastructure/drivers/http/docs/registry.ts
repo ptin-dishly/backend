@@ -1256,6 +1256,82 @@ registry.registerPath({
 // ======================
 
 registry.registerPath({
+  method: "get",
+  path: "/recipes/{recipeId}/steps",
+  tags: ["Recipe Steps"],
+  summary: "Get recipe steps by recipe ID",
+  description:
+    "Returns a list of all steps associated with a specific recipe, ordered by their step number.",
+  operationId: "getStepsByRecipeId",
+  request: {
+    params: z.object({ recipeId: z.string().uuid() }),
+  },
+  responses: {
+    200: {
+      description:
+        "List of recipe steps retrieved successfully. Returns an empty array if none are found.",
+      content: {
+        "application/json": {
+          schema: SuccessResponseSchema(z.array(RecipeStepSchema)),
+          example: {
+            success: true,
+            data: [
+              {
+                id: "550e8400-e29b-41d4-a716-446655440003",
+                recipeId: "550e8400-e29b-41d4-a716-446655440002",
+                stepNumber: 1,
+                instruction: "Sofregir la ceba fins que estigui daurada",
+                duration: 15,
+              },
+              {
+                id: "660e8400-e29b-41d4-a716-446655440004",
+                recipeId: "550e8400-e29b-41d4-a716-446655440002",
+                stepNumber: 2,
+                instruction: "Afegir el tomàquet triturat",
+                duration: 10,
+              },
+            ],
+            meta: { timestamp: new Date().toISOString() },
+          },
+        },
+      },
+    },
+    400: {
+      description: "Invalid recipe ID format",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "INVALID_REQUEST",
+              message: "Invalid path parameters. Expected UUID format.",
+            },
+            meta: { timestamp: new Date().toISOString() },
+          },
+        },
+      },
+    },
+    500: {
+      description: "Internal server error or database failure",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+          example: {
+            success: false,
+            error: {
+              code: "RETRIEVE_ERROR",
+              message: "Failed to load recipe steps",
+            },
+            meta: { timestamp: new Date().toISOString() },
+          },
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
   method: "post",
   path: "/recipe-steps",
   tags: ["Recipe Steps"],

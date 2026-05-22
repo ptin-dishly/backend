@@ -15,6 +15,7 @@ describe("RecipeStepService", () => {
     mockRepo = {
       create: vi.fn(),
       findById: vi.fn(),
+      findByRecipeId: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
     } as unknown as RecipeStepRepository;
@@ -135,6 +136,69 @@ describe("RecipeStepService", () => {
       expect(result.ok).toBe(false);
       if (!result.ok) expect(result.error.code).toBe("INVALID_ID");
     });
+  });
+
+  describe("findByRecipeId", () => {
+      const validRecipeId = "550e8400-e29b-41d4-a716-446655440000";
+
+      it("should return a list of recipe steps successfully", async () => {
+          // 1. Preparamos los datos falsos
+          const mockSteps = [
+              new RecipeStep("step-1", validRecipeId, 1, "Sofregir la ceba", 10),
+              new RecipeStep("step-2", validRecipeId, 2, "Afegir el tomàquet", 5)
+          ];
+          vi.mocked(mockRepo.findByRecipeId).mockResolvedValue(ok(mockSteps));
+
+          // 2. Ejecutamos el servicio
+          const result = await recipeStepService.findByRecipeId(validRecipeId);
+
+          // 3. Comprobamos que todo es correcto
+          expect(mockRepo.findByRecipeId).toHaveBeenCalledWith(validRecipeId);
+          expect(result.ok).toBe(true);
+          if (result.ok) {
+              expect(result.value).toHaveLength(2);
+              expect(result.value[0].stepNumber).toBe(1);
+              expect(result.value[1].stepNumber).toBe(2);
+          }
+      });
+
+      it("should return an empty array if the recipe has no steps", async () => {
+          vi.mocked(mockRepo.findByRecipeId).mockResolvedValue(ok([]));
+
+          const result = await recipeStepService.findByRecipeId(validRecipeId);
+
+          expect(result.ok).toBe(true);
+          if (result.ok) {
+              expect(result.value).toHaveLength(0);
+              expect(result.value).toEqual([]);
+          }
+      });
+
+      it("should return a failure when the recipeId is empty", async () => {
+          // Pasamos un string vacío o con espacios
+          const result = await recipeStepService.findByRecipeId("   ");
+
+          expect(result.ok).toBe(false);
+          if (!result.ok) {
+              expect(result.error.code).toBe("INVALID_ID");
+          }
+          // Comprobamos que cortó la ejecución antes de llamar a la BD
+          expect(mockRepo.findByRecipeId).not.toHaveBeenCalled();
+      });
+
+      it("should propagate a failure when the repository fails", async () => {
+          vi.mocked(mockRepo.findByRecipeId).mockResolvedValue(
+              fail("RETRIEVE_ERROR", "Failed to load recipe steps")
+          );
+
+          const result = await recipeStepService.findByRecipeId(validRecipeId);
+
+          expect(mockRepo.findByRecipeId).toHaveBeenCalledWith(validRecipeId);
+          expect(result.ok).toBe(false);
+          if (!result.ok) {
+              expect(result.error.code).toBe("RETRIEVE_ERROR");
+          }
+      });
   });
 
   describe("update", () => {
