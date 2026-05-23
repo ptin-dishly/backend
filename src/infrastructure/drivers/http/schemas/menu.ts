@@ -34,14 +34,23 @@ export const MenuByAllergenParamsSchema = z.object({
 
 export const CreateMenuSchema = z
   .object({
-    establishmentId: z.string().uuid({ message: "Invalid Establishment UUID" }),
+    establishmentId: z
+      .string()
+      .regex(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/, {
+        message: "Invalid Establishment UUID",
+      }),
     name: z.string().min(1, "Name is required").max(100, "Name is too long"),
     isPublic: z.boolean().default(false),
     qrCodeUrl: z.string().url("Must be a valid URL").nullable().optional(),
     items: z
       .array(
         z.object({
-          recipeId: z.string().uuid({ message: "Invalid Recipe UUID" }),
+          recipeId: z
+            .string()
+            .regex(
+              /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/,
+              { message: "Invalid Recipe UUID" },
+            ),
           price: z.number().positive("Price must be positive"),
           displayOrder: z.number().int().nonnegative(),
           isAvailable: z.boolean().default(true),
