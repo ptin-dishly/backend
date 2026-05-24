@@ -9,9 +9,20 @@ export const IngredientSchema = z.object({
 
 export const UpdateIngredientSchema = IngredientSchema.omit({ id: true }).partial();
 export type UpdateIngredientBody = z.infer<typeof UpdateIngredientSchema>;
+
 export const DeleteIngredientSchema = z.object({
   id: z.string().uuid(),
 });
 
-export const CreateIngredientSchema = IngredientSchema.omit({ id: true });
+const AllergenAssociationSchema = z.object({
+  allergenId: z
+    .string()
+    .regex(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/),
+  presence: z.enum(["contains", "may_contain", "traces"]).default("contains"),
+  notes: z.string().optional(),
+});
+
+export const CreateIngredientSchema = IngredientSchema.omit({ id: true }).extend({
+  allergens: z.array(AllergenAssociationSchema).optional(),
+});
 export type CreateIngredientBody = z.infer<typeof CreateIngredientSchema>;

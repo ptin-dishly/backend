@@ -72,7 +72,28 @@ export class PgIngredientRepository implements IngredientRepository {
       const values = [data.name, data.description ?? null, data.isActive];
 
       const result = await this.pool.query(query, values);
-      return ok(this.toEntity(result.rows[0]));
+      const ingredient = this.toEntity(result.rows[0]);
+
+      // Create allergen associations if provided
+      if (data.allergens && data.allergens.length > 0) {
+        for (const allergen of data.allergens) {
+          const allergenQuery = `
+            INSERT INTO ingredient_allergens (ingredient_id, allergen_id, presence, notes)
+            VALUES ($1, $2, $3, $4)
+            ON CONFLICT (ingredient_id, allergen_id) DO UPDATE
+            SET presence = $3, notes = $4;
+          `;
+          const allergenValues = [
+            ingredient.id,
+            allergen.allergenId,
+            allergen.presence,
+            allergen.notes ?? null,
+          ];
+          await this.pool.query(allergenQuery, allergenValues);
+        }
+      }
+
+      return ok(ingredient);
     } catch (error: unknown) {
       const err = error as Record<string, unknown>;
       if (err?.code === "23505") {
