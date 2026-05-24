@@ -245,6 +245,13 @@ export class PgOrderRepository implements OrderRepository {
         `UPDATE orders SET status = 'served', updated_at = NOW() WHERE id = $1`,
         [orderId],
       );
+      await this.pool.query(
+        `UPDATE allergen_alerts SET is_resolved = true, updated_at = NOW()
+         WHERE order_item_id IN (
+           SELECT id FROM order_items WHERE order_id = $1
+         ) AND is_resolved = false`,
+        [orderId],
+      );
       return ok(undefined);
     } catch (error) {
       return fail("UPDATE_ERROR", "Error closing order", error);
@@ -319,6 +326,15 @@ export class PgOrderRepository implements OrderRepository {
         [data.status, data.notes, id],
       );
       if (updateResult.rowCount === 0) return fail("NOT_FOUND", "Order not found");
+      if (data.status === "served" || data.status === "cancelled") {
+        await this.pool.query(
+          `UPDATE allergen_alerts SET is_resolved = true, updated_at = NOW()
+           WHERE order_item_id IN (
+             SELECT id FROM order_items WHERE order_id = $1
+           ) AND is_resolved = false`,
+          [id],
+        );
+      }
 
       const reload = await this.findById(id);
       if (!reload.ok) return fail(reload.error.code, reload.error.message);
