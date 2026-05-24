@@ -2,6 +2,7 @@ import type { Ingredient } from "../entities/Ingredient";
 import type {
   CreateIngredientData,
   IngredientRepository,
+  IngredientWithAllergens,
   UpdateIngredientData,
 } from "../ports/drivens/IngredientRepository";
 import type { Result } from "../value-objects/Result";
@@ -12,6 +13,10 @@ export class IngredientService {
 
   async findAll(): Promise<Result<Ingredient[]>> {
     return await this.ingredientRepository.findAll();
+  }
+
+  async findAllWithAllergens(): Promise<Result<IngredientWithAllergens[]>> {
+    return await this.ingredientRepository.findAllWithAllergens();
   }
 
   async update(id: string, data: UpdateIngredientData): Promise<Result<Ingredient>> {

@@ -24,6 +24,24 @@ export class IngredientController {
     });
   }
 
+  async findAllWithAllergens(_req: Request, res: Response) {
+    const result = await this.ingredientService.findAllWithAllergens();
+
+    if (result.ok) {
+      return res.status(200).json({
+        success: true,
+        data: result.value,
+        meta: { timestamp: new Date().toISOString() },
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      error: { code: result.error.code, message: result.error.message },
+      meta: { timestamp: new Date().toISOString() },
+    });
+  }
+
   async update(req: Request, res: Response) {
     const id = req.params.id as string;
     const data = req.body;
