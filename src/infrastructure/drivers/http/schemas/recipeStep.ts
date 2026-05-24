@@ -1,7 +1,7 @@
 import { z } from "./zod";
 
 export const RecipeStepParamsSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string().min(36).max(36),
 });
 
 export const CreateRecipeStepSchema = z.object({
