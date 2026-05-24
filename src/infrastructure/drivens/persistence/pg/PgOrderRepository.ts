@@ -246,7 +246,7 @@ export class PgOrderRepository implements OrderRepository {
         [orderId],
       );
       await this.pool.query(
-        `UPDATE allergen_alerts SET is_resolved = true, updated_at = NOW()
+        `UPDATE allergen_alerts SET is_resolved = true
          WHERE order_item_id IN (
            SELECT id FROM order_items WHERE order_id = $1
          ) AND is_resolved = false`,
@@ -328,7 +328,7 @@ export class PgOrderRepository implements OrderRepository {
       if (updateResult.rowCount === 0) return fail("NOT_FOUND", "Order not found");
       if (data.status === "served" || data.status === "cancelled") {
         await this.pool.query(
-          `UPDATE allergen_alerts SET is_resolved = true, updated_at = NOW()
+          `UPDATE allergen_alerts SET is_resolved = true
            WHERE order_item_id IN (
              SELECT id FROM order_items WHERE order_id = $1
            ) AND is_resolved = false`,
