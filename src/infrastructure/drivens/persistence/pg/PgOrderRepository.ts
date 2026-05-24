@@ -196,6 +196,20 @@ export class PgOrderRepository implements OrderRepository {
             new Date(r.updated_at as string),
           ),
         );
+
+        if (item.hasAllergenRisk) {
+          const allergenRows = await client.query(
+            `SELECT allergen_id FROM recipe_allergens WHERE recipe_id = $1 AND contains = true`,
+            [item.recipeId],
+          );
+          for (const aRow of allergenRows.rows) {
+            await client.query(
+              `INSERT INTO allergen_alerts (order_item_id, allergen_id, alert_severity, message)
+               VALUES ($1, $2, 'high', $3)`,
+              [r.id as string, aRow.allergen_id as string, item.allergyPerson ?? null],
+            );
+          }
+        }
       }
 
       await client.query("COMMIT");
