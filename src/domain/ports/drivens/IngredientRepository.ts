@@ -7,10 +7,17 @@ export interface UpdateIngredientData {
   isActive?: boolean;
 }
 
+export interface AllergenAssociation {
+  allergenId: string;
+  presence: "contains" | "may_contain" | "traces";
+  notes?: string;
+}
+
 export interface CreateIngredientData {
   name: string;
   description?: string | null;
   isActive: boolean;
+  allergens?: AllergenAssociation[];
 }
 
 export interface IngredientRepository {
