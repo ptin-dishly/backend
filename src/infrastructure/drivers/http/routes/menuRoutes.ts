@@ -13,7 +13,6 @@ export function MenuRoutes(MenuService: MenuService): Router {
   const router = Router();
   const controller = createMenuController(MenuService);
 
-  router.get("/menus/:id", validate({ params: MenuParamsSchema }), controller.findById);
   router.get(
     "/menus/establishment/:establishmentId",
     validate({ params: MenuEstablishmentParamsSchema }),
@@ -24,6 +23,7 @@ export function MenuRoutes(MenuService: MenuService): Router {
     validate({ params: MenuByAllergenParamsSchema }),
     controller.findByAllergenId,
   );
+  router.get("/menus/:id", validate({ params: MenuParamsSchema }), controller.findById);
   router.put("/menus/:id", controller.update);
   router.delete("/menus/:id", validate({ params: MenuParamsSchema }), controller.delete);
   router.post("/menus", validate({ body: CreateMenuSchema }), controller.create);

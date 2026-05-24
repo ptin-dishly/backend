@@ -52,7 +52,6 @@ const ORDER_WITH_ITEMS_COLUMNS = `
   oi.name        AS item_name,
   oi.special_notes,
   oi.has_allergen_risk,
-  oi.allergy_person,
   oi.status      AS item_status,
   oi.created_at  AS item_created_at,
   oi.updated_at  AS item_updated_at
