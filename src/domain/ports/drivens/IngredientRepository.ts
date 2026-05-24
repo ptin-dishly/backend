@@ -20,8 +20,22 @@ export interface CreateIngredientData {
   allergens?: AllergenAssociation[];
 }
 
+export interface IngredientWithAllergens {
+  id: string;
+  name: string;
+  description: string | null;
+  isActive: boolean;
+  allergens: Array<{
+    allergenId: string;
+    name: string;
+    presence: string;
+    notes: string | null;
+  }>;
+}
+
 export interface IngredientRepository {
   findAll(): Promise<Result<Ingredient[]>>;
+  findAllWithAllergens(): Promise<Result<IngredientWithAllergens[]>>;
   update(id: string, data: UpdateIngredientData): Promise<Result<Ingredient>>;
   delete(id: string): Promise<Result<void>>;
   create(data: CreateIngredientData): Promise<Result<Ingredient>>;

@@ -12,6 +12,10 @@ export function ingredientRoutes(ingredientService: IngredientService): Router {
   const router = Router();
   const controller = new IngredientController(ingredientService);
 
+  router.get("/ingredients/with-allergens", (req, res) =>
+    controller.findAllWithAllergens(req, res),
+  );
+
   router.get("/ingredients", (req, res) => controller.findAll(req, res));
 
   router.put("/ingredients/:id", validate({ body: UpdateIngredientSchema }), (req, res) =>

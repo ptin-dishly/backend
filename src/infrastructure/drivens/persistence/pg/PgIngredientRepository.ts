@@ -2,6 +2,7 @@ import { Ingredient } from "@domain/entities/Ingredient";
 import type {
   CreateIngredientData,
   IngredientRepository,
+  IngredientWithAllergens,
   UpdateIngredientData,
 } from "@domain/ports/drivens/IngredientRepository";
 import type { Result } from "@domain/value-objects/Result";
@@ -18,6 +19,40 @@ export class PgIngredientRepository implements IngredientRepository {
       return ok(ingredients);
     } catch (error) {
       return fail("RETRIEVE_ERROR", "Failed to retrieve ingredients", error);
+    }
+  }
+
+  async findAllWithAllergens(): Promise<Result<IngredientWithAllergens[]>> {
+    try {
+      const query = `
+        SELECT 
+          i.id, 
+          i.name, 
+          i.description, 
+          i.is_active as "isActive",
+          COALESCE(
+            json_agg(
+              json_build_object(
+                'allergenId', a.id,
+                'name', a.name_ca,
+                'presence', ia.presence,
+                'notes', ia.notes
+              )
+            ) FILTER (WHERE a.id IS NOT NULL), '[]'
+          ) as allergens
+        FROM ingredients i
+        LEFT JOIN ingredient_allergens ia ON i.id = ia.ingredient_id
+        LEFT JOIN allergens a ON ia.allergen_id = a.id
+        GROUP BY i.id
+        ORDER BY i.name ASC;
+      `;
+
+      const result = await this.pool.query(query);
+
+      return ok(result.rows);
+    } catch (error: unknown) {
+      console.error("🔥 Error de SQL en findAllWithAllergens:", error);
+      return fail("RETRIEVE_ERROR", "Failed to retrieve ingredients with allergens", error);
     }
   }
 

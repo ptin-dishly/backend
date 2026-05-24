@@ -13,6 +13,7 @@ describe("IngredientService", () => {
     beforeEach(() => {
         mockIngredientRepository = {
             findAll: vi.fn(),
+            findAllWithAllergens: vi.fn(),
             update: vi.fn(),
             create: vi.fn(),
             delete: vi.fn(),
@@ -60,6 +61,68 @@ describe("IngredientService", () => {
             const result = await ingredientService.findAll();
 
             expect(mockIngredientRepository.findAll).toHaveBeenCalledOnce();
+            expect(result.ok).toBe(false);
+            if (!result.ok) {
+                expect(result.error.code).toBe("RETRIEVE_ERROR");
+            }
+        });
+    });
+
+    describe("findAllWithAllergens", () => {
+        it("should return the complete list of ingredients with their allergens", async () => {
+            const mockData = [
+                {
+                    id: "id-1",
+                    name: "Harina",
+                    description: "Harina de trigo",
+                    isActive: true,
+                    allergens: [
+                        { allergenId: "uuid-1", name: "Gluten", presence: "contains", notes: null }
+                    ]
+                },
+                {
+                    id: "id-2",
+                    name: "Tomate",
+                    description: null,
+                    isActive: true,
+                    allergens: []
+                }
+            ];
+            vi.mocked(mockIngredientRepository.findAllWithAllergens).mockResolvedValue(ok(mockData));
+
+            const result = await ingredientService.findAllWithAllergens();
+
+            expect(mockIngredientRepository.findAllWithAllergens).toHaveBeenCalledOnce();
+            expect(result.ok).toBe(true);
+            if (result.ok) {
+                expect(result.value).toHaveLength(2);
+                expect(result.value[0].name).toBe("Harina");
+                expect(result.value[0].allergens).toHaveLength(1);
+                expect(result.value[0].allergens[0].name).toBe("Gluten");
+                expect(result.value[1].allergens).toHaveLength(0);
+            }
+        });
+
+        it("should return an empty array when there are no ingredients", async () => {
+            vi.mocked(mockIngredientRepository.findAllWithAllergens).mockResolvedValue(ok([]));
+
+            const result = await ingredientService.findAllWithAllergens();
+
+            expect(mockIngredientRepository.findAllWithAllergens).toHaveBeenCalledOnce();
+            expect(result.ok).toBe(true);
+            if (result.ok) {
+                expect(result.value).toEqual([]);
+            }
+        });
+
+        it("should return a failure when the repository fails", async () => {
+            vi.mocked(mockIngredientRepository.findAllWithAllergens).mockResolvedValue(
+                fail("RETRIEVE_ERROR", "Failed to retrieve ingredients with allergens")
+            );
+
+            const result = await ingredientService.findAllWithAllergens();
+
+            expect(mockIngredientRepository.findAllWithAllergens).toHaveBeenCalledOnce();
             expect(result.ok).toBe(false);
             if (!result.ok) {
                 expect(result.error.code).toBe("RETRIEVE_ERROR");
