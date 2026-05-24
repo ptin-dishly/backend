@@ -17,5 +17,6 @@ export interface CreateTableInput {
 export interface TableRepository {
   findAll(): Promise<Result<RoomTable[]>>;
   create(input: CreateTableInput): Promise<Result<RoomTable>>;
+  update(id: string, data: { tableNumber?: string; capacity?: number | null }): Promise<Result<RoomTable | null>>;
   delete(id: string): Promise<Result<boolean>>;
 }

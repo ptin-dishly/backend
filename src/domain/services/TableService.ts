@@ -16,6 +16,10 @@ export class TableService {
     return this.tableRepository.create(input);
   }
 
+  update(id: string, data: { tableNumber?: string; capacity?: number | null }): Promise<Result<RoomTable | null>> {
+    return this.tableRepository.update(id, data);
+  }
+
   delete(id: string): Promise<Result<boolean>> {
     return this.tableRepository.delete(id);
   }

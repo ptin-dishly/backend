@@ -26,6 +26,7 @@ export function OrderRoutes(
   router.get("/rooms", roomCtrl.findAll);
   router.get("/tables", tableCtrl.findAll);
   router.post("/tables", tableCtrl.createTable);
+  router.put("/tables/:id", tableCtrl.updateTable);
   router.delete("/tables/:id", tableCtrl.deleteTable);
 
   // Live / dashboard

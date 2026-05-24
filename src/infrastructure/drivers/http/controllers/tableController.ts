@@ -36,5 +36,14 @@ export function createTableController(tableService: TableService) {
       if (!result.value) return sendNotFound(res, "Table not found");
       return sendSuccessNoData(res, 200, "Table deleted");
     },
+
+    async updateTable(req: Request, res: Response) {
+      const id = req.params.id as string;
+      const { tableNumber, capacity } = req.body as { tableNumber?: string; capacity?: number | null };
+      const result = await tableService.update(id, { tableNumber, capacity });
+      if (!result.ok) return sendErrorByCode(res, result.error.code, result.error.message);
+      if (!result.value) return sendNotFound(res, "Table not found");
+      return sendSuccess(res, 200, result.value);
+    },
   };
 }
